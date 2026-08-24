@@ -652,48 +652,129 @@ const Contactus = () => {
               </div>
             </div>
 
-            <div style={styles.contactBox}>
-              <div className="d-flex flex-wrap justify-content-center gap-4">
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Download HappyWedz App on Google Play Store"
-                >
-                  <img
-                    src="/images/cta/playstore.svg"
-                    alt="Google Play Store"
-                    style={{
-                      width: "120px",
-                      height: "120px",
-                      objectFit: "contain",
-                    }}
-                  />
-                </a>
-                <a
-                  href="https://apps.apple.com/app/happywedz/id123456789"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Download HappyWedz App on Apple App Store"
-                >
-                  <img
-                    src="/images/cta/appstore.svg"
-                    alt="Apple App Store"
-                    style={{
-                      width: "120px",
-                      height: "120px",
-                      objectFit: "contain",
-                    }}
-                  />
-                </a>
-              </div>
-              <p
-                style={{ fontSize: "16px", color: "#000" }}
-                className="text-center"
+            {/* App Download Banner */}
+            <div
+              style={{
+              background: "linear-gradient(135deg, #e83581 0%, #c2185b 100%)",
+                borderRadius: "10px",
+                padding: "24px 20px",
+                marginBottom: "15px",
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "16px",
+                flexWrap: "wrap",
+                boxShadow: "0 6px 20px rgba(194,24,91,0.35)",
+              }}
+            >
+              {/* Play Store Button */}
+              <a
+                href="https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="HappyWedz App on Google Play Store"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  border: "2px solid rgba(255,255,255,0.8)",
+                  borderRadius: "8px",
+                  padding: "10px 18px",
+                  color: "#fff",
+                  textDecoration: "none",
+                  fontWeight: "600",
+                  fontSize: "13px",
+                  letterSpacing: "0.3px",
+                  transition: "background 0.2s, border-color 0.2s",
+                  whiteSpace: "nowrap",
+                  backgroundColor: "transparent",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.15)";
+                  e.currentTarget.style.borderColor = "#fff";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";
+                }}
               >
-                {" "}
-                Gets the Happywedz App
-              </p>
+                {/* Review Icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  <line x1="9" y1="10" x2="15" y2="10" />
+                  <line x1="12" y1="7" x2="12" y2="13" />
+                </svg>
+                Play Store
+              </a>
+
+              {/* Divider */}
+              <div
+                style={{
+                  width: "1px",
+                  height: "40px",
+                  backgroundColor: "rgba(255,255,255,0.4)",
+                }}
+              />
+
+              {/* Apple Store Button */}
+              <a
+                href="https://apps.apple.com/app/happywedz/id123456789"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="HappyWedz App on Apple App Store"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  border: "2px solid rgba(255,255,255,0.8)",
+                  borderRadius: "8px",
+                  padding: "10px 18px",
+                  color: "#fff",
+                  textDecoration: "none",
+                  fontWeight: "600",
+                  fontSize: "13px",
+                  letterSpacing: "0.3px",
+                  transition: "background 0.2s, border-color 0.2s",
+                  whiteSpace: "nowrap",
+                  backgroundColor: "transparent",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.15)";
+                  e.currentTarget.style.borderColor = "#fff";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";
+                }}
+              >
+                {/* Mobile Phone Icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" />
+                </svg>
+                Apple Store
+              </a>
             </div>
           </div>
         </div>

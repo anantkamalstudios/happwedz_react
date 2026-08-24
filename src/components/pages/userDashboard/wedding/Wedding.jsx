@@ -8,14 +8,16 @@ import { GrPlan } from "react-icons/gr";
 import { Camera, Music, Utensils, Gift } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import CtaPanel from "../../../../components/home/CtaPanel";
-const logo = "/happywed_white.png";
-const image = "/images/home/1.jpg";
-const bigleafcta1 = "/images/home/bigleafcta1.jpg";
+// Only used by the disabled Design Studio banner (virtual try-on).
+// import CtaPanel from "../../../../components/home/CtaPanel";
+// const logo = "/happywed_white.png";
+// const image = "/images/home/1.jpg";
+// const bigleafcta1 = "/images/home/bigleafcta1.jpg";
 import VenueVendorComponent from "./VenueVendorComponent";
 import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
-import cmsApi from "../../../../services/api/cmsApi";
+// Only used by the disabled Design Studio banner (virtual try-on).
+// import cmsApi from "../../../../services/api/cmsApi";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import { formatDate } from "../../../../utils/dateFormat";
 
@@ -40,28 +42,30 @@ const Wedding = () => {
   const [vendorCategories, setVendorCategories] = useState([]);
   const [showAll, setShowAll] = useState(false);
 
-  const [designBanner, setDesignBanner] = useState(null);
-  const normalizeUrl = (u) => {
-    if (!u || typeof u !== "string") return null;
-    const cleaned = u.replace(/`/g, "").trim();
-    try {
-      return encodeURI(cleaned);
-    } catch {
-      return cleaned;
-    }
-  };
+  // Virtual try-on disabled — Design Studio banner state, helper and CMS fetch
+  // are commented out along with the CtaPanel further down.
+  // const [designBanner, setDesignBanner] = useState(null);
+  // const normalizeUrl = (u) => {
+  //   if (!u || typeof u !== "string") return null;
+  //   const cleaned = u.replace(/`/g, "").trim();
+  //   try {
+  //     return encodeURI(cleaned);
+  //   } catch {
+  //     return cleaned;
+  //   }
+  // };
 
-  useEffect(() => {
-    const fetchBanner = async () => {
-      try {
-        const ds = await cmsApi.designStudioBanner.getBanner();
-        setDesignBanner(ds?.data || null);
-      } catch (e) {
-        console.error("Failed to fetch banner", e);
-      }
-    };
-    fetchBanner();
-  }, []);
+  // useEffect(() => {
+  //   const fetchBanner = async () => {
+  //     try {
+  //       const ds = await cmsApi.designStudioBanner.getBanner();
+  //       setDesignBanner(ds?.data || null);
+  //     } catch (e) {
+  //       console.error("Failed to fetch banner", e);
+  //     }
+  //   };
+  //   fetchBanner();
+  // }, []);
 
   const token = useSelector((state) => state.auth.token); // Keep for auth state
   const userId = useSelector((state) => state.auth.user?.id);
@@ -322,6 +326,11 @@ const Wedding = () => {
           </div>
         </section>
 
+        {/* Design Studio / "Try Virtual Look" banner — disabled along with the
+            virtual try-on. To restore it, uncomment this section plus the
+            CtaPanel/cmsApi imports, the asset consts, and the designBanner
+            state, normalizeUrl helper and CMS fetch above.
+
         <section className="col-lg-12">
           <CtaPanel
             logo={normalizeUrl(designBanner?.logo) || logo}
@@ -341,6 +350,7 @@ const Wedding = () => {
             background={normalizeUrl(designBanner?.bgImage) || bigleafcta1}
           />
         </section>
+        */}
 
         <section className="mt-4">
           <div className="row g-4">

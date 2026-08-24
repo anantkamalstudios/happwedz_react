@@ -204,7 +204,7 @@ const ChecklistPDF = ({ items = [], categories = [], meta = {} }) => {
             />
             <View>
               <Text style={styles.brandName}>HappyWedz</Text>
-              <Text style={styles.brandTagline}>India's Favourite Wedding Planning Platform</Text>
+              <Text style={styles.brandTagline}>India's Most Loved Wedding Planning Platform</Text>
               <Text style={styles.brandUrl}>www.happywedz.com</Text>
             </View>
           </View>

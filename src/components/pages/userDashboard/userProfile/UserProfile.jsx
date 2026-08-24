@@ -10,6 +10,7 @@ import {
   Button,
   Spinner,
   Alert,
+  Modal,
 } from "react-bootstrap";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -18,7 +19,7 @@ import { TextField } from "@mui/material";
 import dayjs from "dayjs";
 import { setCredentials } from "../../../../redux/authSlice";
 import { getImageUrl } from "../../../../utils/imageUtils";
-import { FaUndo, FaSave, FaImage, FaCamera } from "react-icons/fa";
+import { FaUndo, FaSave, FaImage, FaCamera, FaCropAlt, FaRedo } from "react-icons/fa";
 
 const initialState = {
   id: "",
@@ -53,6 +54,36 @@ const UserProfile = ({ user, token }) => {
     confirmPassword: "",
   });
   const [initialValues, setInitialValues] = useState(null);
+
+  // Image Cropper States
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [cropTargetField, setCropTargetField] = useState("profileImage");
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const handlePointerDown = (e) => {
+    setIsDragging(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setDragStart({ x: clientX - offsetX, y: clientY - offsetY });
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setOffsetX(clientX - dragStart.x);
+    setOffsetY(clientY - dragStart.y);
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+  };
 
   useEffect(() => {
     if (!effectiveUser || !userId) return;
@@ -170,7 +201,63 @@ const UserProfile = ({ user, token }) => {
     const { name, files } = e.target;
     if (!files || files.length === 0) return;
     const file = files[0];
-    setFormData((prev) => ({ ...prev, [name]: file }));
+    const imageObjectUrl = URL.createObjectURL(file);
+    setCropImageSrc(imageObjectUrl);
+    setCropTargetField(name);
+    setZoom(1);
+    setRotation(0);
+    setOffsetX(0);
+    setOffsetY(0);
+    setShowCropModal(true);
+    e.target.value = "";
+  };
+
+  const handleCropSave = () => {
+    if (!cropImageSrc) return;
+    const img = new Image();
+    img.src = cropImageSrc;
+    img.onload = () => {
+      const isProfile = cropTargetField === "profileImage";
+      const targetSize = isProfile ? 400 : 800;
+      const targetHeight = isProfile ? 400 : 350;
+      const canvas = document.createElement("canvas");
+      canvas.width = targetSize;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, targetSize, targetHeight);
+      ctx.save();
+
+      ctx.translate(targetSize / 2, targetHeight / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.scale(zoom, zoom);
+
+      const aspect = img.width / img.height;
+      let drawW = targetSize;
+      let drawH = targetSize / aspect;
+      if (drawH < targetHeight) {
+        drawH = targetHeight;
+        drawW = targetHeight * aspect;
+      }
+
+      ctx.drawImage(
+        img,
+        -drawW / 2 + offsetX,
+        -drawH / 2 + offsetY,
+        drawW,
+        drawH
+      );
+      ctx.restore();
+
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const croppedFile = new File([blob], `${cropTargetField}_cropped.jpg`, {
+          type: "image/jpeg",
+        });
+        setFormData((prev) => ({ ...prev, [cropTargetField]: croppedFile }));
+        setShowCropModal(false);
+      }, "image/jpeg", 0.92);
+    };
   };
 
   const handlePasswordFieldChange = (e) => {
@@ -857,6 +944,156 @@ const UserProfile = ({ user, token }) => {
           </Card>
         </Col>
       </Row>
+
+      {/* Image Cropper Modal */}
+      <Modal
+        show={showCropModal}
+        onHide={() => setShowCropModal(false)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title className="fs-18 fw-bold">
+            <FaCropAlt className="me-2" style={{ color: "#ed1173" }} />
+            Crop {cropTargetField === "profileImage" ? "Profile Picture" : "Cover Photo"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <p className="text-muted small mb-2">
+            💡 Drag the image with your mouse or finger to align it inside the crop circle.
+          </p>
+          <div
+            onMouseDown={handlePointerDown}
+            onMouseMove={handlePointerMove}
+            onMouseUp={handlePointerUp}
+            onMouseLeave={handlePointerUp}
+            onTouchStart={handlePointerDown}
+            onTouchMove={handlePointerMove}
+            onTouchEnd={handlePointerUp}
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "360px",
+              backgroundColor: "#111",
+              overflow: "hidden",
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: isDragging ? "grabbing" : "grab",
+              userSelect: "none",
+              touchAction: "none",
+            }}
+          >
+            {cropImageSrc && (
+              <img
+                src={cropImageSrc}
+                alt="Crop Preview"
+                draggable={false}
+                style={{
+                  transform: `translate(${offsetX}px, ${offsetY}px) rotate(${rotation}deg) scale(${zoom})`,
+                  transition: isDragging ? "none" : "transform 0.05s ease-out",
+                  maxHeight: "100%",
+                  maxWidth: "100%",
+                  objectFit: "contain",
+                  userSelect: "none",
+                  pointerEvents: "none",
+                }}
+              />
+            )}
+            {/* Viewport Mask Overlay */}
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: cropTargetField === "profileImage" ? "220px" : "320px",
+                height: cropTargetField === "profileImage" ? "220px" : "180px",
+                borderRadius: cropTargetField === "profileImage" ? "50%" : "8px",
+                border: "2px dashed #ed1173",
+                boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
+
+          <div className="mt-3 px-3">
+            <Row className="align-items-center mb-2">
+              <Col xs={3} className="text-end fw-bold fs-14">Zoom:</Col>
+              <Col xs={7}>
+                <Form.Range
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                />
+              </Col>
+              <Col xs={2} className="text-start fs-14">{zoom.toFixed(1)}x</Col>
+            </Row>
+
+            <Row className="align-items-center mb-2">
+              <Col xs={3} className="text-end fw-bold fs-14">Pan Horizontal (X):</Col>
+              <Col xs={7}>
+                <Form.Range
+                  min={-150}
+                  max={150}
+                  value={offsetX}
+                  onChange={(e) => setOffsetX(parseInt(e.target.value))}
+                />
+              </Col>
+              <Col xs={2} className="text-start fs-14">{offsetX}px</Col>
+            </Row>
+
+            <Row className="align-items-center mb-2">
+              <Col xs={3} className="text-end fw-bold fs-14">Pan Vertical (Y):</Col>
+              <Col xs={7}>
+                <Form.Range
+                  min={-150}
+                  max={150}
+                  value={offsetY}
+                  onChange={(e) => setOffsetY(parseInt(e.target.value))}
+                />
+              </Col>
+              <Col xs={2} className="text-start fs-14">{offsetY}px</Col>
+            </Row>
+
+            <div className="d-flex justify-content-center gap-2 mt-3">
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={() => setRotation((r) => (r + 90) % 360)}
+              >
+                <FaRedo className="me-1" /> Rotate 90°
+              </Button>
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={() => {
+                  setZoom(1);
+                  setRotation(0);
+                  setOffsetX(0);
+                  setOffsetY(0);
+                }}
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCropModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            style={{ backgroundColor: "#ed1173", borderColor: "#ed1173" }}
+            onClick={handleCropSave}
+          >
+            Apply & Save Crop
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

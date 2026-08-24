@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/authSlice";
 import { vendorLogout } from "../../redux/vendorAuthSlice";
 import { setLocation } from "../../redux/locationSlice";
+import { FiMail, FiPhone, FiMapPin, FiSearch, FiEdit3, FiSmartphone } from "react-icons/fi";
 import { FaArrowRightLong, FaChevronDown, FaChevronUp } from "react-icons/fa6";
 import usePhotography from "../../hooks/usePhotography";
 import { useFilter } from "../../context/realWedding.context";
@@ -322,6 +323,8 @@ const Header = () => {
               {/* Location Selector */}
               <div className="mb-3 d-flex align-items-center justify-content-between">
                 <LocationModalWithCategories />
+                {/* Design Studio (virtual try-on) entry point — disabled.
+
                 <div>
                   <Link
                     to="/try"
@@ -345,6 +348,7 @@ const Header = () => {
                     />
                   </Link>
                 </div>
+                */}
               </div>
 
               {/* Menu Items */}
@@ -866,26 +870,60 @@ const Header = () => {
                 )}
               </ul>
 
-              {/* App Download Section */}
+              {/* App Download Section - Mobile */}
               <div className="mt-4 pt-3 border-top">
-                <h6 className="fw-semibold mb-3">Get the App</h6>
-                <div className="d-flex gap-2 mb-3">
-                  <img
-                    src="/images/header/playstore.png"
-                    alt="Play Store"
-                    width="24"
-                    height="25"
-                    className="img-fluid"
-                    style={{ maxHeight: "35px", cursor: "pointer" }}
-                  />
-                  <img
-                    src="/images/header/appstore.png"
-                    alt="App Store"
-                    width="25"
-                    height="25"
-                    className="img-fluid"
-                    style={{ maxHeight: "35px", cursor: "pointer" }}
-                  />
+                <div
+                  style={{
+                    background: "#e83581",
+                    borderRadius: "8px",
+                    padding: "10px 16px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "14px",
+                  }}
+                >
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "7px",
+                      color: "#fff",
+                      textDecoration: "none",
+                      fontWeight: "600",
+                      fontSize: "13px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M3 20.5v-17c0-.83.94-1.3 1.6-.8l14 8.5c.67.4.67 1.4 0 1.8l-14 8.5c-.66.5-1.6.03-1.6-.8z"/>
+                    </svg>
+                    Play Store
+                  </a>
+                  <div style={{ width: "1px", height: "18px", backgroundColor: "rgba(255,255,255,0.4)" }} />
+                  <a
+                    href="https://apps.apple.com/app/happywedz/id123456789"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "7px",
+                      color: "#fff",
+                      textDecoration: "none",
+                      fontWeight: "600",
+                      fontSize: "13px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.32c.62-.75 1.04-1.8 0.93-2.85-.9.04-2 .61-2.65 1.37-.58.67-1.09 1.75-.95 2.78 1.01.08 2.05-.55 2.67-1.3"/>
+                    </svg>
+                    Apple Store
+                  </a>
                 </div>
               </div>
             </div>
@@ -894,114 +932,112 @@ const Header = () => {
           {/* DESKTOP VIEW */}
           <div className="d-none d-lg-block w-100">
             <div className="row w-100" style={{ margin: 0, padding: 0 }}>
-              <div className="col-12 bg-white p-2 header-topbar">
-                <div className="container-fluid w-100 p-0 px-3">
-                  <div className="d-flex align-items-center justify-content-between flex-nowrap">
-                    {/* Left: Tagline + Location */}
+              {/* TIER 1: Top Bar (White) */}
+              <div className="col-12 p-0 header-topbar d-flex align-items-center" style={{ backgroundColor: "#ffffff", borderBottom: "1px solid #eaeaea", height: "42px", minHeight: "42px" }}>
+                <div className="container-fluid w-100 px-4 h-100">
+                  <div className="d-flex align-items-center justify-content-between flex-nowrap h-100">
+                    {/* Left: Tagline + Location Modal */}
                     <div className="d-flex align-items-center gap-3">
-                      <a
-                        className="nav-link fw-bold top-header-heading fs-18 text-nowrap m-0 p-0"
-                        href="#"
-                        style={{ color: "#C31162" }}
+                      <span
+                        className="fw-bold text-nowrap m-0 p-0 fs-14"
+                        style={{ color: "#c2185b" }}
                       >
-                        India's Favourite Wedding Planning Platform
-                      </a>
+                        India's Most Loved Wedding Planning Platform
+                      </span>
                       <LocationModalWithCategories />
                     </div>
 
-                    {/* Right: Play Store, App Store, TryOn Studio */}
-                    <div className="d-flex align-items-center gap-3">
-                      {/* Play Store */}
+                    {/* Right: Play Store & App Store Vector Badges */}
+                    <div className="d-flex align-items-center gap-2">
+                      {/* Google Play Badge */}
                       <a
                         href="https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
                         target="_blank"
                         rel="noopener noreferrer"
-                        title="Download on Play Store"
-                        className="d-flex align-items-center"
+                        title="Google Play"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          backgroundColor: "#000000",
+                          color: "#ffffff",
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          textDecoration: "none",
+                          height: "30px",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          transition: "transform 0.2s"
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
                       >
-                        <img
-                          src="/images/header/playstore.png"
-                          alt="Play Store"
-                          style={{
-                            height: "24px",
-                            width: "auto",
-                            objectFit: "contain",
-                            cursor: "pointer",
-                            transition: "transform 0.2s ease",
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
-                          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                        />
+                        <svg width="15" height="15" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M3 20.5v-17c0-.83.94-1.3 1.6-.8l14 8.5c.67.4.67 1.4 0 1.8l-14 8.5c-.66.5-1.6.03-1.6-.8z"/>
+                          <path fill="#34A853" d="M3 3.5l10.5 10.5L3 20.5V3.5z"/>
+                          <path fill="#EA4335" d="M13.5 14L3 20.5c.66.5 1.6.03 1.6-.8l8.9-5.7z"/>
+                          <path fill="#FBBC04" d="M13.5 10L4.6 4.3C3.94 3.8 3 4.27 3 5.1v.4l10.5 4.5z"/>
+                        </svg>
+                        <div style={{ display: "flex", flexDirection: "column", textAlign: "left" }}>
+                          <span style={{ fontSize: "7px", textTransform: "uppercase", letterSpacing: "0.5px", opacity: 0.85, lineHeight: "1" }}>GET IT ON</span>
+                          <span style={{ fontSize: "11px", fontWeight: "700", lineHeight: "1.1", fontFamily: "Roboto, sans-serif" }}>Google Play</span>
+                        </div>
                       </a>
 
-                      {/* App Store */}
+                      {/* App Store Badge */}
                       <a
-                        href="https://www.apple.com/app-store/"
+                        href="https://apps.apple.com/app/happywedz/id123456789"
                         target="_blank"
                         rel="noopener noreferrer"
-                        title="Download on App Store"
-                        className="d-flex align-items-center"
+                        title="App Store"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          backgroundColor: "#000000",
+                          color: "#ffffff",
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          textDecoration: "none",
+                          height: "30px",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          transition: "transform 0.2s"
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
                       >
-                        <img
-                          src="/images/header/appstore.png"
-                          alt="App Store"
-                          style={{
-                            height: "26px",
-                            width: "auto",
-                            objectFit: "contain",
-                            cursor: "pointer",
-                            transition: "transform 0.2s ease",
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
-                          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                        />
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="#ffffff">
+                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.32c.62-.75 1.04-1.8 0.93-2.85-.9.04-2 .61-2.65 1.37-.58.67-1.09 1.75-.95 2.78 1.01.08 2.05-.55 2.67-1.3"/>
+                        </svg>
+                        <div style={{ display: "flex", flexDirection: "column", textAlign: "left" }}>
+                          <span style={{ fontSize: "7px", opacity: 0.85, lineHeight: "1" }}>Download on the</span>
+                          <span style={{ fontSize: "11px", fontWeight: "700", lineHeight: "1.1", fontFamily: "-apple-system, sans-serif" }}>App Store</span>
+                        </div>
                       </a>
-
-                      {/* TryOn Studio */}
-                      <Link
-                        to="/try/outfit-filters"
-                        title="TryOn Studio"
-                        className="d-flex align-items-center text-decoration-none"
-                      >
-                        <img
-                          src="/images/header/tryimg.png"
-                          alt="TryOn Studio"
-                          style={{
-                            height: "40px",
-                            width: "auto",
-                            objectFit: "contain",
-                            cursor: "pointer",
-                            transition: "transform 0.2s ease",
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
-                          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                        />
-                      </Link>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Bottom */}
-              <div className="col-12 py-0">
-                <div className="container" style={{ maxWidth: "1400px" }}>
-                  <div className="d-flex w-100 justify-content-center">
-                    <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-between flex-nowrap">
-                      <div className="text-center">
-                        <Link className="navbar-brand-logo" to="/">
-                          <img
-                            src="/images/logo-sm-300.webp"
-                            alt="HappyWedz"
-                            width="160"
-                            height="40"
-                            className="mx-auto d-block"
-                          />
-                        </Link>
-                      </div>
-                      <ul className="navbar-nav header-mainnav d-flex flex-wrap justify-content-center gap-2">
+              {/* TIER 2: Main Navbar Bar (Vibrant Pink) */}
+              <div className="col-12 p-0 primary-bg d-flex align-items-center" style={{ backgroundColor: "#ed1173", height: "50px", minHeight: "50px" }}>
+                <div className="container-fluid px-4 w-100" style={{ height: "50px" }}>
+                  <div className="d-flex w-100 align-items-center justify-content-between flex-nowrap" style={{ height: "50px" }}>
+                    <div className="d-flex align-items-center">
+                      <Link className="navbar-brand-logo me-4 d-flex align-items-center" to="/">
+                        <img
+                          src="/images/logo-sm-300.webp"
+                          alt="HappyWedz"
+                          width="140"
+                          height="32"
+                          className="d-block"
+                          style={{ filter: "brightness(0) invert(1)", height: "32px", objectFit: "contain" }}
+                        />
+                      </Link>
+                    </div>
+                    <ul className="navbar-nav header-mainnav d-flex flex-row align-items-center justify-content-center gap-3 m-0 p-0" style={{ height: "50px", minHeight: "50px" }}>
                         {/* Planning Tools Dropdown */}
                         <li
-                          className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
+                          className="py-0 nav-item dropdown mega-dropdown-wrapper position-static"
                           onMouseEnter={() => setOpenMenu("planning")}
                           onMouseLeave={() => setOpenMenu(null)}
                         >
@@ -2017,64 +2053,98 @@ const Header = () => {
                           </div>
                         </li> */}
 
-                        {/* Auth Links */}
+                      </ul>
+
+                      {/* Right Actions: Log In / Dashboard / Logout Pill Buttons */}
+                      <div className="d-flex align-items-center gap-2 ms-2 me-1">
+                        {/* Log In / Dashboard Pill Button */}
                         {isUserLoggedIn ? (
-                          <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
-                            <div className="dropdown-wrapper">
-                              <Link
-                                to="/user-dashboard"
-                                className="nav-link text-white fs-16"
-                              >
-                                User Dashboard
-                              </Link>
-                            </div>
-                          </li>
+                          <Link
+                            to="/user-dashboard"
+                            style={{
+                              backgroundColor: "rgba(0, 0, 0, 0.18)",
+                              color: "#ffffff",
+                              borderRadius: "20px",
+                              padding: "4px 14px",
+                              fontWeight: "600",
+                              fontSize: "13px",
+                              textDecoration: "none",
+                              whiteSpace: "nowrap",
+                              transition: "background-color 0.2s",
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.3)"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.18)"; }}
+                          >
+                            User Dashboard
+                          </Link>
                         ) : isVendorLoggedIn ? (
-                          <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
-                            <div className="dropdown-wrapper">
-                              <Link
-                                to="/vendor-dashboard"
-                                className="nav-link text-white fs-16"
-                              >
-                                Vendor Dashboard
-                              </Link>
-                            </div>
-                          </li>
+                          <Link
+                            to="/vendor-dashboard"
+                            style={{
+                              backgroundColor: "rgba(0, 0, 0, 0.18)",
+                              color: "#ffffff",
+                              borderRadius: "20px",
+                              padding: "4px 14px",
+                              fontWeight: "600",
+                              fontSize: "13px",
+                              textDecoration: "none",
+                              whiteSpace: "nowrap",
+                              transition: "background-color 0.2s",
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.3)"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.18)"; }}
+                          >
+                            Vendor Dashboard
+                          </Link>
                         ) : (
-                          <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
-                            <div className="dropdown-wrapper">
-                              <Link
-                                to="/customer-login"
-                                className="nav-link text-white fs-16"
-                              >
-                                Login
-                              </Link>
-                            </div>
-                          </li>
+                          <Link
+                            to="/customer-login"
+                            style={{
+                              backgroundColor: "rgba(0, 0, 0, 0.18)",
+                              color: "#ffffff",
+                              borderRadius: "20px",
+                              padding: "5px 16px",
+                              fontWeight: "600",
+                              fontSize: "13px",
+                              textDecoration: "none",
+                              whiteSpace: "nowrap",
+                              transition: "background-color 0.2s",
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.3)"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.18)"; }}
+                          >
+                            Log In
+                          </Link>
                         )}
 
                         {isLoggedIn && (
-                          <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
-                            <div className="dropdown-wrapper">
-                              <button
-                                onClick={handleLogout}
-                                className="nav-link text-white btn fs-16"
-                                style={{ textDecoration: "none" }}
-                              >
-                                Logout
-                              </button>
-                            </div>
-                          </li>
+                          <button
+                            onClick={handleLogout}
+                            style={{
+                              backgroundColor: "rgba(0, 0, 0, 0.18)",
+                              color: "#ffffff",
+                              borderRadius: "20px",
+                              padding: "4px 12px",
+                              fontWeight: "600",
+                              fontSize: "13px",
+                              border: "none",
+                              cursor: "pointer",
+                              transition: "background-color 0.2s",
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.3)"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.18)"; }}
+                          >
+                            Logout
+                          </button>
                         )}
-                      </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </nav>
+        </nav>
     </>
   );
 };

@@ -24,13 +24,17 @@ const MetroCities = lazy(() => import("../home/MetroCities"));
 // Served straight from /public as pre-compressed WebP rather than being pulled
 // through the bundler as multi-hundred-KB PNG/JPG.
 const logo = "/happywed_white.png";
-const image = "/images/home/1.webp";
+// Only referenced by the disabled Design Studio panel (and the already
+// commented-out Matrimonial panel further down).
+// const image = "/images/home/1.webp";
 const einviteImage = "/images/home/einvite.webp";
-const bigleafcta1 = "/images/home/bigleafcta1.webp";
+// const bigleafcta1 = "/images/home/bigleafcta1.webp";
 const bigleafcta5 = "/images/home/bigleafcta5.webp";
 
 const Home = () => {
-  const [designBanner, setDesignBanner] = useState(null);
+  // Virtual try-on disabled — the Design Studio banner's state, CMS fetch and
+  // CtaPanel are all commented out below.
+  // const [designBanner, setDesignBanner] = useState(null);
   const [einviteBanner, setEinviteBanner] = useState(null);
   const [realWeddingData, setRealWeddingData] = useState(null);
   const [couplesSaysData, setCouplesSaysData] = useState(null);
@@ -44,19 +48,20 @@ const Home = () => {
     }
   };
   useEffect(() => {
-    // These four are independent; awaiting them in series cost four sequential
+    // These three are independent; awaiting them in series cost sequential
     // round trips (~5s on the trace) before any banner could render.
     let cancelled = false;
     const value = (r) => (r.status === "fulfilled" ? r.value : null);
 
     Promise.allSettled([
-      cmsApi.designStudioBanner.getBanner(),
+      // Design Studio banner not fetched while the virtual try-on is disabled.
+      // cmsApi.designStudioBanner.getBanner(),
       cmsApi.einviteBanner.getBanner(),
       cmsApi.realWeddingPhoto.getData(),
       cmsApi.whatCouplesSays.getData(),
-    ]).then(([ds, ei, rw, cs]) => {
+    ]).then(([ei, rw, cs]) => {
       if (cancelled) return;
-      setDesignBanner(value(ds)?.data || null);
+      // setDesignBanner(value(ds)?.data || null);
       setEinviteBanner(value(ei)?.data || null);
       setRealWeddingData(value(rw) || null);
       setCouplesSaysData(value(cs)?.data || null);
@@ -72,6 +77,10 @@ const Home = () => {
       <StructuredData type="homepage" />
       <Herosection />
       <WeddingCategories />
+      {/* Design Studio / "Try Virtual Look" banner — disabled along with the
+          virtual try-on. To restore it, uncomment this panel plus the
+          designBanner state, its CMS fetch, and the image/bigleafcta1 consts.
+
       <CtaPanel
         logo={normalizeUrl(designBanner?.logo) || logo}
         img={normalizeUrl(designBanner?.mainImage) || image}
@@ -89,6 +98,7 @@ const Home = () => {
         btnName={designBanner?.btnName || "Try Virtual Look"}
         background={normalizeUrl(designBanner?.bgImage) || bigleafcta1}
       />
+      */}
       {/* Local boundary: without it, a suspending section below would fall through
           to App's <Suspense> and replace the already-painted hero with the loader.
 

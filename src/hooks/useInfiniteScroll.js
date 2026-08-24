@@ -66,13 +66,19 @@ const useInfiniteScroll = (
         : [];
       const normalizeUrl = (u) => {
         if (!u) return null;
-        if (/^https?:\/\//i.test(u)) return u;
-        return `${IMAGE_BASE_URL}${u.startsWith("/") ? u : "/" + u}`;
+        let cleaned = String(u);
+        // Rewrite S3 URLs to happywedz.com (S3 returns 403)
+        cleaned = cleaned.replace(
+          "https://happywedz-s3-bucket.s3.ap-south-1.amazonaws.com",
+          "https://happywedz.com"
+        );
+        if (/^https?:\/\//i.test(cleaned)) return cleaned;
+        return `${IMAGE_BASE_URL}${cleaned.startsWith("/") ? cleaned : "/" + cleaned}`;
       };
       const gallery = (media.length > 0 ? media : portfolioUrls)
         .map(normalizeUrl)
         .filter(Boolean);
-      const firstImage = gallery.length > 0 ? gallery[0] : null;
+      const firstImage = gallery.length > 0 ? gallery[0] : "/images/imageNotFound.jpg";
 
       const vendorTypeName =
         attributes.vendor_type ||
@@ -191,7 +197,7 @@ const useInfiniteScroll = (
         // Only vendors who uploaded 360° content from their login get the 360° badge
         has360: hasView360(item),
       };
-    }).filter((item) => item && item.image && String(item.image).trim() !== "");
+    }).filter(Boolean);
   }, []);
 
   // Fetch data with caching
@@ -347,32 +353,9 @@ const useInfiniteScroll = (
           params.append("filters", JSON.stringify(nonPriceFilters));
         }
 
-        // Only return vendors whose first media image is confirmed to exist in S3.
-        // The batch job (verify-vendor-images.js) sets image_exists = TRUE after verification.
-        params.append("image_exists", "true");
-
         const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
         const apiUrl = `${apiBaseUrl}/vendor-services?${params.toString()}`;
         const cacheKey = apiUrl;
-
-        // Check cache first
-        if (cacheRef.current.has(cacheKey)) {
-          const cached = cacheRef.current.get(cacheKey);
-          if (pageNum === 1) {
-            setData(cached.data);
-          } else {
-            setData((prevData) => {
-              const existingIds = new Set(prevData.map((item) => item.id));
-              const newItems = cached.data.filter(
-                (item) => !existingIds.has(item.id)
-              );
-              return [...prevData, ...newItems];
-            });
-          }
-          setHasMore(cached.hasMore);
-          loadedPagesRef.current.add(pageNum);
-          return;
-        }
 
         // Abort any previous request
         if (abortRef.current) {
@@ -397,22 +380,14 @@ const useInfiniteScroll = (
           : [];
 
         const isValidCity = (city) => {
-          if (!city || typeof city !== "string") return false;
+          if (!city || typeof city !== "string") return true;
           const lower = city.toLowerCase().trim();
           if (
-            !lower ||
-            lower === "unknown" ||
             lower === "unknown city" ||
             lower === "null" ||
-            lower === "undefined" ||
-            lower === "n/a" ||
-            lower === "none" ||
-            lower === "all" ||
-            lower.includes("location not available") ||
-            lower.includes("not available") ||
-            lower.includes("unknown")
+            lower === "undefined"
           ) {
-            return false;
+            return true;
           }
           return true;
         };
@@ -427,34 +402,24 @@ const useInfiniteScroll = (
           return cleanItem.includes(cleanSelected) || cleanSelected.includes(cleanItem);
         };
 
-        const transformed = transformApiData(itemsRaw).filter((item) => {
-          if (!item) return false;
-          if (!item.image) return false;
-          const imgStr = String(item.image).toLowerCase().trim();
-          if (
-            !imgStr ||
-            imgStr === "null" ||
-            imgStr === "undefined" ||
-            imgStr.includes("placeholder") ||
-            imgStr.includes("not_found") ||
-            imgStr.includes("image_not_found") ||
-            imgStr.includes("imagenotfound") ||
-            imgStr.includes("no-image") ||
-            imgStr.includes("no_image")
-          ) {
-            return false;
-          }
-          const cityVal = item.city || item.location || item.address;
-          if (!isValidCity(cityVal)) {
-            return false;
-          }
-          if (city && city.toLowerCase() !== "all") {
-            if (!matchesSelectedCity(item, city)) {
-              return false;
+        const VENUE_FALLBACK_IMG = "/images/imageNotFound.jpg";
+
+        const transformed = transformApiData(itemsRaw)
+          .map((item) => {
+            if (!item) return null;
+            if (!item.image || String(item.image).trim() === "") {
+              item.image = VENUE_FALLBACK_IMG;
             }
-          }
-          return true;
-        });
+            return item;
+          })
+          .filter(Boolean)
+          .sort((a, b) => {
+            const aHasImg = a.image && a.image !== VENUE_FALLBACK_IMG && !a.image.includes("imageNotFound");
+            const bHasImg = b.image && b.image !== VENUE_FALLBACK_IMG && !b.image.includes("imageNotFound");
+            if (aHasImg && !bHasImg) return -1;
+            if (!aHasImg && bHasImg) return 1;
+            return 0;
+          });
 
         // Determine if there are more pages
         let hasMorePages = true;
@@ -482,7 +447,14 @@ const useInfiniteScroll = (
             const newItems = transformed.filter(
               (item) => !existingIds.has(item.id)
             );
-            return [...prevData, ...newItems];
+            const combined = [...prevData, ...newItems];
+            return combined.sort((a, b) => {
+              const aHasImg = a.image && a.image !== VENUE_FALLBACK_IMG && !a.image.includes("imageNotFound");
+              const bHasImg = b.image && b.image !== VENUE_FALLBACK_IMG && !b.image.includes("imageNotFound");
+              if (aHasImg && !bHasImg) return -1;
+              if (!aHasImg && bHasImg) return 1;
+              return 0;
+            });
           });
         }
 
@@ -525,11 +497,11 @@ const useInfiniteScroll = (
 
   // Reset when dependencies change
   const reset = useCallback(() => {
-    setData([]);
     setPage(1);
     setHasMore(true);
     setError(null);
     loadedPagesRef.current.clear();
+    cacheRef.current.clear();
     setLoading(true);
   }, []);
 

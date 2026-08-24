@@ -1140,7 +1140,18 @@ const ShaadiAI = () => {
                     )}
                     <div className={styles.homeContainer}>
                         <div className={styles.homeContent}>
-                            <h1 className={styles.homeTitle}>Shaadi AI</h1>
+                            {/* Logo only — the mark already carries the wordmark, so the
+                                alt text is what gives this heading its accessible name. */}
+                            <h1 className={styles.homeTitle}>
+                                <img
+                                    src="/logo-no-bg.png"
+                                    alt="Shaadi AI by HappyWedz"
+                                    className={styles.homeTitleLogo}
+                                    width="128"
+                                    height="128"
+                                    decoding="async"
+                                />
+                            </h1>
 
                             {renderInputArea()}
 

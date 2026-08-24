@@ -331,10 +331,7 @@ const matchesSelectedCity = (item, selectedCity) => {
                           style={{ height: "200px", width: "100%" }}
                           onError={(e) => {
                             e.target.onerror = null;
-                            const cardCol = e.target.closest(".col-12, .col") || e.target.closest(".card");
-                            if (cardCol) {
-                              cardCol.style.display = "none";
-                            }
+                            e.target.src = "/images/imageNotFound.jpg";
                           }}
                         />
 

@@ -89,6 +89,7 @@ const Budget = () => {
     }
   };
 
+  const [newCategoryId, setNewCategoryId] = useState("");
   const [newSubcategoryId, setNewSubcategoryId] = useState("");
   const [newEstimated, setNewEstimated] = useState("");
   const [newFinal, setNewFinal] = useState("");
@@ -99,29 +100,30 @@ const Budget = () => {
       Swal.fire("Sign in required", "Please log in to add expenses.", "info");
       return;
     }
-    const vendorTypeId = selectedCategoryId;
+    const catId = newCategoryId || selectedCategoryId;
     const vendorSubcategoryId = Number(newSubcategoryId);
     const estimatedBudget = Number(newEstimated || 0);
     const finalCost = Number(newFinal || 0);
     const paidAmount = Number(newPaid || 0);
 
-    if (!vendorTypeId || !vendorSubcategoryId || estimatedBudget <= 0) {
+    if (!catId || !vendorSubcategoryId || estimatedBudget <= 0) {
       Swal.fire(
         "Validation",
-        "Select subcategory and enter estimated amount.",
+        "Please select Category, Subcategory and enter estimated budget.",
         "warning"
       );
       return;
     }
 
     const created = await addBudget({
-      vendorTypeId,
+      vendorTypeId: catId,
       vendorSubcategoryId,
       estimatedBudget,
       finalCost,
       paidAmount,
     });
     if (created) {
+      setNewCategoryId("");
       setNewSubcategoryId("");
       setNewEstimated("");
       setNewFinal("");
@@ -184,12 +186,12 @@ const Budget = () => {
           </div>
 
           <div className="wb-budget-card">
-            <div className="wb-budget-label">TOTAL SPENT</div>
+            <div className="wb-budget-label">TOTAL SPENT (PAID)</div>
             <div className="wb-budget-amount">{formatCurrency(totalSpent)}</div>
           </div>
 
           <div className="wb-budget-card">
-            <div className="wb-budget-label">REMAINING</div>
+            <div className="wb-budget-label">REMAINING (TO BE PAID)</div>
             <div
               className={`wb-budget-amount ${
                 remainingBudget < 0 ? "wb-over-budget" : ""
@@ -209,8 +211,24 @@ const Budget = () => {
       </div>
 
       <div className="wb-categories-container">
-        <div className="wb-categories-list">
+        <div className="wb-categories-list" style={{ flex: "0 0 300px", maxWidth: "300px", width: "300px" }}>
           <h2 className="wb-section-title fs-16">Categories</h2>
+          <button
+            type="button"
+            className="wb-category-header fs-14 btn btn-transparent w-100 text-start d-flex justify-content-between align-items-center mb-2"
+            onClick={() => setSelectedCategoryId(null)}
+            style={{
+              fontWeight: "bold",
+              backgroundColor: selectedCategoryId === null ? "#fce7f3" : "transparent",
+              color: selectedCategoryId === null ? "#ed1173" : "inherit",
+              borderRadius: "8px",
+              padding: "10px 14px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span>All Categories</span>
+            <span className="ms-2">{formatCurrency(estimatedTotal)}</span>
+          </button>
           {categories.map((category) => (
             <div key={category.id} className="wb-category-item fs-14">
               <button
@@ -218,16 +236,17 @@ const Budget = () => {
                 className="wb-category-header fs-14 btn btn-transparent w-100 text-start d-flex justify-content-between align-items-center"
                 onClick={() => handleCategoryClick(category.id)}
                 aria-pressed={selectedCategoryId === category.id}
+                style={{ padding: "10px 14px" }}
               >
-                <div className="wb-category-name fs-14 d-flex align-items-center gap-2">
+                <div className="wb-category-name fs-14 d-flex align-items-center gap-2" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {selectedCategoryId === category.id ? (
-                    <FaBookOpenReader className="wb-category-icon" />
+                    <FaBookOpenReader className="wb-category-icon flex-shrink-0" />
                   ) : (
-                    <FaMinus className="wb-category-icon" />
+                    <FaMinus className="wb-category-icon flex-shrink-0" />
                   )}
-                  <span>{category.name}</span>
+                  <span className="text-truncate">{category.name}</span>
                 </div>
-                <div className="wb-category-amount fs-14">
+                <div className="wb-category-amount fs-14 ms-2 flex-shrink-0">
                   {formatCurrency(category.amount)}
                 </div>
               </button>
@@ -235,128 +254,66 @@ const Budget = () => {
           ))}
         </div>
 
-        <div className="wb-expense-details">
-          {selectedCategoryId ? (
-            <>
-              <div className="wb-category-summary align-content-center">
-                <p className="wb-category-title m-0 fs-16 text-center align-content-center">
-                  {categories.find((c) => c.id === selectedCategoryId)?.name}
-                </p>
-                <div className="wb-category-total">
-                  {formatCurrency(
-                    categories.find((c) => c.id === selectedCategoryId)?.amount
-                  )}
-                </div>
-              </div>
-
-              <table className="wb-expense-table">
-                <thead>
-                  <tr>
-                    <th>EXPENSE</th>
-                    <th>ESTIMATED BUDGET</th>
-                    <th>FINAL COST</th>
-                    <th>PAID</th>
-                    <th>ACTIONS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {categories
-                    .find((c) => c.id === selectedCategoryId)
-                    ?.budgets.map((expense) => (
-                      <tr key={expense.id}>
-                        <td>{expense.name}</td>
-                        <td>
-                          <div className="wb-currency-input">
-                            <span>₹</span>
-                            <input
-                              type="number"
-                              value={expense.estimated}
-                              onChange={(e) =>
-                                updateExpense(
-                                  selectedCategoryId,
-                                  expense.id,
-                                  "estimated",
-                                  e.target.value
-                                )
-                              }
-                              className="wb-input wb-table-input fs-14"
-                            />
-                          </div>
-                        </td>
-                        <td>
-                          <div className="wb-currency-input">
-                            <span>₹</span>
-                            <input
-                              type="number"
-                              value={expense.final}
-                              onChange={(e) =>
-                                updateExpense(
-                                  selectedCategoryId,
-                                  expense.id,
-                                  "final",
-                                  e.target.value
-                                )
-                              }
-                              className="wb-input wb-table-input"
-                            />
-                          </div>
-                        </td>
-                        <td>
-                          <div className="wb-currency-input">
-                            <span>₹</span>
-                            <input
-                              type="number"
-                              value={expense.paid}
-                              onChange={(e) =>
-                                updateExpense(
-                                  selectedCategoryId,
-                                  expense.id,
-                                  "paid",
-                                  e.target.value
-                                )
-                              }
-                              className="wb-input wb-table-input"
-                            />
-                          </div>
-                        </td>
-                        <td>
-                          <button
-                            className="wb-delete-button"
-                            onClick={() =>
-                              deleteExpense(selectedCategoryId, expense.id)
-                            }
-                          >
-                            <FaTrash />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  {/* Add new expense row */}
-                  <tr>
-                    <td>
-                      <select
-                        className="form-select wb-input"
-                        value={newSubcategoryId}
-                        onChange={(e) => setNewSubcategoryId(e.target.value)}
-                      >
-                        <option value="">Select subcategory</option>
-                        {categories
-                          .find((c) => c.id === selectedCategoryId)
-                          ?.subcategories?.map((sub) => (
-                            <option key={sub.id} value={sub.id}>
-                              {sub.name}
-                            </option>
-                          ))}
-                      </select>
-                    </td>
+        <div className="wb-expense-details p-3 border rounded shadow-sm bg-white table-responsive flex-grow-1">
+          <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h3 className="fw-bold m-0 fs-20" style={{ color: "#ed1173" }}>
+              {selectedCategoryId
+                ? categories.find((c) => String(c.id) === String(selectedCategoryId))?.name
+                : "All Categories"}
+            </h3>
+            <div className="fw-bold fs-15 text-muted">
+              Total:{" "}
+              <span style={{ color: "#ed1173" }}>
+                {formatCurrency(
+                  selectedCategoryId
+                    ? categories.find((c) => String(c.id) === String(selectedCategoryId))?.amount || 0
+                    : estimatedTotal
+                )}
+              </span>
+            </div>
+          </div>
+          <table className="wb-expense-table w-100">
+            <thead>
+              <tr>
+                <th style={{ width: "24%" }}>CATEGORY</th>
+                <th style={{ width: "32%" }}>SUB CATEGORY</th>
+                <th style={{ width: "12%" }}>ESTIMATED BUDGET</th>
+                <th style={{ width: "12%" }}>FINAL COST</th>
+                <th style={{ width: "12%" }}>PAID</th>
+                <th style={{ width: "8%", textAlign: "center" }}>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories
+                .filter((c) => !selectedCategoryId || c.id === selectedCategoryId)
+                .flatMap((cat) =>
+                  (cat.budgets || []).map((expense) => ({
+                    ...expense,
+                    catId: cat.id,
+                    catName: cat.name,
+                  }))
+                )
+                .sort((a, b) => Number(a.id || 0) - Number(b.id || 0))
+                .map((expense) => (
+                  <tr key={expense.id}>
+                    <td className="fw-bold" style={{ color: "#ed1173" }}>{expense.catName}</td>
+                    <td>{expense.name}</td>
                     <td>
                       <div className="wb-currency-input">
                         <span>₹</span>
                         <input
                           type="number"
-                          value={newEstimated}
-                          onChange={(e) => setNewEstimated(e.target.value)}
-                          className="wb-input wb-table-input"
+                          value={expense.estimated}
+                          onChange={(e) =>
+                            updateExpense(
+                              expense.catId,
+                              expense.id,
+                              "estimated",
+                              e.target.value
+                            )
+                          }
+                          className="wb-input wb-table-input fs-14"
+                          style={{ width: "85px", padding: "4px 8px" }}
                         />
                       </div>
                     </td>
@@ -365,9 +322,17 @@ const Budget = () => {
                         <span>₹</span>
                         <input
                           type="number"
-                          value={newFinal}
-                          onChange={(e) => setNewFinal(e.target.value)}
+                          value={expense.final}
+                          onChange={(e) =>
+                            updateExpense(
+                              expense.catId,
+                              expense.id,
+                              "final",
+                              e.target.value
+                            )
+                          }
                           className="wb-input wb-table-input"
+                          style={{ width: "85px", padding: "4px 8px" }}
                         />
                       </div>
                     </td>
@@ -376,75 +341,127 @@ const Budget = () => {
                         <span>₹</span>
                         <input
                           type="number"
-                          value={newPaid}
-                          onChange={(e) => setNewPaid(e.target.value)}
+                          value={expense.paid}
+                          onChange={(e) =>
+                            updateExpense(
+                              expense.catId,
+                              expense.id,
+                              "paid",
+                              e.target.value
+                            )
+                          }
                           className="wb-input wb-table-input"
+                          style={{ width: "85px", padding: "4px 8px" }}
                         />
                       </div>
                     </td>
-                    <td>
+                    <td style={{ textAlign: "center" }}>
                       <button
-                        className="wb-button wb-add-button"
-                        onClick={handleAddExpense}
+                        className="wb-delete-button"
+                        onClick={() => deleteExpense(expense.catId, expense.id)}
                       >
-                        <FaPlus />
+                        <FaTrash />
                       </button>
                     </td>
                   </tr>
-                </tbody>
-              </table>
-            </>
-          ) : (
-            <>
-              <h2 className="wb-section-title fs-16">Expense Details</h2>
-              <div className="wb-pie-chart-container">
-                {/* <div className="wb-pie-chart-message">
-                  Select a category to view expense details
-                </div> */}
-                <div className="wb-pie-chart-wrapper">
-                  <ResponsiveContainer width="100%" height={400}>
-                    <PieChart>
-                      <Pie
-                        data={getPieChartData()}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={120}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={false}
-                      >
-                        {categories.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(value, name) => [
-                          formatCurrency(value),
-                          name,
-                        ]}
-                        contentStyle={{
-                          backgroundColor: "#fff",
-                          border: "1px solid #ffcdd2",
-                          borderRadius: "8px",
-                          padding: "10px",
-                        }}
-                      />
-                      <Legend
-                        wrapperStyle={{
-                          paddingTop: "20px",
-                          fontSize: "14px",
-                        }}
-                        formatter={(value) => value}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </>
-          )}
+                ))}
+              {/* Add New Expense Row */}
+              <tr>
+                <td>
+                  {selectedCategoryId ? (
+                    <span className="fw-bold" style={{ color: "#ed1173" }}>
+                      {categories.find((c) => String(c.id) === String(selectedCategoryId))?.name}
+                    </span>
+                  ) : (
+                    <select
+                      className="form-select wb-input w-100"
+                      style={{ fontSize: "12px", padding: "5px 6px" }}
+                      value={newCategoryId}
+                      onChange={(e) => {
+                        setNewCategoryId(e.target.value);
+                        setNewSubcategoryId("");
+                      }}
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </td>
+                <td>
+                  <select
+                    className="form-select wb-input w-100"
+                    style={{ fontSize: "12px", padding: "5px 6px" }}
+                    value={newSubcategoryId}
+                    onChange={(e) => setNewSubcategoryId(e.target.value)}
+                  >
+                    <option value="">Select Subcategory</option>
+                    {(
+                      categories.find(
+                        (c) =>
+                          String(c.id) ===
+                          String(selectedCategoryId || newCategoryId)
+                      )?.subcategories || []
+                    ).map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <div className="wb-currency-input">
+                    <span>₹</span>
+                    <input
+                      type="number"
+                      value={newEstimated}
+                      onChange={(e) => setNewEstimated(e.target.value)}
+                      className="wb-input wb-table-input"
+                      placeholder="0"
+                      style={{ width: "85px", padding: "4px 8px" }}
+                    />
+                  </div>
+                </td>
+                <td>
+                  <div className="wb-currency-input">
+                    <span>₹</span>
+                    <input
+                      type="number"
+                      value={newFinal}
+                      onChange={(e) => setNewFinal(e.target.value)}
+                      className="wb-input wb-table-input"
+                      placeholder="0"
+                      style={{ width: "85px", padding: "4px 8px" }}
+                    />
+                  </div>
+                </td>
+                <td>
+                  <div className="wb-currency-input">
+                    <span>₹</span>
+                    <input
+                      type="number"
+                      value={newPaid}
+                      onChange={(e) => setNewPaid(e.target.value)}
+                      className="wb-input wb-table-input"
+                      placeholder="0"
+                      style={{ width: "85px", padding: "4px 8px" }}
+                    />
+                  </div>
+                </td>
+                <td>
+                  <button
+                    className="wb-button wb-add-button"
+                    onClick={handleAddExpense}
+                  >
+                    <FaPlus />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

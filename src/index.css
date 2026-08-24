@@ -181,3 +181,26 @@ body {
 .Toastify__toast-container .Toastify__close-button:hover {
   opacity: 1;
 }
+
+/* ==========================================================
+   GLOBAL MOBILE RESPONSIVENESS & OVERFLOW SAFETY
+========================================================== */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .modal-dialog {
+    margin: 0.5rem auto;
+    max-width: calc(100vw - 1rem);
+  }
+  .container, .container-fluid {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

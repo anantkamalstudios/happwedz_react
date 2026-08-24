@@ -71,7 +71,7 @@ const Guests = () => {
 
   const statusOptions = ["Attending", "Not Attending", "Pending"];
   const typeOptions = ["Adult", "Child"];
-  const menuOptions = ["Veg", "NonVeg", "All"];
+  const menuOptions = ["Veg", "NonVeg", "Jain", "Vegan", "Eggetarian", "All"];
 
   const _handlePrint = () => {
     if (!printRef.current) {
@@ -118,7 +118,7 @@ const Guests = () => {
           <img src="${window.location.origin}/happywedzLogo.png" style="height: 65px; width: 65px; object-fit: contain;" alt="HappyWedz" />
           <div>
             <div class="brand">HappyWedz</div>
-            <div class="tagline">India's Favourite Wedding Planning Platform</div>
+            <div class="tagline">India's Most Loved Wedding Planning Platform</div>
             <div class="url">www.happywedz.com</div>
           </div>
         </div>
@@ -1256,60 +1256,61 @@ const Guests = () => {
                       </span>
                     </div>
 
-                    <table className="wgl-guest-table">
-                      <thead>
-                        <tr>
-                          {/* <th className="wgl-table-header fs-16">Select</th> */}
-                          <th className="wgl-table-header fs-16">Guest</th>
-                          <th className="wgl-table-header fs-16">Status</th>
-                          <th className="wgl-table-header fs-16">Companions</th>
-                          <th className="wgl-table-header fs-16">Seat</th>
-                          <th className="wgl-table-header fs-16">Type</th>
-                          <th className="wgl-table-header fs-16">Menu</th>
-                          <th className="wgl-table-header fs-16">Phone</th>
-                          <th className="wgl-table-header fs-16">Actions</th>
-                        </tr>
-                      </thead>
+                    {(() => {
+                      const hasAnySeatInGroup = groupGuests.some(
+                        (g) => g.seat_number && String(g.seat_number).trim() !== ""
+                      );
+                      return (
+                        <table className="wgl-guest-table">
+                          <thead>
+                            <tr>
+                              <th className="wgl-table-header fs-16">Guest</th>
+                              <th className="wgl-table-header fs-16">Status</th>
+                              <th className="wgl-table-header fs-16">Companions</th>
+                              {hasAnySeatInGroup && (
+                                <th className="wgl-table-header fs-16">Seat</th>
+                              )}
+                              <th className="wgl-table-header fs-16">Type</th>
+                              <th className="wgl-table-header fs-16">Menu</th>
+                              <th className="wgl-table-header fs-16">Phone</th>
+                              <th className="wgl-table-header fs-16">Actions</th>
+                            </tr>
+                          </thead>
 
-                      <tbody>
-                        {groupGuests.map((g) => (
-                          <tr key={g.id} className="wgl-guest-row">
-                            {/* <td className="fs-14 text-center">
-                              <input
-                                type="checkbox"
-                                checked={selectedGuestIds.has(g.id)}
-                                onChange={() => toggleGuestSelection(g.id)}
-                              />
-                            </td> */}
-                            <td className="wgl-guest-name fs-14 text-center">
-                              {g.name}
-                            </td>
+                          <tbody>
+                            {groupGuests.map((g) => (
+                              <tr key={g.id} className="wgl-guest-row">
+                                <td className="wgl-guest-name fs-14 text-center">
+                                  {g.name}
+                                </td>
 
-                            <td className="wgl-guest-status fs-14 text-center">
-                              <select
-                                className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
-                                value={g.status}
-                                onChange={(e) =>
-                                  updateGuestField(
-                                    g.id,
-                                    "status",
-                                    e.target.value
-                                  )
-                                }
-                              >
-                                {statusOptions.map((s) => (
-                                  <option key={s}>{s}</option>
-                                ))}
-                              </select>
-                            </td>
+                                <td className="wgl-guest-status fs-14 text-center">
+                                  <select
+                                    className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
+                                    value={g.status}
+                                    onChange={(e) =>
+                                      updateGuestField(
+                                        g.id,
+                                        "status",
+                                        e.target.value
+                                      )
+                                    }
+                                  >
+                                    {statusOptions.map((s) => (
+                                      <option key={s}>{s}</option>
+                                    ))}
+                                  </select>
+                                </td>
 
-                            <td className="wgl-guest-companions fs-14 text-center">
-                              {g.companions}
-                            </td>
+                                <td className="wgl-guest-companions fs-14 text-center">
+                                  {g.companions}
+                                </td>
 
-                            <td className="wgl-guest-seat fs-14 text-center">
-                              {g.seat_number}
-                            </td>
+                                {hasAnySeatInGroup && (
+                                  <td className="wgl-guest-seat fs-14 text-center">
+                                    {g.seat_number}
+                                  </td>
+                                )}
 
                             <td className="wgl-guest-type fs-14 text-center">
                               <select
@@ -1398,6 +1399,8 @@ const Guests = () => {
                         ))}
                       </tbody>
                     </table>
+                  );
+                })()}
                   </div>
                 )
               )

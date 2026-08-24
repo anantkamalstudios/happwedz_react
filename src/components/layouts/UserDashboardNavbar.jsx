@@ -11,6 +11,7 @@ import {
   FaEnvelopeOpenText,
   FaUserFriends,
   FaUser,
+  FaCameraRetro,
 } from "react-icons/fa";
 
 const tabs = [
@@ -78,6 +79,18 @@ const tabs = [
     img: "/images/userDashboard/real-wedding-img1.png",
   },
   {
+    // Movments+ has its own layout and header, so this tab leaves the dashboard
+    // instead of rendering through UserDashboardMain's slug switch. `path`
+    // takes precedence over `slug` in handleTabClick below.
+    id: "movments-plus",
+    slug: "movments-plus",
+    label: "Movments+",
+    path: "/movment-plus/home",
+    // No /images/userDashboard asset for this one, so it falls back to the
+    // react-icon — see the img/icon branch in the tab body.
+    icon: <FaCameraRetro />,
+  },
+  {
     id: "user-profile",
     slug: "user-profile",
     label: "Profile",
@@ -101,7 +114,7 @@ const UserDashboardNavbar = () => {
 
   const handleTabClick = (tab) => {
     setActiveTab(tab.id);
-    navigate(`/user-dashboard/${tab.slug}`);
+    navigate(tab.path || `/user-dashboard/${tab.slug}`);
   };
 
   return (
@@ -141,26 +154,33 @@ const UserDashboardNavbar = () => {
                 fontSize: "22px",
               }}
             >
-              {/* {tab.icon} */}
-              <div
-                style={{
-                  height: "52px",
-                  width: "52px",
-                  padding: "4px",
-                  border: "none",
-                }}
-              >
-                <img
-                  src={tab.img}
-                  alt=""
+              {tab.img ? (
+                <div
                   style={{
-                    height: "100%",
-                    width: "100%",
-                    objectFit: "contain",
-                    borderRadius: "50%",
+                    height: "52px",
+                    width: "52px",
+                    padding: "4px",
+                    border: "none",
                   }}
-                />
-              </div>
+                >
+                  <img
+                    src={tab.img}
+                    alt=""
+                    style={{
+                      height: "100%",
+                      width: "100%",
+                      objectFit: "contain",
+                      borderRadius: "50%",
+                    }}
+                  />
+                </div>
+              ) : (
+                /* The image tabs fill the full 52px box, so the bare 22px icon
+                   inherited from the circle would look undersized next to them. */
+                <span style={{ fontSize: "30px", display: "flex" }}>
+                  {tab.icon}
+                </span>
+              )}
             </div>
             <span
               className="mt-2 fs-16"

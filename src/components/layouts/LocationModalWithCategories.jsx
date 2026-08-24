@@ -276,11 +276,12 @@ const LocationModalWithCategories = () => {
       <div style={{ position: "relative", display: "inline-block" }}>
         <Button
           variant="outline-light"
-          className="border-danger rounded-0 text-dark d-flex align-items-center justify-content-between px-3"
+          className="border-danger rounded-0 text-dark d-flex align-items-center justify-content-between px-2"
           onClick={() => setShow(true)}
           style={{
-            minWidth: 180,
-            height: 40,
+            minWidth: 130,
+            height: 30,
+            fontSize: "13px",
             backgroundColor: "#fff",
           }}
         >
@@ -291,7 +292,7 @@ const LocationModalWithCategories = () => {
               <span className="text-dark fs-14">Select Location</span>
             )}
           </span>
-          <IoMdArrowDropdown size={25} color="#000" />
+          <IoMdArrowDropdown size={16} color="#000" />
         </Button>
       </div>
 

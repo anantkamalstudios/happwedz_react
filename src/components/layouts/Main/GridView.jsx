@@ -312,12 +312,9 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid, currentCity }) => {
                       borderRadius: "15px",
                       display: "block",
                     }}
-                    onError={() => {
-                      setHiddenIds((prev) => {
-                        const next = new Set(prev);
-                        next.add(venue.id);
-                        return next;
-                      });
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/images/imageNotFound.jpg";
                     }}
                   />
 

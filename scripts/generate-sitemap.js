@@ -64,7 +64,8 @@ const staticUrls = [
   // Digital Invitations & Studio
   { loc: "/einvites", changefreq: "weekly", priority: "0.8" },
   { loc: "/video-templates", changefreq: "monthly", priority: "0.7" },
-  { loc: "/try", changefreq: "monthly", priority: "0.7" },
+  // Virtual try-on disabled — route commented out in App.jsx
+  // { loc: "/try", changefreq: "monthly", priority: "0.7" },
 
   // AI Wedding Tools
   { loc: "/ai-features", changefreq: "weekly", priority: "0.8" },

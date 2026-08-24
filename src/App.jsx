@@ -190,9 +190,10 @@ const EinviteViewPage = lazy(
   () => import("./components/pages/EinviteViewPage"),
 );
 const OurCards = lazy(() => import("./components/pages/OurCards"));
-const TryLanding = lazy(
-  () => import("./components/pages/designStudio/TryLanding"),
-);
+// Virtual Try-On (Design Studio) disabled — see the commented "Try Flow" routes below.
+// const TryLanding = lazy(
+//   () => import("./components/pages/designStudio/TryLanding"),
+// );
 const ChooseTemplate = lazy(() => import("./components/pages/ChooseTemplate"));
 const TemplatePreviewPage = lazy(
   () => import("./components/pages/TemplatePreviewPage"),
@@ -213,25 +214,26 @@ const MyWeddingWebsites = lazy(
   () => import("./components/pages/MyWeddingWebsites"),
 );
 
-const BrideMakeupChoose = lazy(
-  () => import("./components/pages/designStudio/BrideMakeupChoose"),
-);
-const GroomeMakeupChoose = lazy(
-  () => import("./components/pages/designStudio/GroomeMakeupChoose"),
-);
-const TryMakeupLanding = lazy(
-  () => import("./components/pages/designStudio/TryMakeupLanding"),
-);
-const UploadSelfiePage = lazy(
-  () => import("./components/pages/designStudio/UploadSelfiePage"),
-);
-const FiltersPage = lazy(
-  () => import("./components/pages/designStudio/FiltersPage"),
-);
+// Virtual Try-On (Design Studio) disabled — see the commented "Try Flow" routes below.
+// const BrideMakeupChoose = lazy(
+//   () => import("./components/pages/designStudio/BrideMakeupChoose"),
+// );
+// const GroomeMakeupChoose = lazy(
+//   () => import("./components/pages/designStudio/GroomeMakeupChoose"),
+// );
+// const TryMakeupLanding = lazy(
+//   () => import("./components/pages/designStudio/TryMakeupLanding"),
+// );
+// const UploadSelfiePage = lazy(
+//   () => import("./components/pages/designStudio/UploadSelfiePage"),
+// );
+// const FiltersPage = lazy(
+//   () => import("./components/pages/designStudio/FiltersPage"),
+// );
 
-const OutfitFilterPage = lazy(
-  () => import("./components/pages/designStudio/OutfitFilterPage"),
-);
+// const OutfitFilterPage = lazy(
+//   () => import("./components/pages/designStudio/OutfitFilterPage"),
+// );
 
 const ContactUs = lazy(() => import("./components/pages/Contactus"));
 
@@ -562,7 +564,12 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
-              {/* Try Flow */}
+              {/* Try Flow — virtual try-on (Design Studio) is disabled.
+                  These URLs now fall through to the catch-all NotFound route.
+                  To re-enable: uncomment this block AND the matching lazy()
+                  imports near the top of this file, plus the two header links
+                  in components/layouts/Header.jsx.
+
               <Route path="/try" element={<TryLanding />} />
               <Route
                 path="/try/bride"
@@ -612,6 +619,7 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
+              */}
               <Route
                 path="/finallook"
                 element={

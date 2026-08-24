@@ -21,44 +21,30 @@ const UserPreference = () => {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      width: 550px;
+      width: 480px;
+      max-width: calc(100vw - 32px);
       z-index: 1050;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(232, 53, 129, 0.18);
+      background: #ffffff;
     }
 
     .cookie-gradient {
-      background: linear-gradient(135deg, #f472b6 0%, #ec4899 50%, #f43f5e 100%);
+      background: #ffffff;
       padding: 24px;
       position: relative;
-      overflow: hidden;
-    }
-
-    .cookie-gradient::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-      transition: left 1s ease-in-out;
-      pointer-events: none;
-    }
-
-    .cookie-gradient:hover::before {
-      left: 100%;
     }
 
     .cookie-icon {
-      width: 150px;
-      height: 150px;
-      background: white;
+      width: 64px;
+      height: 64px;
+      background: #fff0f5;
       border-radius: 50%;
       flex-shrink: 0;
       padding: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(232, 53, 129, 0.15);
     }
 
     .cookie-icon img {
@@ -69,48 +55,72 @@ const UserPreference = () => {
     }
 
     .cookie-title {
-      color: white;
+      color: #111827;
       font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 8px;
+      font-weight: 700;
+      margin-bottom: 6px;
     }
 
     .cookie-text {
-      color: rgba(255, 255, 255, 0.95);
+      color: #4b5563;
       font-size: 0.875rem;
       line-height: 1.5;
       margin: 0;
     }
 
     .btn-reject {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: white;
-      font-weight: 500;
-      backdrop-filter: blur(10px);
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+      font-weight: 600;
       transition: all 0.2s;
     }
 
     .btn-reject:hover {
-      background: rgba(255, 255, 255, 0.3);
-      color: white;
-      border-color: rgba(255, 255, 255, 0.4);
+      background: #e5e7eb;
+      color: #111827;
     }
 
     .btn-accept {
-      background: white;
-      color: #ec4899;
-      font-weight: 500;
+      background: linear-gradient(135deg, #e83581 0%, #c2185b 100%);
+      color: #ffffff;
+      font-weight: 600;
       border: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 14px rgba(232, 53, 129, 0.35);
       transition: all 0.2s;
     }
 
     .btn-accept:hover {
-      background: #fce7f3;
-      color: #ec4899;
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 6px 18px rgba(232, 53, 129, 0.45);
+      color: #ffffff;
+    }
+
+    @media (max-width: 576px) {
+      .cookie-consent {
+        bottom: 12px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-width: none;
+        border-radius: 12px;
+      }
+      .cookie-gradient {
+        padding: 16px;
+      }
+      .cookie-icon {
+        width: 50px;
+        height: 50px;
+        padding: 4px;
+      }
+      .cookie-title {
+        font-size: 1rem;
+        margin-bottom: 4px;
+      }
+      .cookie-text {
+        font-size: 0.8rem;
+        line-height: 1.3;
+      }
     }
   `;
 

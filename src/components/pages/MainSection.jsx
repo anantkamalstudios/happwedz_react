@@ -201,7 +201,7 @@ const MainSection = () => {
     categoryInfo ? categoryInfo.name : null,
     selectedCity,
     "Venues",
-    9,
+    18,
     venueFilters
   );
   const [searchQuery, setSearchQuery] = useState("");
@@ -313,6 +313,18 @@ const MainSection = () => {
                 />
               )}
             </InfiniteScroll>
+            {hasMore && !loading && (
+              <div className="text-center my-4">
+                <button
+                  type="button"
+                  className="btn btn-primary text-white fw-bold px-4 py-2 rounded-pill shadow-sm"
+                  onClick={loadMore}
+                  style={{ backgroundColor: "#ed1173", borderColor: "#ed1173" }}
+                >
+                  Load More Venues ({data.length} Shown)
+                </button>
+              </div>
+            )}
             <PricingModal
               show={show}
               handleClose={handleClose}

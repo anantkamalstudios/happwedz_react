@@ -93,7 +93,10 @@ const BulkImportModal = ({
       let menu = "Veg";
       if (rawMenu) {
         const lm = rawMenu.toLowerCase();
-        if (lm.includes("non") || lm.includes("nv")) menu = "NonVeg";
+        if (lm.includes("jain")) menu = "Jain";
+        else if (lm.includes("vegan")) menu = "Vegan";
+        else if (lm.includes("egg")) menu = "Eggetarian";
+        else if (lm.includes("non") || lm.includes("nv")) menu = "NonVeg";
         else if (lm.includes("all")) menu = "All";
         else if (lm.includes("veg")) menu = "Veg";
       }

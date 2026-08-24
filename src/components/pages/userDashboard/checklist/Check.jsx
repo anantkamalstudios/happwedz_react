@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FaCheck,
   FaPlus,
@@ -7,12 +7,14 @@ import {
   FaCalendarAlt,
   FaHeart,
   FaTimes,
+  FaEdit,
 } from "react-icons/fa";
 import { FiCheck, FiTrash, FiLink, FiEdit, FiClock } from "react-icons/fi";
 import { FaChevronDown, FaSpinner } from "react-icons/fa6";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { updateUserProfile } from "../../../../redux/authSlice";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -29,31 +31,75 @@ const CATEGORY_API =
   "https://happywedz.com/api/vendor-types/with-subcategories/all";
 
 const Check = () => {
-  const user = useSelector((state) => state.auth.user);
-  const token = useSelector((state) => state.auth.token);
+  const dispatch = useDispatch();
+  const { user, token } = useSelector((state) => state.auth);
   const userId = user?.id || user?.user_id || user?._id;
 
   const [checklists, setChecklists] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [startDate, setStartDate] = useState(() => {
+    return (
+      localStorage.getItem("saved_start_date") ||
+      (userId && localStorage.getItem(`saved_start_date_${userId}`)) ||
+      dayjs().format("YYYY-MM-DD")
+    );
+  });
+  const [weddingDate, setWeddingDate] = useState(() => {
+    return (
+      localStorage.getItem("saved_wedding_date") ||
+      (userId && localStorage.getItem(`saved_wedding_date_${userId}`)) ||
+      (user?.weddingDate ? String(user.weddingDate).slice(0, 10) : "")
+    );
+  });
   const [text, setText] = useState("");
   const [vendorSubId, setVendorSubId] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [startDate, setStartDate] = useState("");
-  // Initialize wedding date from Redux user data
-  const [weddingDate, setWeddingDate] = useState(
-    user?.weddingDate ? String(user.weddingDate).slice(0, 10) : ""
-  );
   const [loading, setLoading] = useState(false);
 
+  const hasUserEditedDate = useRef(false);
+
   // Handler for start date change
-  const handleStartDateChange = (newDate) => {
+  const handleStartDateChange = async (newDate) => {
     const formattedDate = newDate ? dayjs(newDate).format("YYYY-MM-DD") : "";
+    hasUserEditedDate.current = true;
     setStartDate(formattedDate);
+    localStorage.setItem("saved_start_date", formattedDate);
+    if (userId) {
+      localStorage.setItem(`saved_start_date_${userId}`, formattedDate);
+    }
+    if (userId && formattedDate) {
+      try {
+        await axiosInstance.put(`/new-checklist/update-wedding-date`, {
+          userId,
+          weddingDate,
+          startDate: formattedDate,
+        });
+      } catch (e) {
+        console.warn("Could not save start date to backend:", e);
+      }
+    }
   };
 
   // Handler for wedding date change
-  const handleWeddingDateChange = (newDate) => {
+  const handleWeddingDateChange = async (newDate) => {
     const formattedDate = newDate ? dayjs(newDate).format("YYYY-MM-DD") : "";
+    hasUserEditedDate.current = true;
     setWeddingDate(formattedDate);
+    localStorage.setItem("saved_wedding_date", formattedDate);
+    if (userId) {
+      localStorage.setItem(`saved_wedding_date_${userId}`, formattedDate);
+    }
+    dispatch(updateUserProfile({ weddingDate: formattedDate }));
+    if (userId && formattedDate) {
+      try {
+        await axiosInstance.put(`/new-checklist/update-wedding-date`, {
+          userId,
+          weddingDate: formattedDate,
+          startDate,
+        });
+      } catch (e) {
+        console.warn("Could not save wedding date to backend:", e);
+      }
+    }
   };
   const [refresh, setRefresh] = useState(false);
   const [error, setError] = useState(null);
@@ -64,6 +110,8 @@ const Check = () => {
   const itemsPerPage = 10;
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
+  const [editingDays, setEditingDays] = useState(1);
+  const [customTaskDays, setCustomTaskDays] = useState({});
   const [updateLoading, setUpdateLoading] = useState(false);
 
   const fetchChecklists = async () => {
@@ -75,11 +123,13 @@ const Check = () => {
       );
       const fetchedChecklists = res.data?.data || [];
       setChecklists(fetchedChecklists);
-      if (res.data?.data?.length > 0) {
+      if (res.data?.data?.length > 0 && !hasUserEditedDate.current) {
         const firstTask = res.data.data[0];
-        if (firstTask.start_date)
+        const localSavedStart = userId ? localStorage.getItem(`saved_start_date_${userId}`) : null;
+        const localSavedWedding = userId ? localStorage.getItem(`saved_wedding_date_${userId}`) : null;
+        if (!localSavedStart && firstTask.start_date && !startDate)
           setStartDate(firstTask.start_date.split("T")[0]);
-        if (firstTask.wedding_date)
+        if (!localSavedWedding && firstTask.wedding_date && !weddingDate)
           setWeddingDate(firstTask.wedding_date.split("T")[0]);
       }
     } catch (err) {
@@ -107,13 +157,14 @@ const Check = () => {
     }
   };
 
-  // Sync wedding date from Redux when user data changes
+  // Sync dates when userId loads or rehydrates from Redux
   useEffect(() => {
-    if (user?.weddingDate) {
-      const formattedDate = String(user.weddingDate).slice(0, 10);
-      setWeddingDate(formattedDate);
-    }
-  }, [user?.weddingDate]);
+    const savedStart = (userId && localStorage.getItem(`saved_start_date_${userId}`)) || localStorage.getItem("saved_start_date");
+    const savedWedding = (userId && localStorage.getItem(`saved_wedding_date_${userId}`)) || localStorage.getItem("saved_wedding_date");
+
+    if (savedStart) setStartDate(savedStart);
+    if (savedWedding) setWeddingDate(savedWedding);
+  }, [userId]);
 
   const [countdown, setCountdown] = useState(null);
 
@@ -168,62 +219,62 @@ const Check = () => {
     }
   }, [vendorSubId, categories]);
 
+  const totalRemainingDaysCount = daysLeft !== null && daysLeft > 0 ? daysLeft : 0;
+  const baseDaysAllocated = checklists.length > 0 ? Math.floor(totalRemainingDaysCount / checklists.length) : 0;
+  const totalAllocatedDays = baseDaysAllocated * checklists.length;
+  const unallocatedBufferDays = Math.max(0, totalRemainingDaysCount - totalAllocatedDays);
+
   useEffect(() => {
-    if (startDate && weddingDate && requiredDays > 0) {
-      const s = new Date(startDate);
-      const w = new Date(weddingDate);
-      const totalDays = Math.ceil((w - s) / (1000 * 60 * 60 * 24));
+    if (weddingDate) {
+      const remainingDaysCount = daysLeft !== null && daysLeft >= 0 ? daysLeft : 0;
 
-      if (totalDays < 8) {
-        setTimeOptions(["Wedding too near (<8 days)"]);
-        return;
-      }
-
-      const endDate = new Date(s);
-      endDate.setDate(endDate.getDate() + requiredDays);
+      const s = startDate ? new Date(startDate) : new Date();
+      const endDate = new Date(weddingDate);
 
       setTimeOptions([
-        `${requiredDays} days required`,
         `Start: ${formatDate(s)}`,
         `End: ${formatDate(endDate)}`,
-        `Remaining buffer: ${totalDays - requiredDays} days`,
+        `Remaining countdown: ${remainingDaysCount} days`,
+        `Unallocated buffer: ${unallocatedBufferDays} day${unallocatedBufferDays === 1 ? "" : "s"} (${totalAllocatedDays} days allocated across ${checklists.length} task${checklists.length === 1 ? "" : "s"})`,
       ]);
     }
-  }, [startDate, weddingDate, requiredDays]);
+  }, [startDate, weddingDate, requiredDays, daysLeft, unallocatedBufferDays, totalAllocatedDays, checklists.length]);
 
   const [distributedTasks, setDistributedTasks] = useState([]);
 
   useEffect(() => {
-    if (!startDate || !weddingDate || checklists.length === 0) {
+    if (!weddingDate || checklists.length === 0) {
       setDistributedTasks([]);
       return;
     }
 
-    const start = new Date(startDate);
-    const end = new Date(weddingDate);
-    const totalDays = Math.max(
-      1,
-      Math.ceil((end - start) / (1000 * 60 * 60 * 24))
-    );
-    const perTaskDays = Math.max(1, Math.floor(totalDays / checklists.length));
+    const totalRemainingDays = daysLeft !== null && daysLeft > 0 ? daysLeft : 1;
+    const totalTasks = checklists.length;
+    const baseDays = Math.floor(totalRemainingDays / totalTasks);
+    const remainder = totalRemainingDays % totalTasks;
 
     const temp = [];
-    let current = new Date(start);
+    let current = startDate ? new Date(startDate) : new Date();
 
-    for (let i = 0; i < checklists.length; i++) {
+    for (let i = 0; i < totalTasks; i++) {
+      const item = checklists[i];
+      // Equal distribution to all tasks
+      const taskDays = baseDays;
+      const validDays = Math.max(1, taskDays);
       const taskStart = new Date(current);
       const taskEnd = new Date(current);
-      taskEnd.setDate(taskEnd.getDate() + perTaskDays - 1);
+      taskEnd.setDate(taskEnd.getDate() + validDays - 1);
+
       temp.push({
-        ...checklists[i],
-        days_assigned: perTaskDays,
+        ...item,
+        days_assigned: validDays,
         distributed_start_date: formatDate(taskStart),
         distributed_end_date: formatDate(taskEnd),
       });
-      current.setDate(current.getDate() + perTaskDays);
+      current.setDate(current.getDate() + validDays);
     }
     setDistributedTasks(temp);
-  }, [checklists, startDate, weddingDate]);
+  }, [checklists, startDate, weddingDate, daysLeft]);
 
   const addChecklist = async () => {
     setError(null);
@@ -276,9 +327,21 @@ const Check = () => {
     }
   };
 
-  const handleEdit = (id, currentText) => {
+  const getMaxDaysForTask = (taskId) => {
+    const totalRemaining = daysLeft !== null && daysLeft > 0 ? daysLeft : 1;
+    const baseDays = checklists.length > 0 ? Math.floor(totalRemaining / checklists.length) : 1;
+    const otherTasksAllocated = checklists.reduce((acc, item) => {
+      if (item.id === taskId) return acc;
+      const days = customTaskDays[item.id] !== undefined ? customTaskDays[item.id] : baseDays;
+      return acc + days;
+    }, 0);
+    return Math.max(1, totalRemaining - otherTasksAllocated);
+  };
+
+  const handleEdit = (id, currentText, currentDays) => {
     setEditingId(id);
     setEditingText(currentText);
+    setEditingDays(currentDays || 1);
   };
 
   const saveEdit = async () => {
@@ -287,11 +350,18 @@ const Check = () => {
       return;
     }
 
+    const maxAllowed = getMaxDaysForTask(editingId);
+    const validDays = Math.min(maxAllowed, Math.max(1, editingDays));
+
     setUpdateLoading(true);
     try {
       await axiosInstance.put(`/new-checklist/update/${editingId}`, {
         text: editingText,
       });
+      setCustomTaskDays((prev) => ({
+        ...prev,
+        [editingId]: validDays,
+      }));
       setEditingId(null);
       setEditingText("");
       setRefresh((prev) => !prev);
@@ -308,15 +378,21 @@ const Check = () => {
     setEditingText("");
   };
 
-  const toggleStatus = async (id, currentStatus) => {
+  const updateStatus = async (id, newStatus) => {
+    setError(null);
+    setChecklists((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
+    );
+    setDistributedTasks((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
+    );
+
     try {
-      const newStatus = currentStatus === "completed" ? "pending" : "completed";
       await axiosInstance.put(`/new-checklist/update/${id}`, {
         status: newStatus,
       });
-      setRefresh((prev) => !prev);
     } catch (err) {
-      setError("Failed to update checklist.");
+      console.warn("Status save warning:", err);
     }
   };
 
@@ -461,7 +537,6 @@ const Check = () => {
                       format="DD/MM/YYYY"
                       onChange={handleStartDateChange}
                       className="fs-14"
-                      disabled={checklists.length > 0 && !!startDate}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -485,7 +560,6 @@ const Check = () => {
                       value={weddingDate ? dayjs(weddingDate) : null}
                       format="DD/MM/YYYY"
                       onChange={handleWeddingDateChange}
-                      disabled={checklists.length > 0 && !!weddingDate}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -613,6 +687,10 @@ const Check = () => {
                       <div className="hw-stat-pill">
                         <span className="hw-stat-num" style={{ color: "#ed1173" }}>{Math.max(0, checklists.length - completedCount)}</span>
                         <span className="hw-stat-label">Tasks Remaining</span>
+                      </div>
+                      <div className="hw-stat-pill">
+                        <span className="hw-stat-num" style={{ color: "#3b82f6" }}>{unallocatedBufferDays}</span>
+                        <span className="hw-stat-label">Unallocated Buffer</span>
                       </div>
                     </div>
                   </div>
@@ -742,26 +820,55 @@ const Check = () => {
                               {currentItems.map((item) => (
                                 <tr key={item.id}>
                                   <td className="text-center">
-                                    <div
-                                      className={`hw-status-toggle ${
-                                        item.status === "completed" ? "is-completed" : ""
-                                      }`}
-                                      onClick={() =>
-                                        toggleStatus(item.id, item.status)
-                                      }
-                                      title={
-                                        item.status === "completed"
-                                          ? "Click to mark as pending"
-                                          : "Click to mark as completed"
-                                      }
-                                    >
-                                      {item.status === "completed" ? (
-                                        <FaCheck size={13} />
-                                      ) : (
-                                        <FiCheck size={14} />
-                                      )}
-                                    </div>
-                                  </td>
+                                      <select
+                                        className="form-select form-select-sm shadow-none"
+                                        style={{
+                                          fontSize: "12px",
+                                          fontWeight: "600",
+                                          borderRadius: "20px",
+                                          padding: "4px 10px",
+                                          cursor: "pointer",
+                                          width: "115px",
+                                          margin: "0 auto",
+                                          backgroundColor:
+                                            item.status === "completed" || item.status === "done"
+                                              ? "#dcfce7"
+                                              : item.status === "in_progress" || item.status === "in progress"
+                                              ? "#e0f2fe"
+                                              : "#fef3c7",
+                                          color:
+                                            item.status === "completed" || item.status === "done"
+                                              ? "#15803d"
+                                              : item.status === "in_progress" || item.status === "in progress"
+                                              ? "#0369a1"
+                                              : "#92400e",
+                                          borderColor:
+                                            item.status === "completed" || item.status === "done"
+                                              ? "#86efac"
+                                              : item.status === "in_progress" || item.status === "in progress"
+                                              ? "#93c5fd"
+                                              : "#fde047",
+                                        }}
+                                        value={
+                                          item.status === "done"
+                                            ? "completed"
+                                            : item.status === "in progress"
+                                            ? "in_progress"
+                                            : item.status || "pending"
+                                        }
+                                        onChange={(e) => updateStatus(item.id, e.target.value)}
+                                      >
+                                        <option value="pending" style={{ backgroundColor: "#ffffff", color: "#92400e" }}>
+                                          Pending
+                                        </option>
+                                        <option value="in_progress" style={{ backgroundColor: "#ffffff", color: "#0369a1" }}>
+                                          In Progress
+                                        </option>
+                                        <option value="completed" style={{ backgroundColor: "#ffffff", color: "#15803d" }}>
+                                          Done
+                                        </option>
+                                      </select>
+                                   </td>
                                   <td>
                                     {editingId === item.id ? (
                                       <input
@@ -795,29 +902,42 @@ const Check = () => {
                                           <span className="hw-category-title">
                                             {subcategory?.name || "General"}
                                           </span>
-                                          {subcategory?.required_days && (
-                                            <span
-                                              className="hw-lead-time-badge"
-                                              title="Estimated preparation/lead time required"
-                                            >
-                                              <FiClock size={11} />
-                                              ~{subcategory.required_days}d prep
-                                            </span>
-                                          )}
                                         </div>
                                       );
                                     })()}
-                                  </td>
-                                  <td>
-                                    <span
-                                      className="hw-timeline-badge"
-                                      title="Days allocated in your wedding planning schedule"
-                                    >
-                                      <FaCalendarAlt size={11} style={{ color: "#3b82f6" }} />
-                                      {item.days_assigned || "—"}{" "}
-                                      {item.days_assigned ? "Days Allocated" : ""}
-                                    </span>
-                                  </td>
+                                   </td>
+                                   <td>
+                                     {editingId === item.id ? (
+                                       <div className="d-flex align-items-center gap-1">
+                                         <input
+                                           type="number"
+                                           min="1"
+                                           max={getMaxDaysForTask(item.id)}
+                                           className="form-control form-control-sm text-center shadow-none"
+                                           style={{ width: "55px", fontSize: "12px", fontWeight: "600" }}
+                                           value={editingDays}
+                                           onChange={(e) => {
+                                             const maxLimit = getMaxDaysForTask(item.id);
+                                             const val = parseInt(e.target.value) || 1;
+                                             setEditingDays(Math.min(maxLimit, Math.max(1, val)));
+                                           }}
+                                           title={`Maximum ${getMaxDaysForTask(item.id)} days available to allocate`}
+                                         />
+                                         <span style={{ fontSize: "11px", color: "#64748b", fontWeight: "600" }}>
+                                           / {getMaxDaysForTask(item.id)} Days Max
+                                         </span>
+                                       </div>
+                                     ) : (
+                                       <span
+                                         className="hw-timeline-badge"
+                                         title="Days allocated in your wedding planning schedule"
+                                       >
+                                         <FaCalendarAlt size={11} style={{ color: "#3b82f6" }} />
+                                         {item.days_assigned || "—"}{" "}
+                                         {item.days_assigned ? "Days Allocated" : ""}
+                                       </span>
+                                     )}
+                                   </td>
                                   <td>
                                     <div className="d-flex gap-2 justify-content-center">
                                       {editingId === item.id ? (
@@ -835,37 +955,34 @@ const Check = () => {
                                           >
                                             {updateLoading ? (
                                               <FaSpinner
+                                                size={12}
                                                 className="spin"
-                                                size={13}
                                               />
                                             ) : (
-                                              <FaCheck size={13} />
+                                              <FaCheck size={12} />
                                             )}
                                           </button>
-
                                           <button
                                             className="hw-action-btn"
                                             style={{
-                                              background: "#f1f5f9",
-                                              color: "#64748b",
+                                              background: "#fef2f2",
+                                              color: "#dc2626",
+                                              borderColor: "#fecaca",
                                             }}
                                             onClick={cancelEdit}
-                                            disabled={updateLoading}
                                             title="Cancel"
                                           >
-                                            <FaTimes size={13} />
+                                            <FaTimes size={12} />
                                           </button>
                                         </>
                                       ) : (
                                         <>
                                           <button
-                                            className="hw-action-btn edit-btn"
-                                            onClick={() =>
-                                              handleEdit(item.id, item.text)
-                                            }
-                                            title="Edit Task"
+                                            className="hw-action-btn"
+                                            onClick={() => handleEdit(item.id, item.text, item.days_assigned)}
+                                            title="Edit Task & Days"
                                           >
-                                            <FiEdit size={14} />
+                                            <FaEdit size={12} />
                                           </button>
                                           <button
                                             className="hw-action-btn delete-btn"

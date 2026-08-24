@@ -492,6 +492,7 @@ textarea {
 }
 .top-header-heading {
   margin-left: 8px;
+  font-size: 15px !important;
 }
 .mega-dropdown-wrapper .dropdown-menu {
   top: 100%;
@@ -4113,7 +4114,7 @@ label {
    `d-none d-lg-block`. */
 @media (min-width: 992px) {
   .header-topbar {
-    min-height: 66px;
+    min-height: 44px;
   }
 }
 /* Same reasoning one row down: `ul.navbar-nav` is `d-flex flex-wrap`, so

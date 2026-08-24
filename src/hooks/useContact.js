@@ -34,7 +34,7 @@ export const useContact = () => {
   return {
     submitContact,
     loading,
-    r,erro
+    error,
   };
 };
 

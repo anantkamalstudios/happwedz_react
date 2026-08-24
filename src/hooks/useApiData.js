@@ -60,12 +60,12 @@ const useApiData = (
       try {
         const subCategory = slug
           ? slug
-              .replace(/-{2,}/g, " / ")
-              .replace(/-/g, " ")
-              .replace(/\s*\/\s*/g, " / ")
-              .replace(/\s{2,}/g, " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase())
-              .trim()
+            .replace(/-{2,}/g, " / ")
+            .replace(/-/g, " ")
+            .replace(/\s*\/\s*/g, " / ")
+            .replace(/\s{2,}/g, " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase())
+            .trim()
           : null;
 
         const params = new URLSearchParams();
@@ -181,10 +181,6 @@ const useApiData = (
           params.append("filters", JSON.stringify(nonPriceFilters));
         }
 
-        // Only return vendors whose first media image is confirmed to exist in S3.
-        // The batch job (verify-vendor-images.js) sets image_exists = TRUE after verification.
-        params.append("image_exists", "true");
-
         const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
         const apiUrl = `${apiBaseUrl}/vendor-services?${params.toString()}`;
 
@@ -215,75 +211,30 @@ const useApiData = (
         const itemsRaw = Array.isArray(result)
           ? result
           : Array.isArray(result.data)
-          ? result.data
-          : [];
+            ? result.data
+            : [];
 
-        const isValidCity = (city) => {
-          if (!city || typeof city !== "string") return false;
-          const lower = city.toLowerCase().trim();
-          if (
-            !lower ||
-            lower === "unknown" ||
-            lower === "unknown city" ||
-            lower === "null" ||
-            lower === "undefined" ||
-            lower === "n/a" ||
-            lower === "none" ||
-            lower === "all" ||
-            lower.includes("location not available") ||
-            lower.includes("not available") ||
-            lower.includes("unknown")
-          ) {
-            return false;
+        const VENUE_FALLBACK_IMG = "/images/imageNotFound.jpg";
+
+        const transformed = transformApiData(itemsRaw).map((item) => {
+          if (!item) return null;
+          if (!item.image || String(item.image).trim() === "") {
+            item.image = VENUE_FALLBACK_IMG;
           }
-          return true;
-        };
-
-        const matchesSelectedCity = (item, selectedCity) => {
-          if (!selectedCity || selectedCity.toLowerCase() === "all") return true;
-          const itemLocation = String(
-            item.city || item.location || item.address || item.area || ""
-          ).toLowerCase();
-          const cleanSelected = selectedCity.toLowerCase().replace(/[^a-z0-9]/g, "");
-          const cleanItem = itemLocation.replace(/[^a-z0-9]/g, "");
-          return cleanItem.includes(cleanSelected) || cleanSelected.includes(cleanItem);
-        };
-
-        const filterValidImages = (items) =>
-          items.filter((item) => {
-            if (!item) return false;
-            if (!item.image) return false;
-            const imgStr = String(item.image).toLowerCase().trim();
-            if (
-              !imgStr ||
-              imgStr === "null" ||
-              imgStr === "undefined" ||
-              imgStr.includes("placeholder") ||
-              imgStr.includes("not_found") ||
-              imgStr.includes("image_not_found") ||
-              imgStr.includes("imagenotfound") ||
-              imgStr.includes("no-image") ||
-              imgStr.includes("no_image")
-            ) {
-              return false;
-            }
-            const cityVal = item.city || item.location || item.address;
-            if (!isValidCity(cityVal)) {
-              return false;
-            }
-            if (city && city.toLowerCase() !== "all") {
-              if (!matchesSelectedCity(item, city)) {
-                return false;
-              }
-            }
-            return true;
-          });
+          return item;
+        }).filter(Boolean);
 
         if (Array.isArray(result)) {
           const total = itemsRaw.length;
           const start = (page - 1) * limit;
           const pagedItems = itemsRaw.slice(start, start + limit);
-          const transformed = filterValidImages(transformApiData(pagedItems));
+          const transformed = transformApiData(pagedItems).map((item) => {
+            if (!item) return null;
+            if (!item.image || String(item.image).trim() === "") {
+              item.image = VENUE_FALLBACK_IMG;
+            }
+            return item;
+          }).filter(Boolean);
           setData(transformed);
           const nextPagination = {
             page,
@@ -297,7 +248,13 @@ const useApiData = (
             pagination: nextPagination,
           });
         } else {
-          const transformed = filterValidImages(transformApiData(itemsRaw));
+          const transformed = transformApiData(itemsRaw).map((item) => {
+            if (!item) return null;
+            if (!item.image || String(item.image).trim() === "") {
+              item.image = VENUE_FALLBACK_IMG;
+            }
+            return item;
+          }).filter(Boolean);
           setData(transformed);
           if (result.pagination) {
             const nextPagination = {
@@ -401,8 +358,8 @@ const transformApiData = (items) => {
 
     const portfolioUrls = attributes.Portfolio
       ? attributes.Portfolio.split("|")
-          .map((url) => url.trim())
-          .filter((url) => url)
+        .map((url) => url.trim())
+        .filter((url) => url)
       : [];
     const normalizeUrl = (u) => {
       if (!u) return null;
@@ -491,10 +448,10 @@ const transformApiData = (items) => {
         : null,
       starting_price: !isVenue
         ? photoPackage ||
-          photoVideoPackage ||
-          attributes.PriceRange ||
-          attributes.price ||
-          null
+        photoVideoPackage ||
+        attributes.PriceRange ||
+        attributes.price ||
+        null
         : null,
 
       address: (attributes.address && attributes.address.toLowerCase() !== "unknown") ? attributes.address : (attributes.Address && attributes.Address.toLowerCase() !== "unknown") ? attributes.Address : "",

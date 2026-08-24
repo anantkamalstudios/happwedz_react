@@ -95,7 +95,7 @@ export function useBudget() {
 
           const grouped = categories.map((category) => {
             const budgetsForCategory = items.filter(
-              (b) => b.vendor_type_id === category.id
+              (b) => String(b.vendor_type_id) === String(category.id)
             );
             const mappedRows = budgetsForCategory.map((b) => ({
               id: b.id,
@@ -186,8 +186,8 @@ export function useBudget() {
 
       const payload = {
         userId: user.id,
-        vendor_type_id: vendorTypeId,
-        vendor_subcategory_id: vendorSubcategoryId,
+        vendor_type_id: Number(vendorTypeId),
+        vendor_subcategory_id: Number(vendorSubcategoryId),
         estimated_budget: Number(estimatedBudget || 0),
         final_cost: Number(finalCost || 0),
         paid_amount: Number(paidAmount || 0),
@@ -210,7 +210,7 @@ export function useBudget() {
 
         setCategories((prev) =>
           prev.map((cat) => {
-            if (cat.id !== vendorTypeId) return cat;
+            if (String(cat.id) !== String(vendorTypeId)) return cat;
             const row = {
               id: newRow.id,
               vendor_type_id: newRow.vendor_type_id,
@@ -243,8 +243,8 @@ export function useBudget() {
       if (!id) return false;
       const payload = {
         userId: user?.id,
-        vendor_type_id: vendorTypeId,
-        vendor_subcategory_id: vendorSubcategoryId,
+        vendor_type_id: Number(vendorTypeId),
+        vendor_subcategory_id: Number(vendorSubcategoryId),
         estimated_budget: Number(estimated || 0),
         final_cost: Number(final || 0),
         paid_amount: Number(paid || 0),
@@ -261,7 +261,7 @@ export function useBudget() {
 
       setCategories((prev) =>
         prev.map((cat) => {
-          if (cat.id !== vendorTypeId) return cat;
+          if (String(cat.id) !== String(vendorTypeId)) return cat;
           const updatedBudgets = (cat.budgets || []).map((row) => {
             if (row.id !== id) return row;
             const updated = {
@@ -296,7 +296,7 @@ export function useBudget() {
 
       setCategories((prev) =>
         prev.map((cat) => {
-          if (cat.id !== vendorTypeId) return cat;
+          if (String(cat.id) !== String(vendorTypeId)) return cat;
           const existing = cat.budgets || [];
           const row = existing.find((r) => r.id === id);
           const filtered = existing.filter((r) => r.id !== id);
