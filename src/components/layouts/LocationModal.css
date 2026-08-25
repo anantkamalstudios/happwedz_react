@@ -633,18 +633,25 @@
   border-color: transparent;
 }
 
-/* Responsive Grid Breakpoints */
-@media (max-width: 1024px) {
+/* Responsive Grid Breakpoints
+   All five category columns stay side by side at every width. Below the point
+   where five readable columns still fit, the row scrolls horizontally instead of
+   restacking — dropping to 3/2/1 columns buried International and States under a
+   long scroll, so the picker looked like a different component on a phone. */
+@media (max-width: 1200px) {
   .hw-location-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(210px, 1fr));
     gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    /* room for the scrollbar so it never overlaps the last row of cities */
+    padding-bottom: 8px;
   }
-}
 
-@media (max-width: 768px) {
-  .hw-location-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+  .hw-location-col {
+    scroll-snap-align: start;
   }
 }
 
@@ -654,8 +661,9 @@
     width: 96vw;
     margin: 0.5rem auto;
   }
+  /* Slightly narrower columns so a second one peeks in and hints at the scroll. */
   .hw-location-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(5, minmax(180px, 1fr));
   }
   .hw-location-col {
     height: 280px;

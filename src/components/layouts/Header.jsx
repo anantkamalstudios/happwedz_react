@@ -660,7 +660,23 @@ const Header = () => {
                   )}
                 </li>
 
-                {/* Blog */}
+                {/* Shop */}
+                <li className="mb-2">
+                  <a
+                    href="https://store.happywedz.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
+                    onClick={handleMobileLinkClick}
+                  >
+                    Shop
+                  </a>
+                </li>
+
+                {/* Blog is hidden on mobile so the drawer carries the same
+                    sections as the desktop bar, where this entry is also commented
+                    out. Restore here and in the desktop nav together. */}
+                {/*
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
@@ -732,6 +748,7 @@ const Header = () => {
                     </div>
                   )}
                 </li>
+                */}
 
                 {/* Genie */}
                 <li className="mb-2">
@@ -744,7 +761,21 @@ const Header = () => {
                   </Link>
                 </li>
 
-                {/* Real Wedding */}
+                {/* Honeymoon */}
+                <li className="mb-2">
+                  <Link
+                    to="/honeymoon"
+                    className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
+                    onClick={handleMobileLinkClick}
+                  >
+                    Honeymoon
+                  </Link>
+                </li>
+
+                {/* Real Wedding is hidden on mobile so the drawer carries the same
+                    sections as the desktop bar, where this entry is also commented
+                    out. Restore here and in the desktop nav together. */}
+                {/*
                 <li className="mb-2">
                   <button className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light">
                     <span
@@ -828,6 +859,7 @@ const Header = () => {
                     </div>
                   )}
                 </li>
+                */}
 
                 {/* Auth Links */}
                 <li className="mb-2">

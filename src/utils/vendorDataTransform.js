@@ -3,6 +3,8 @@
  * This ensures compatibility with existing components while using dynamic data
  */
 
+import { toCdnUrl } from "../config/constants";
+
 export const transformVendorData = (apiVendor) => {
   if (!apiVendor) return null;
 
@@ -193,7 +195,8 @@ const API_BASE_URL = "https://happywedz.com";
 
 const normalizeMediaUrl = (url) => {
   if (!url) return "";
-  let cleanUrl = String(url).replace("https://happywedz-s3-bucket.s3.ap-south-1.amazonaws.com", "https://happywedz.com");
+  // Serve bucket-hosted media from whichever origin is configured for it.
+  const cleanUrl = toCdnUrl(String(url));
   // Already absolute
   if (/^https?:\/\//i.test(cleanUrl)) return cleanUrl;
   // Prefix site base for paths starting with '/'
