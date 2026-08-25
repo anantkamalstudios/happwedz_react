@@ -3,7 +3,7 @@
 .hw-location-modal .modal-dialog {
   --bs-modal-width: 1240px;
   width: 95vw;
-  max-width: 1240px;
+  max-width: 1240px !important;
   margin: 1.5rem auto;
 }
 
@@ -11,7 +11,7 @@
   .hw-location-modal.modal .modal-dialog,
   .hw-location-modal .modal-dialog {
     --bs-modal-width: 1280px;
-    max-width: 1280px;
+    max-width: 1280px !important;
   }
 }
 
@@ -392,9 +392,6 @@
   color: #1e293b;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .hw-location-list {

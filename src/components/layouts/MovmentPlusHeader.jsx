@@ -155,10 +155,38 @@ const MovmentPlusHeader = () => {
           box-shadow: none;
         }
 
+        .logout_btn {
+          background-color: white;
+          color: #d81b60;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-weight: 600;
+          font-size: 14px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+          margin-left: 10px;
+        }
+
+        .logout_btn:hover {
+          background-color: #f8f9fa;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
         @media (max-width: 991px) {
           .nav_list_7h4k2 {
             margin-top: 1rem;
             padding-bottom: 1rem;
+          }
+
+          .logout_btn {
+            margin-top: 10px;
+            justify-content: center;
           }
 
           .nav_link_3j9w1.active_9m2l4::after {

@@ -1,6 +1,7 @@
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import React, { useMemo, useState, useRef, useEffect, useImperativeHandle } from "react";
 import { getImageUrl, handleImageError } from "../../../utils/imageUtils";
-import { MdDeleteOutline } from "react-icons/md";
+import { fabric } from "fabric";
+import { MdDeleteOutline, MdOutlineFileDownload } from "react-icons/md";
 import { IoIosClose } from "react-icons/io";
 import { FiEdit2 } from "react-icons/fi";
 import { TbTextResize } from "react-icons/tb";
@@ -9,228 +10,497 @@ import { useSelector } from "react-redux";
 import { FaCopy, FaWhatsapp, FaDownload } from "react-icons/fa";
 import Swal from "sweetalert2";
 
-const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
+const EinviteCardEditor = React.forwardRef(({ card, onSave, onCancel, onSaveDraft }, ref) => {
   const [editedCard, setEditedCard] = useState(card || {});
-  const [selectedFieldId, setSelectedFieldId] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showSizePanel, setShowSizePanel] = useState(false);
+  const [canvas, setCanvas] = useState(null);
+  const [activeObject, setActiveObject] = useState(null);
   const [history, setHistory] = useState([]);
   const [isPreview, setIsPreview] = useState(false);
-  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isPublished, setIsPublished] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  // Refs for boundary detection
+  const [updateTrigger, setUpdateTrigger] = useState(0);
+  const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false);
+  const [isStickerDropdownOpen, setIsStickerDropdownOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const isEditModeRef = useRef(false);
+  const [originalFont, setOriginalFont] = useState(null);
+  const [recentColors, setRecentColors] = useState([]);
   const canvasRef = useRef(null);
-  const textElementRefs = useRef({});
 
-  // Font preloading effect
+  useImperativeHandle(ref, () => ({
+    handleSave,
+    handleSaveDraft
+  }));
+
+  // Sync state to ref for canvas event handlers
   useEffect(() => {
-    if (editedCard.editableFields && editedCard.editableFields.length > 0) {
-      const uniqueFonts = [
-        ...new Set(
-          editedCard.editableFields
-            .map((field) => field.fontFamily)
-            .filter(Boolean)
-        ),
-      ];
+    isEditModeRef.current = isEditMode;
+    if (canvas) canvas.requestRenderAll();
+  }, [isEditMode, canvas]);
 
-      uniqueFonts.forEach((fontFamily) => {
-        // Create a link element to preload the font
-        const link = document.createElement("link");
-        link.rel = "preload";
-        link.as = "font";
-        link.type = "font/woff2";
-        link.crossOrigin = "anonymous";
+  const DUMMY_STICKERS = [
+    { type: 'image', value: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGNpcmNsZSBjeD0iMjgiIGN5PSIzOCIgcj0iMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGRDcwMCIgc3Ryb2tlLXdpZHRoPSI0Ii8+PGNpcmNsZSBjeD0iNDIiIGN5PSIyOCIgcj0iMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGRDcwMCIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBvbHlnb24gcG9pbnRzPSI0MiwxNCA0OCw2IDM2LDYiIGZpbGw9IiMwMEZGRkYiLz48L3N2Zz4=" }, // Rings
+    { type: 'image', value: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZD0iTTMyIDU4IEMtMTAgMzIgMTAgLTYgMzIgMTggQzU0IC02IDc0IDMyIDMyIDU4IFoiIGZpbGw9IiNGRjE0OTMiLz48L3N2Zz4=" }, // Heart
+    { type: 'emoji', value: "🐘" }, // Elephant (Ganpati representation)
+    { type: 'emoji', value: "🕉️" }, // Om
+    { type: 'emoji', value: "✨" }, // Sparkles
+    { type: 'emoji', value: "🌹" } // Rose
+  ];
 
-        // Try to load from Google Fonts
-        const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
-          fontFamily
-        )}:wght@400;500;600;700&display=swap`;
+  const FONT_FAMILIES = [
+    "Arial",
+    "Times New Roman",
+    "Courier New",
+    "Georgia",
+    "Verdana",
+    "Brush Script MT",
+    "serif",
+    "Dancing Script",
+    "Great Vibes",
+    "Pacifico",
+    "Playfair Display",
+    "Lobster",
+    "Caveat",
+    "Cinzel"
+  ];
 
-        // Check if font is already loaded
-        if (!document.querySelector(`link[href*="${fontFamily}"]`)) {
-          const fontLink = document.createElement("link");
-          fontLink.rel = "stylesheet";
-          fontLink.href = fontUrl;
-          document.head.appendChild(fontLink);
+  const pushHistory = () => {
+    // Canvas history not fully implemented, just a stub
+  };
+
+  const bgUrl = getImageUrl(editedCard.backgroundUrl || editedCard.background_url);
+  const [scale, setScale] = useState(1);
+
+  // Responsive scale
+  useEffect(() => {
+    const handleResize = () => {
+      const containerWidth = window.innerWidth;
+      const availableWidth = Math.min(containerWidth - 30, 450);
+
+      if (availableWidth < 414) {
+        setScale(availableWidth / 414);
+      } else {
+        setScale(1);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Initialize Fabric Canvas
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    // Setup custom controls and selection styling
+    fabric.Object.prototype.set({
+      transparentCorners: false,
+      cornerColor: '#007bff',
+      cornerStrokeColor: '#007bff',
+      borderColor: '#007bff',
+      cornerSize: 10,
+      padding: 5,
+    });
+
+    // Hide standard corners (scaling/rotation) and only keep border
+    fabric.Object.prototype.setControlsVisibility({
+      tl: false,
+      tr: false,
+      bl: false,
+      br: false,
+      ml: false,
+      mt: false,
+      mr: false,
+      mb: false,
+      mtr: false,
+    });
+
+    // Add a custom delete control icon at top left
+    const deleteIcon = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3Csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 512 512' style='enable-background:new 0 0 512 512;' xml:space='preserve'%3E%3Cpath d='M341,128V96c0-17.6-14.4-32-32-32H203c-17.6,0-32,14.4-32,32v32H53.4c-4.6,0-8.4,3.8-8.4,8.4v15.2c0,4.6,3.8,8.4,8.4,8.4h37.5 l27,303.4c1.2,13.8,12.8,24.6,26.7,24.6h223c13.9,0,25.4-10.8,26.7-24.6l27-303.4h37.5c4.6,0,8.4-3.8,8.4-8.4v-15.2 c0-4.6-3.8-8.4-8.4-8.4H341z M203,96h106v32H203V96z M353.4,456H158.6l-24.2-272h243.2L353.4,456z' fill='%23666666'/%3E%3C/svg%3E";
+    const img = document.createElement('img');
+    img.src = deleteIcon;
+    
+    fabric.Object.prototype.controls.deleteControl = new fabric.Control({
+      x: -0.5,
+      y: -0.5,
+      offsetY: -16,
+      offsetX: -16,
+      cursorStyle: 'pointer',
+      mouseUpHandler: (eventData, transform) => {
+        const target = transform.target;
+        const canvas = target.canvas;
+        canvas.remove(target);
+        canvas.discardActiveObject();
+        canvas.requestRenderAll();
+        return true;
+      },
+      render: function(ctx, left, top, styleOverride, fabricObject) {
+        const size = this.cornerSize || 24;
+        ctx.save();
+        ctx.translate(left, top);
+        ctx.beginPath();
+        ctx.arc(0, 0, size/2, 0, 2 * Math.PI);
+        ctx.fillStyle = "white";
+        ctx.shadowColor = "rgba(0,0,0,0.3)";
+        ctx.shadowBlur = 4;
+        ctx.fill();
+        ctx.closePath();
+        ctx.shadowBlur = 0;
+        ctx.drawImage(img, -size/2 + 4, -size/2 + 4, size - 8, size - 8);
+        ctx.restore();
+      },
+      cornerSize: 28
+    });
+
+    const initCanvas = new fabric.Canvas(canvasRef.current, {
+      width: 414,
+      height: 659.288,
+      preserveObjectStacking: true,
+    });
+    setCanvas(initCanvas);
+
+    // Draw dashed borders for unselected text objects ONLY in edit mode
+    initCanvas.on('after:render', function() {
+      if (!isEditModeRef.current) return;
+      
+      initCanvas.contextContainer.strokeStyle = '#007bff';
+      initCanvas.contextContainer.setLineDash([4, 4]);
+      initCanvas.contextContainer.lineWidth = 1;
+      
+      initCanvas.getObjects().forEach(obj => {
+        if (obj.type === 'i-text' && obj !== initCanvas.getActiveObject()) {
+          const bound = obj.getBoundingRect();
+          initCanvas.contextContainer.strokeRect(
+            bound.left,
+            bound.top,
+            bound.width,
+            bound.height
+          );
         }
       });
-    }
-  }, [editedCard.editableFields]);
+      initCanvas.contextContainer.setLineDash([]);
+    });
 
-  // Animation timeout effect - stop animations after 2 seconds
-  useEffect(() => {
-    if (isInitialLoad) {
-      const timer = setTimeout(() => {
-        setIsInitialLoad(false);
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isInitialLoad]);
-
-  const pushHistory = (state) => {
-    setHistory((prev) => [...prev, state]);
-  };
-
-  // Get animation style based on field index
-  const getAnimationStyle = (index) => {
-    if (!isInitialLoad) return {};
-
-    const animations = [
-      {
-        animation: "slideInFromLeft 0.8s ease-out forwards",
-        transform: "translateX(-100px)",
-        opacity: 0,
-      },
-      {
-        animation: "slideInFromRight 0.8s ease-out forwards",
-        transform: "translateX(100px)",
-        opacity: 0,
-      },
-      {
-        animation: "slideInFromTop 0.8s ease-out forwards",
-        transform: "translateY(-50px)",
-        opacity: 0,
-      },
-      {
-        animation: "slideInFromBottom 0.8s ease-out forwards",
-        transform: "translateY(50px)",
-        opacity: 0,
-      },
-      {
-        animation: "fadeInScale 0.8s ease-out forwards",
-        transform: "scale(0.8)",
-        opacity: 0,
-      },
-      {
-        animation: "typewriter 1.2s ease-out forwards",
-        transform: "translateX(0)",
-        opacity: 0,
-      },
-      {
-        animation: "bounceIn 0.8s ease-out forwards",
-        transform: "scale(0.3)",
-        opacity: 0,
-      },
-    ];
-
-    const animationIndex = index % animations.length;
-    const selectedAnimation = animations[animationIndex];
-
-    return {
-      ...selectedAnimation,
-      animationDelay: `${index * 0.1}s`,
-    };
-  };
-
-  const shareUrl = `${window.location.origin}/einvites/view/${card.id}`;
-
-  const authUser = useSelector((state) => state?.auth?.user);
-  const vendorUser = useSelector((state) => state?.vendorAuth?.vendor);
-  const userPhone = authUser?.phone || vendorUser?.phone || "";
-
-  const normalizePhoneForWhatsApp = (phone) => {
-    if (!phone) return "";
-    const digitsOnly = String(phone).replace(/\D/g, "");
-    return digitsOnly;
-  };
-
-  const openWhatsAppShare = () => {
-    const targetPhone = normalizePhoneForWhatsApp(userPhone);
-    const message = `Hey! Check out my e-invite: ${shareUrl}`;
-    const base = targetPhone
-      ? `https://wa.me/${targetPhone}`
-      : "https://wa.me/";
-    const url = `${base}?text=${encodeURIComponent(message)}`;
-    window.open(url, "_blank");
-  };
-
-  const handleCopy = () => {
-    navigator.clipboard
-      .writeText(shareUrl)
-      .then(() => {
-        // alert("Link copied to clipboard!");
-        Swal.fire({
-          text: "Link copied to clipboard!",
-          timer: 1500,
-        });
-      })
-      .catch((err) => {
-        console.error("Failed to copy: ", err);
+    // Add Fields
+    if (editedCard.editableFields) {
+      const initialColors = new Set();
+      editedCard.editableFields.forEach((field) => {
+        if (field.src) {
+           fabric.Image.fromURL(field.src, (img) => {
+             if (!img) return;
+             img.set({
+               left: field.x || initCanvas.width / 2,
+               top: field.y || initCanvas.height / 2,
+               scaleX: field.scaleX || 1,
+               scaleY: field.scaleY || 1,
+               angle: field.angle || 0,
+               originX: field.originX || 'left',
+               originY: field.originY || 'top',
+               id: field.id
+             });
+             initCanvas.add(img);
+           }, { crossOrigin: 'anonymous' });
+        } else {
+           if (field.color) initialColors.add(field.color);
+           const textObj = new fabric.IText(field.defaultText || field.label, {
+             left: field.x || initCanvas.width / 2,
+             top: field.y || 100,
+             fontFamily: field.fontFamily || 'Arial',
+             fontSize: field.fontSize || 30,
+             fill: field.color || '#000000',
+             textAlign: field.textAlign || 'left',
+             fontWeight: field.fontWeight || 'normal',
+             fontStyle: field.fontStyle || 'normal',
+             scaleX: field.scaleX || 1,
+             scaleY: field.scaleY || 1,
+             angle: field.angle || 0,
+             originX: field.originX || 'left',
+             originY: field.originY || 'top',
+             id: field.id
+           });
+           initCanvas.add(textObj);
+        }
       });
+      setRecentColors(Array.from(initialColors));
+    }
+
+    // Keyboard events for deletion
+    const handleKeyDown = (e) => {
+      // Don't intercept if user is typing in a React input field
+      if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        return;
+      }
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const activeObj = initCanvas.getActiveObject();
+        // Prevent backspace from navigating back or deleting canvas if we are editing text on canvas
+        if (activeObj && !activeObj.isEditing) {
+          e.preventDefault();
+          initCanvas.remove(activeObj);
+          initCanvas.discardActiveObject();
+          initCanvas.renderAll();
+          setActiveObject(null);
+        }
+      }
+    };
+    
+    // Use window listener for keyboard shortcuts to ensure it captures events
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Events
+    initCanvas.on('selection:created', (e) => setActiveObject(e.selected[0]));
+    initCanvas.on('selection:updated', (e) => setActiveObject(e.selected[0]));
+    initCanvas.on('selection:cleared', () => setActiveObject(null));
+    initCanvas.on('object:modified', (e) => {
+      setActiveObject(initCanvas.getActiveObject());
+      saveHistory();
+    });
+    initCanvas.on('object:scaling', (e) => {
+      if (e.target && e.target.type === 'i-text') {
+        setUpdateTrigger(prev => prev + 1); // Trigger UI update for font size input
+      }
+    });
+    initCanvas.on('object:added', (e) => {
+      // Don't save history for the background image
+      if (e.target && e.target.type !== 'image') {
+        saveHistory();
+      }
+    });
+
+    const saveHistory = () => {
+      const json = initCanvas.toJSON(['id', 'name', 'cardType']);
+      setHistory(prev => {
+        const newHistory = [...prev, JSON.stringify(json)];
+        return newHistory.slice(-20); // Keep last 20 states
+      });
+    };
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      initCanvas.dispose();
+    };
+  }, [editedCard.id, bgUrl]); // Re-init on card change
+
+  const handleAddText = () => {
+    if (!canvas) return;
+    const text = new fabric.IText('New Text', {
+      left: canvas.width / 2,
+      top: canvas.height / 2,
+      fontFamily: 'Arial',
+      fontSize: 24,
+      fill: '#000000',
+      originX: 'center',
+      originY: 'center',
+    });
+    canvas.add(text);
+    canvas.setActiveObject(text);
   };
 
-  const handleFieldChange = (fieldId, value) => {
-    setEditedCard((prev) => {
-      const next = {
-        ...prev,
-        editableFields: prev.editableFields?.map((field) =>
-          field.id === fieldId ? { ...field, defaultText: value } : field
-        ),
-      };
-      return next;
+  const handleAddSticker = (sticker) => {
+    if (!canvas) return;
+
+    if (sticker.type === 'emoji') {
+      const text = new fabric.IText(sticker.value, {
+        left: canvas.width / 2,
+        top: canvas.height / 2,
+        fontFamily: 'Arial',
+        fontSize: 60,
+        fill: '#000000',
+        originX: 'center',
+        originY: 'center',
+      });
+      canvas.add(text);
+      canvas.setActiveObject(text);
+      setIsStickerDropdownOpen(false);
+    } else if (sticker.type === 'image') {
+      fabric.Image.fromURL(sticker.value, (img) => {
+        if (!img) return;
+        if (img.width > 150) img.scaleToWidth(150);
+        img.set({
+          left: canvas.width / 2,
+          top: canvas.height / 2,
+          originX: 'center',
+          originY: 'center',
+        });
+        canvas.add(img);
+        canvas.setActiveObject(img);
+        setIsStickerDropdownOpen(false);
+      }, { crossOrigin: 'anonymous' });
+    }
+  };
+
+  const handleAddImage = (e) => {
+    const file = e.target.files[0];
+    if (!file || !canvas) return;
+
+    const reader = new FileReader();
+    reader.onload = (f) => {
+      const data = f.target.result;
+      fabric.Image.fromURL(data, (img) => {
+        // scale image down if it's too big
+        if (img.width > 200) {
+           img.scaleToWidth(200);
+        }
+        img.set({
+          left: canvas.width / 2,
+          top: canvas.height / 2,
+          originX: 'center',
+          originY: 'center',
+        });
+        canvas.add(img);
+        canvas.setActiveObject(img);
+      });
+    };
+    reader.readAsDataURL(file);
+    // reset input value so the same file can be uploaded again if needed
+    e.target.value = null;
+  };
+
+  const handleColorChange = (e) => {
+    if (!activeObject || !canvas) return;
+    const newColor = e.target.value;
+    activeObject.set('fill', newColor);
+    canvas.renderAll();
+    setActiveObject(canvas.getActiveObject());
+    
+    setRecentColors(prev => {
+      const updated = [newColor, ...prev.filter(c => c !== newColor)];
+      return updated.slice(0, 10);
     });
   };
 
-  const handleStyleChange = (fieldId, styleType, value) => {
-    setEditedCard((prev) => {
-      const next = {
-        ...prev,
-        editableFields: prev.editableFields?.map((field) =>
-          field.id === fieldId ? { ...field, [styleType]: value } : field
-        ),
-      };
-      return next;
-    });
+  const handleTextChange = (e) => {
+    if (!activeObject || activeObject.type !== 'i-text' || !canvas) return;
+    activeObject.set('text', e.target.value);
+    canvas.renderAll();
+    setUpdateTrigger(prev => prev + 1); // trigger re-render to reflect input value
+  };
+
+  const handleFontChange = (fontName) => {
+    if (!activeObject || activeObject.type !== 'i-text' || !canvas) return;
+    activeObject.set('fontFamily', fontName);
+    canvas.renderAll();
+    setUpdateTrigger(prev => prev + 1);
+    setIsFontDropdownOpen(false);
+    setOriginalFont(null);
+  };
+
+  const handleFontSizeChange = (e) => {
+    if (!activeObject || activeObject.type !== 'i-text' || !canvas) return;
+    const size = parseInt(e.target.value, 10);
+    if (!isNaN(size) && size > 0) {
+      activeObject.set('fontSize', size);
+      // Reset scale since we are explicitly setting font size
+      activeObject.set('scaleX', 1);
+      activeObject.set('scaleY', 1);
+      canvas.renderAll();
+      setUpdateTrigger(prev => prev + 1);
+    }
+  };
+
+  const handleFontHover = (fontName) => {
+    if (!activeObject || activeObject.type !== 'i-text' || !canvas) return;
+    if (!originalFont) {
+       setOriginalFont(activeObject.fontFamily);
+    }
+    activeObject.set('fontFamily', fontName);
+    canvas.renderAll();
+  };
+
+  const handleFontHoverOut = () => {
+    if (!activeObject || activeObject.type !== 'i-text' || !canvas || !originalFont) return;
+    // only reset if the dropdown is still open (meaning they haven't clicked one)
+    if (isFontDropdownOpen) {
+      activeObject.set('fontFamily', originalFont);
+      canvas.renderAll();
+    }
+  };
+
+  const handleDelete = () => {
+    if(!activeObject || !canvas) return;
+    canvas.remove(activeObject);
+    canvas.discardActiveObject();
+    canvas.renderAll();
   };
 
   const stripDomain = (url) => {
     if (!url) return url;
-    return url.replace(/^https?:\/\/(www\.)?happywedz\.com/, "");
+    return url.replace(/^(https?:\/\/[^\/]+)+/, "");
   };
 
   const buildCleanPayload = () => {
-    const editableFields = Array.isArray(editedCard.editableFields)
-      ? editedCard.editableFields.map((field) => ({
-          id: field.id,
-          label: field.label,
-          defaultText: field.defaultText ?? "",
-          color: field.color ?? "#000000",
-          fontFamily: field.fontFamily ?? "Arial",
-          fontSize: Number.isFinite(field.fontSize) ? field.fontSize : 16,
-          x: Math.round(field.x ?? 0),
-          y: Math.round(field.y ?? 0),
-        }))
-      : [];
+    if (!canvas) return null;
+    
+    // Extract editable fields from canvas objects
+    const objects = canvas.getObjects();
+    const editableFields = objects.map((obj, i) => {
+      if (obj.type === 'i-text') {
+        return {
+          id: obj.id || `field_${i}`,
+          label: obj.text,
+          defaultText: obj.text,
+          color: obj.fill,
+          fontFamily: obj.fontFamily,
+          fontSize: Math.round(obj.fontSize * (obj.scaleX || 1)),
+          textAlign: obj.textAlign,
+          fontWeight: obj.fontWeight,
+          fontStyle: obj.fontStyle,
+          x: Math.round(obj.left),
+          y: Math.round(obj.top),
+          scaleX: 1,
+          scaleY: 1,
+          angle: obj.angle,
+          originX: obj.originX,
+          originY: obj.originY,
+        };
+      } else if (obj.type === 'image') {
+        return {
+           id: obj.id || `image_${i}`,
+           label: 'image',
+           defaultText: 'image',
+           fontSize: 30, // satisfy backend validation
+           src: obj.getSrc(),
+           x: Math.round(obj.left),
+           y: Math.round(obj.top),
+           scaleX: obj.scaleX,
+           scaleY: obj.scaleY,
+           angle: obj.angle,
+           originX: obj.originX,
+           originY: obj.originY,
+        };
+      } else {
+        return {
+           id: obj.id || `sticker_${i}`,
+           label: obj.type, // 'circle'
+           defaultText: obj.type,
+           color: obj.fill,
+           fontSize: 16, // dummy
+           x: Math.round(obj.left),
+           y: Math.round(obj.top),
+           scaleX: obj.scaleX,
+           scaleY: obj.scaleY,
+           angle: obj.angle,
+           originX: obj.originX,
+           originY: obj.originY,
+        };
+      }
+    });
 
     return {
       id: editedCard.id || editedCard._id,
       name: editedCard.name,
       cardType: editedCard.cardType,
-      backgroundUrl: stripDomain(
-        editedCard.backgroundUrl || editedCard.background_url
-      ),
-      thumbnailUrl: stripDomain(
-        editedCard.thumbnailUrl || editedCard.thumbnail_url
-      ),
-      // Server expects a JSON string for editableFields
+      backgroundUrl: stripDomain(editedCard.backgroundUrl || editedCard.background_url),
+      thumbnailUrl: stripDomain(editedCard.thumbnailUrl || editedCard.thumbnail_url),
       editableFields: JSON.stringify(editableFields),
     };
   };
 
   const handleSave = async () => {
     const cleanedCard = buildCleanPayload();
+    if(!cleanedCard) return;
     try {
       setIsPublishing(true);
       await Promise.resolve(onSave(cleanedCard));
-      setIsPublished(true);
-      setIsPreview(false);
-      setShowPublishConfirm(false);
     } finally {
       setIsPublishing(false);
     }
@@ -238,7 +508,7 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
 
   const handleSaveDraft = () => {
     const cleanedCard = buildCleanPayload();
-    pushHistory(JSON.parse(JSON.stringify(editedCard)));
+    if(!cleanedCard) return;
     try {
       const key = "einviteDrafts";
       const existing = JSON.parse(localStorage.getItem(key) || "[]");
@@ -263,303 +533,211 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     Swal.fire({ text: "Draft saved successfully!", timer: 1500, icon: "success" });
   };
 
-  const selectedField = useMemo(
-    () =>
-      editedCard.editableFields?.find((f) => f.id === selectedFieldId) || null,
-    [editedCard, selectedFieldId]
-  );
-
-  const bgUrl = getImageUrl(
-    editedCard.backgroundUrl || editedCard.background_url
-  );
-
-  const [scale, setScale] = useState(1);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const containerWidth = window.innerWidth;
-      const availableWidth = Math.min(containerWidth - 30, 450);
-
-      if (availableWidth < 414) {
-        setScale(availableWidth / 414);
-      } else {
-        setScale(1);
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const onCanvasMove = (e) => {
-    if (!isDragging || !selectedField) {
-      return;
-    }
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    if (e.type === "touchmove") {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-    let clientX, clientY;
-    if (e.type === "touchmove") {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-
-    const canvasRect = canvas.getBoundingClientRect();
-    const textElement = textElementRefs.current[selectedField.id];
-    if (!textElement) return;
-    const textRect = textElement.getBoundingClientRect();
-    const textWidth = textRect.width / scale;
-    const textHeight = textRect.height / scale;
-    const mouseX = (clientX - canvasRect.left) / scale;
-    const mouseY = (clientY - canvasRect.top) / scale;
-    let newX = mouseX - dragOffset.x;
-    let newY = mouseY - dragOffset.y;
-    const minX = 0;
-    const minY = 0;
-    const maxX = 414 - textWidth;
-    const maxY = 659.288 - textHeight;
-    newX = Math.max(minX, Math.min(newX, maxX));
-    newY = Math.max(minY, Math.min(newY, maxY));
-    setEditedCard((prev) => ({
-      ...prev,
-      editableFields: prev.editableFields.map((f) =>
-        f.id === selectedField.id ? { ...f, x: newX, y: newY } : f
-      ),
-    }));
-  };
-
-  // Add non-passive touch event listeners for proper preventDefault support on mobile
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const handleTouchMove = (e) => {
-      // Only prevent default if we're actively dragging
-      if (isDragging && selectedField) {
-        e.preventDefault();
-        e.stopPropagation();
-        // Call the move handler
-        onCanvasMove(e);
-      }
-      // If not dragging, allow normal scrolling
-    };
-
-    // Add non-passive listener so preventDefault works
-    canvas.addEventListener("touchmove", handleTouchMove, { passive: false });
-
-    return () => {
-      canvas.removeEventListener("touchmove", handleTouchMove);
-    };
-  }, [isDragging, selectedField, onCanvasMove]);
-
-  const beginDrag = (e, field) => {
-    e.stopPropagation();
-
-    // Prevent scrolling on touch devices when starting to drag
-    if (e.type === "touchstart") {
-      e.preventDefault();
-    }
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    let clientX, clientY;
-    if (e.type === "touchstart") {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-
-    const canvasRect = canvas.getBoundingClientRect();
-    const startX = (clientX - canvasRect.left) / scale;
-    const startY = (clientY - canvasRect.top) / scale;
-
-    setSelectedFieldId(field.id);
-    setIsDragging(true);
-    setDragOffset({ x: startX - field.x, y: startY - field.y });
-    pushHistory(JSON.parse(JSON.stringify(editedCard)));
-  };
-
-  const endDrag = () => {
-    if (isDragging) {
-      setIsDragging(false);
-      // Re-enable scrolling after drag ends
-    }
-  };
-
-  const openEdit = () => {
-    if (!selectedField) return;
-    setShowEditModal(true);
-  };
-
-  const handleSizeOpen = () => {
-    if (!selectedField) return;
-    setShowSizePanel(true);
-  };
-
-  const handleDelete = () => {
-    if (!selectedField) return;
-    pushHistory(JSON.parse(JSON.stringify(editedCard)));
-    setEditedCard((prev) => ({
-      ...prev,
-      editableFields: prev.editableFields.filter(
-        (f) => f.id !== selectedField.id
-      ),
-    }));
-    setSelectedFieldId(null);
-    setShowSizePanel(false);
-  };
-
   const handleUndo = () => {
-    if (history.length === 0) return;
-    const last = history[history.length - 1];
-    setHistory((prev) => prev.slice(0, prev.length - 1));
-    setEditedCard(last);
-  };
-
-  const [showFontSizeValue, setShowFontSizeValue] = useState(false);
-  let hideValueTimeout = null;
-
-  const handleFontSizeChange = (e) => {
-    const newSize = parseInt(e.target.value);
-    handleStyleChange(selectedField.id, "fontSize", newSize);
-
-    setShowFontSizeValue(true);
-    clearTimeout(hideValueTimeout);
-    hideValueTimeout = setTimeout(() => setShowFontSizeValue(false), 1000);
+    if (!canvas || history.length <= 1) return;
+    
+    // The current state is the last item in history. We want the one before it.
+    const previousState = history[history.length - 2];
+    
+    // Remove current state from history
+    setHistory(prev => prev.slice(0, -1));
+    
+    canvas.loadFromJSON(previousState, () => {
+      canvas.renderAll();
+      setActiveObject(null);
+      setUpdateTrigger(prev => prev + 1);
+    });
   };
 
   return (
-    <div
-      className={`einvite-editor py-4 ${!isInitialLoad ? "no-animations" : ""}`}
-      onMouseUp={endDrag}
-      onTouchEnd={endDrag}
-    >
-      <style>
-        {`
-          .einvite-editor [style*="font-family"] {
-            font-display: swap !important;
-          }
+    <div className="einvite-editor py-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+      <div className="container">
+        <div className="row justify-content-center gap-lg-4">
           
-          /* Animation keyframes */
-          @keyframes slideInFromLeft {
-            to {
-              transform: translateX(0);
-              opacity: 1;
-            }
-          }
-          
-          @keyframes slideInFromRight {
-            to {
-              transform: translateX(0);
-              opacity: 1;
-            }
-          }
-          
-          @keyframes slideInFromTop {
-            to {
-              transform: translateY(0);
-              opacity: 1;
-            }
-          }
-          
-          @keyframes slideInFromBottom {
-            to {
-              transform: translateY(0);
-              opacity: 1;
-            }
-          }
-          
-          @keyframes fadeInScale {
-            to {
-              transform: scale(1);
-              opacity: 1;
-            }
-          }
-          
-          @keyframes typewriter {
-            0% {
-              width: 0;
-              opacity: 0;
-            }
-            50% {
-              opacity: 1;
-            }
-            100% {
-              width: auto;
-              opacity: 1;
-            }
-          }
-          
-          @keyframes bounceIn {
-            0% {
-              transform: scale(0.3);
-              opacity: 0;
-            }
-            50% {
-              transform: scale(1.05);
-              opacity: 1;
-            }
-            70% {
-              transform: scale(0.9);
-            }
-            100% {
-              transform: scale(1);
-              opacity: 1;
-            }
-          }
-          
-          /* Disable animations after initial load */
-          .einvite-editor.no-animations * {
-            animation: none !important;
-            transition: none !important;
-          }
-        `}
-      </style>
-      <div className="container-fluid">
-        <div className="row justify-content-center">
+          {/* Add Text Panel */}
+          <div className="col-md-4 col-lg-3 mb-4">
+            <div className="card shadow-sm mb-4 border-0 rounded-3">
+              <div className="card-body p-4">
+                <h6 className="mb-1 d-flex align-items-center fw-bold" style={{ fontSize: '15px' }}>
+                  <span className="badge rounded-circle me-2 text-white" style={{backgroundColor: '#ec4899', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>1</span> Add Text
+                </h6>
+                <small className="text-muted mb-3 d-block" style={{ fontSize: '12px', marginLeft: '32px' }}>Click on card to add or edit text</small>
+                <button className="btn w-100 fw-medium bg-transparent mt-1" style={{color: '#ec4899', border: '1px solid #ec4899', borderRadius: '6px'}} onClick={handleAddText}>
+                  + Add Text
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Properties Panel */}
+          <div className="col-md-4 col-lg-3 mb-4" style={{ opacity: activeObject ? 1 : 0.5, pointerEvents: activeObject ? 'auto' : 'none', transition: 'opacity 0.2s' }}>
+            <div className="card shadow-sm border-0 rounded-3 mb-4">
+              <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                      <h6 className="mb-0 d-flex align-items-center fw-bold" style={{ fontSize: '15px' }}>
+                        <span className="badge rounded-circle me-2 text-white" style={{backgroundColor: '#ec4899', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>2</span> Properties
+                      </h6>
+                      <span className="text-muted" style={{ transform: 'rotate(180deg)' }}>^</span>
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="form-label fw-bold" style={{ fontSize: '12px', color: '#333' }}>Color</label>
+                        <div className="d-flex align-items-center mb-3">
+                          <input 
+                            type="color" 
+                            className="form-control form-control-color border-0 p-0 shadow-sm"
+                            style={{ width: '100%', height: '36px', borderRadius: '6px', flex: 1 }}
+                            onChange={handleColorChange}
+                            value={activeObject?.fill || '#A6731C'}
+                          />
+                          <span className="ms-3 text-muted fw-bold" style={{ fontSize: '12px', minWidth: '70px' }}>
+                            {(activeObject?.fill || '#A6731C').toUpperCase()}
+                          </span>
+                        </div>
+                        
+                        {/* Recent Colors */}
+                        <div className="mt-3">
+                          <label className="form-label fw-bold" style={{ fontSize: '12px', color: '#333' }}>Recent Colors</label>
+                          <div className="d-flex flex-wrap gap-2 align-items-center">
+                            {recentColors.map((color, idx) => (
+                              <div 
+                                key={idx}
+                                onClick={() => {
+                                  if (activeObject) {
+                                    activeObject.set('fill', color);
+                                    canvas.renderAll();
+                                    setUpdateTrigger(prev => prev + 1);
+                                    setRecentColors(prev => {
+                                      const updated = [color, ...prev.filter(c => c !== color)];
+                                      return updated.slice(0, 10);
+                                    });
+                                  }
+                                }}
+                                style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  backgroundColor: color,
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  border: activeObject?.fill === color ? '2px solid #000' : '1px solid #dee2e6'
+                                }}
+                                title={color}
+                              />
+                            ))}
+                            <button className="btn btn-sm btn-outline-secondary rounded-2 d-flex align-items-center justify-content-center bg-transparent" style={{ width: '24px', height: '24px', borderStyle: 'dashed', padding: 0 }}>
+                              <span style={{ fontSize: '16px', lineHeight: '1', color: '#6c757d' }}>+</span>
+                            </button>
+                          </div>
+                        </div>
+                    </div>
+
+                    {(!activeObject || activeObject?.type === 'i-text') && (
+                      <>
+                        <div className="mb-4">
+                          <label className="form-label fw-bold" style={{ fontSize: '12px', color: '#333' }}>Text</label>
+                          <div className="position-relative">
+                            <input 
+                              type="text" 
+                              className="form-control pe-4 text-muted"
+                              style={{ fontSize: '13px', borderRadius: '6px' }}
+                              onChange={handleTextChange}
+                              value={activeObject?.text || 'Engagement Ceremony'}
+                            />
+                              <span className="position-absolute top-50 end-0 translate-middle-y me-3 fw-bold text-muted" style={{ fontSize: '14px' }}>T</span>
+                            </div>
+                          </div>
+
+                        <div className="mb-4 position-relative">
+                          <label className="form-label fw-bold" style={{ fontSize: '12px', color: '#333' }}>Font Family</label>
+                          <div 
+                            className="form-control d-flex justify-content-between align-items-center text-muted" 
+                            style={{ cursor: 'pointer', fontFamily: activeObject?.fontFamily || 'Pacifico', fontSize: '13px', borderRadius: '6px' }}
+                            onClick={() => setIsFontDropdownOpen(!isFontDropdownOpen)}
+                          >
+                            <span>{activeObject?.fontFamily || 'Pacifico'}</span>
+                              <span style={{ fontSize: '10px' }}>▼</span>
+                            </div>
+                            
+                            {isFontDropdownOpen && (
+                              <div 
+                                className="w-100 bg-white border rounded shadow-sm mt-1 position-absolute" 
+                                style={{ maxHeight: '200px', overflowY: 'auto', zIndex: 1000, top: '100%' }}
+                                onMouseLeave={handleFontHoverOut}
+                              >
+                                {FONT_FAMILIES.map((font) => (
+                                  <div 
+                                  key={font} 
+                                  className="px-3 py-2 border-bottom"
+                                  style={{ fontFamily: font, cursor: 'pointer', backgroundColor: (activeObject?.fontFamily || 'Pacifico') === font ? '#f8f9fa' : 'white' }}
+                                    onMouseEnter={() => handleFontHover(font)}
+                                    onClick={() => handleFontChange(font)}
+                                  >
+                                    {font}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="mb-2">
+                            <label className="form-label fw-bold" style={{ fontSize: '12px', color: '#333' }}>Font Size</label>
+                            <div className="d-flex align-items-center mt-1">
+                              <input 
+                                type="range" 
+                                className="form-range"
+                                min="8"
+                                max="200"
+                                value={Math.round((activeObject?.fontSize || 30) * (activeObject?.scaleX || 1))}
+                                onChange={handleFontSizeChange}
+                                style={{ flex: 1, accentColor: '#ec4899' }}
+                              />
+                              <div className="ms-3 border rounded text-center fw-bold text-muted" style={{ minWidth: '40px', fontSize: '13px', padding: '4px' }}>
+                                {Math.round((activeObject?.fontSize || 30) * (activeObject?.scaleX || 1))}
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                  </div>
+
+                  <div className="card shadow-sm border-0 rounded-3 mt-3">
+                    <div className="card-body p-4">
+                      <h6 className="mb-3 d-flex align-items-center fw-bold" style={{ fontSize: '15px' }}>
+                        <span className="badge rounded-circle me-2 text-white" style={{backgroundColor: '#ec4899', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>3</span> Actions
+                      </h6>
+                      <button className="btn w-100 fw-medium d-flex justify-content-center align-items-center gap-2 bg-transparent mt-1" style={{color: '#ef4444', border: '1px solid #ef4444', borderRadius: '6px'}} onClick={handleDelete}>
+                        <MdDeleteOutline size={18} />
+                        Delete Selected
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
           {/* Canvas Section */}
-          <div className="col-md-5">
+          <div className="col-md-auto d-flex flex-column align-items-center">
             <div
-              className="einvite-canvas-wrapper mx-auto"
+              className="einvite-canvas-wrapper shadow-sm border rounded"
               style={{
-                width: `${414 * scale}px`, // Scaled width for the wrapper
-                maxWidth: "100%",
-                height: `${659.288 * scale}px`, // Scaled height for the wrapper
+                width: `${414 * scale}px`,
+                height: `${659.288 * scale}px`,
                 position: "relative",
-                overflow: "hidden", // Hide overflow if any
+                overflow: "hidden",
+                background: "#fff"
               }}
             >
               <div
-                ref={canvasRef}
-                className="einvite-canvas-container position-absolute border rounded shadow-sm"
                 style={{
                   width: "414px",
                   height: "659.288px",
-                  backgroundColor: "#ffffff",
-                  overflow: "hidden",
                   transform: `scale(${scale})`,
                   transformOrigin: "top left",
+                  position: "absolute",
                   left: 0,
                   top: 0,
                 }}
-                onMouseMove={onCanvasMove}
-                // Touch events handled via useEffect with non-passive listeners
-                onMouseLeave={endDrag}
-                onClick={() => setSelectedFieldId(null)}
               >
-                {bgUrl ? (
+                {bgUrl && (
                   <img
                     src={bgUrl}
                     alt="Card Background"
@@ -567,10 +745,11 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                     style={{
                       width: "414px",
                       height: "659.288px",
-                      // backgroundImage: `url(${bgUrl})`,
-                      backgroundPosition: "center center",
-                      backgroundRepeat: "no-repeat",
-                      backgroundSize: "cover",
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      pointerEvents: 'none',
+                      zIndex: 0
                     }}
                     onError={(e) =>
                       handleImageError(
@@ -579,446 +758,57 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                       )
                     }
                   />
-                ) : (
-                  <div
-                    className="text-center text-muted p-5"
-                    style={{
-                      height: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    No background image found
-                  </div>
                 )}
-
-                {/* Editable Text Fields */}
-                {editedCard.editableFields?.map((field, index) => {
-                  const animationStyle = getAnimationStyle(index);
-                  return (
-                    <div
-                      key={field.id}
-                      ref={(el) => {
-                        if (el) textElementRefs.current[field.id] = el;
-                      }}
-                      onMouseDown={(e) => {
-                        if (isPreview || isPublished) return;
-                        beginDrag(e, field);
-                      }}
-                      onTouchStart={(e) => {
-                        if (isPreview || isPublished) return;
-                        beginDrag(e, field);
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Don't prevent default on click - allow normal behavior for text selection/editing
-                        setSelectedFieldId(field.id);
-                      }}
-                      style={{
-                        position: "absolute",
-                        left: field.x,
-                        top: field.y,
-                        color: field.color,
-                        fontFamily: `"${field.fontFamily}", Arial, sans-serif`,
-                        fontSize: `${field.fontSize}px`,
-                        cursor: isPreview || isPublished ? "default" : "move",
-                        userSelect: "none",
-                        // touchAction managed via preventDefault in event handlers
-                        border:
-                          !isPreview &&
-                          !isPublished &&
-                          selectedFieldId === field.id
-                            ? "2px dashed #d91d6e"
-                            : "none",
-                        padding:
-                          !isPreview &&
-                          !isPublished &&
-                          selectedFieldId === field.id
-                            ? "4px 8px"
-                            : 0,
-                        background:
-                          !isPreview &&
-                          !isPublished &&
-                          selectedFieldId === field.id
-                            ? "rgba(217, 29, 110, 0.08)"
-                            : "transparent",
-                        borderRadius: "4px",
-                        transition: !isInitialLoad
-                          ? "border 0.2s ease, padding 0.2s ease, background 0.2s ease"
-                          : "none",
-                        whiteSpace: "nowrap",
-                        ...animationStyle,
-                      }}
-                    >
-                      {field.defaultText}
-                      {!isPreview &&
-                        !isPublished &&
-                        selectedFieldId === field.id && (
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-light position-absolute"
-                            style={{
-                              right: -15,
-                              top: -20,
-                              padding: "5px 5px",
-                              borderRadius: "50%",
-                              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete();
-                            }}
-                            onTouchStart={(e) => {
-                              e.stopPropagation();
-                              handleDelete();
-                            }}
-                          >
-                            <MdDeleteOutline size={20} color="#000" />
-                          </button>
-                        )}
-                    </div>
-                  );
-                })}
+                <div style={{ position: 'absolute', left: 0, top: 0, zIndex: 1, width: '100%', height: '100%' }}>
+                  <canvas ref={canvasRef} />
+                </div>
               </div>
             </div>
 
-            {/* Bottom customizables */}
-            {!isPreview && !isPublished && (
-              <div
-                className="einvite-card-editor mt-3"
-                style={{ width: "414px", margin: "0 auto" }}
-              >
-                {showSizePanel && selectedField && (
-                  <div className="size-panel">
-                    <div className="size-panel-header">
-                      <h6 className="size-panel-title">
-                        Size {selectedField.fontSize}
-                      </h6>
-                      <button
-                        type="button"
-                        className="btn-close-panel"
-                        onClick={() => setShowSizePanel(false)}
-                        aria-label="Close"
-                      >
-                        <IoIosClose color="#000" size={20} />
-                      </button>
-                    </div>
-
-                    <div className="size-panel-body">
-                      <input
-                        type="range"
-                        className="size-slider"
-                        min="8"
-                        max="120"
-                        value={selectedField.fontSize}
-                        onChange={handleFontSizeChange}
-                        onMouseDown={() =>
-                          pushHistory(JSON.parse(JSON.stringify(editedCard)))
-                        }
-                      />
-
-                      {/* {showFontSizeValue && (
-                      <div className="size-value">{selectedField.fontSize}px</div>
-                    )} */}
-                    </div>
-                  </div>
-                )}
-
-                <div className="editor-toolbar d-flex justify-content-center align-items-center gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    className="toolbar-btn"
-                    onClick={openEdit}
-                    disabled={!selectedField}
-                    title="Edit"
-                  >
-                    <FiEdit2 />
-
-                    <span>Edit</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="toolbar-btn"
-                    onClick={handleSizeOpen}
-                    disabled={!selectedField}
-                    title="Size"
-                  >
-                    <TbTextResize />
-
-                    <span>Size</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="toolbar-btn"
-                    onClick={handleUndo}
-                    disabled={history.length === 0}
-                    title="Undo"
-                  >
-                    <AiOutlineUndo />
-
-                    <span>Undo</span>
-                  </button>
-
-                  <div className="toolbar-spacer"></div>
-
-                  <button
-                    type="button"
-                    className="btn btn-light btn-save-draft me-2 fs-12"
-                    onClick={handleSaveDraft}
-                  >
-                    Save Draft
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-next fs-12 text-white"
-                    onClick={() => setIsPreview(true)}
-                  >
-                    Next
-                  </button>
+            {/* Bottom Toolbar */}
+            <div className="d-flex align-items-center justify-content-center bg-white mt-3 shadow-sm border-0 rounded-3 p-3 px-4" style={{ width: `${414 * scale}px`, maxWidth: '100%', minHeight: '84px' }}>
+              <div className="d-flex gap-5 text-secondary">
+                <div 
+                  className="d-flex flex-column align-items-center" 
+                  style={{ cursor: 'pointer', color: isEditMode ? '#ec4899' : '#4a4a4a' }} 
+                  onClick={() => setIsEditMode(!isEditMode)}
+                >
+                  <FiEdit2 size={22} className="mb-1" />
+                  <span style={{ fontSize: '13px', fontWeight: 600 }}>Edit</span>
+                </div>
+                <div 
+                  className="d-flex flex-column align-items-center" 
+                  style={{ cursor: 'pointer', color: '#4a4a4a' }}
+                  onClick={() => {
+                    if (activeObject && activeObject.type === 'i-text') {
+                      const newSize = Math.min(200, Math.round(activeObject.fontSize * 1.1));
+                      activeObject.set('fontSize', newSize);
+                      canvas.renderAll();
+                      setUpdateTrigger(prev => prev + 1);
+                    }
+                  }}
+                >
+                  <TbTextResize size={22} className="mb-1" />
+                  <span style={{ fontSize: '13px', fontWeight: 600 }}>Size</span>
+                </div>
+                <div 
+                  className="d-flex flex-column align-items-center" 
+                  style={{ cursor: history.length > 1 ? 'pointer' : 'not-allowed', color: history.length > 1 ? '#4a4a4a' : '#ccc' }} 
+                  onClick={handleUndo}
+                >
+                  <AiOutlineUndo size={22} className="mb-1" />
+                  <span style={{ fontSize: '13px', fontWeight: 600 }}>Undo</span>
                 </div>
               </div>
-            )}
-
-            {/* Preview toolbar */}
-            {isPreview && !isPublished && (
-              <div
-                className="mt-3 d-flex justify-content-center gap-2"
-                style={{ width: "350px", margin: "0 auto" }}
-              >
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary me-2 fs-12"
-                  onClick={() => setIsPreview(false)}
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-success fs-12 text-white"
-                  onClick={() => setShowPublishConfirm(true)}
-                >
-                  Publish
-                </button>
-              </div>
-            )}
-
-            {/* Post-publish options */}
-            {isPublished && (
-              <div className="container my-4">
-                <div className="row g-4">
-                  {/* Card 1 - Share Only Free */}
-                  <div className="col-12">
-                    <div className="border rounded-4 shadow-sm p-4 bg-white">
-                      <h5 className="fw-bold mb-3">
-                        Share Only — <span className="primary-text">Free</span>
-                      </h5>
-
-                      <div className="d-flex align-items-center mb-3">
-                        <div className="d-flex align-items-center flex-wrap">
-                          <span
-                            className="text-primary small me-2"
-                            style={{ cursor: "pointer" }}
-                            onClick={handleCopy}
-                            title={shareUrl}
-                          >
-                            {shareUrl.length > 60
-                              ? shareUrl.slice(0, 60) + "..."
-                              : shareUrl}
-                          </span>
-                          <FaCopy
-                            role="button"
-                            style={{ cursor: "pointer" }}
-                            className="text-primary"
-                            onClick={handleCopy}
-                            title="Copy Link"
-                          />
-                        </div>
-                      </div>
-
-                      <ul className="mb-3 text-secondary">
-                        <li>Share link with Guests</li>
-                        <li>Guests RSVP, map location & comment</li>
-                        <li>No Downloadable Digital Invite</li>
-                      </ul>
-                      <button
-                        className="btn btn-success d-flex align-items-center"
-                        onClick={openWhatsAppShare}
-                      >
-                        <FaWhatsapp className="me-2" /> Share on WhatsApp
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Card 2 - Share + Download */}
-                  <div className="col-12">
-                    <div className="border rounded-4 shadow-sm p-4 bg-white">
-                      <h5 className="fw-bold mb-3 ">
-                        Share + Download —{" "}
-                        <span className="primary-text">₹249 only</span>
-                      </h5>
-
-                      <div className="d-flex align-items-center mb-3">
-                        <span
-                          className="text-primary small me-2"
-                          style={{ cursor: "pointer" }}
-                          onClick={handleCopy}
-                        >
-                          {shareUrl}
-                        </span>
-                        <FaCopy
-                          role="button"
-                          className="text-primary"
-                          onClick={handleCopy}
-                          title="Copy Link"
-                        />
-                      </div>
-
-                      <ul className="mb-3 text-secondary">
-                        <li>Share link with Guests</li>
-                        <li>Guests RSVP, map location & comment</li>
-                        <li>Downloadable card allowed [Non-Animated PDF]</li>
-                      </ul>
-
-                      <button className="btn btn-primary text-white d-flex align-items-center">
-                        <FaDownload className="me-2" /> Download
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
+
         </div>
       </div>
 
-      {/* Edit Modal */}
-      {showEditModal && selectedField && (
-        <div
-          className="modal fade show d-block"
-          tabIndex="-1"
-          role="dialog"
-          onClick={() => setShowEditModal(false)}
-        >
-          <div
-            className="modal-dialog"
-            role="document"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Edit Text</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowEditModal(false)}
-                ></button>
-              </div>
-              <div
-                className="modal-body"
-                style={{ touchAction: "auto", overflowY: "auto" }}
-              >
-                <div className="mb-3">
-                  <label className="form-label">Text</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={selectedField.defaultText}
-                    onChange={(e) =>
-                      handleFieldChange(selectedField.id, e.target.value)
-                    }
-                    onFocus={() =>
-                      pushHistory(JSON.parse(JSON.stringify(editedCard)))
-                    }
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Color</label>
-                  <input
-                    type="color"
-                    className="form-control form-control-color"
-                    value={selectedField.color}
-                    onChange={(e) =>
-                      handleStyleChange(
-                        selectedField.id,
-                        "color",
-                        e.target.value
-                      )
-                    }
-                  />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowEditModal(false)}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => setShowEditModal(false)}
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Publish Confirm Modal */}
-      {showPublishConfirm && (
-        <div
-          className="modal fade show d-block"
-          tabIndex="-1"
-          role="dialog"
-          onClick={() => !isPublishing && setShowPublishConfirm(false)}
-        >
-          <div
-            className="modal-dialog"
-            role="document"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Confirm Publish</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => !isPublishing && setShowPublishConfirm(false)}
-                ></button>
-              </div>
-              <div className="modal-body">Are you sure to publish card?</div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  disabled={isPublishing}
-                  onClick={() => setShowPublishConfirm(false)}
-                >
-                  Dismiss
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  disabled={isPublishing}
-                  onClick={handleSave}
-                >
-                  {isPublishing ? "Publishing..." : "Publish"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-};
+});
 
 export default EinviteCardEditor;

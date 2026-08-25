@@ -201,6 +201,13 @@ const UserProfile = ({ user, token }) => {
     const { name, files } = e.target;
     if (!files || files.length === 0) return;
     const file = files[0];
+
+    if (name === "coverImage") {
+      setFormData((prev) => ({ ...prev, [name]: file }));
+      e.target.value = "";
+      return;
+    }
+
     const imageObjectUrl = URL.createObjectURL(file);
     setCropImageSrc(imageObjectUrl);
     setCropTargetField(name);
@@ -778,14 +785,14 @@ const UserProfile = ({ user, token }) => {
 
                   <Col md={3}>
                     <Form.Group controlId="weddingVenue">
-                      <Form.Label className="fs-16">Wedding Venue</Form.Label>
+                      <Form.Label className="fs-16">Wedding City</Form.Label>
                       <Form.Control
                         className="fs-14"
                         type="text"
                         name="weddingVenue"
                         value={formData.weddingVenue}
                         onChange={handleChange}
-                        placeholder="Venue"
+                        placeholder="Wedding City"
                       />
                     </Form.Group>
                   </Col>

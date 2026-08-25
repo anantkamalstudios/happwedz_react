@@ -497,11 +497,11 @@ const CustomerRegister = () => {
                     className={`form-control fs-14 ${
                       errors.weddingVenue ? "is-invalid" : ""
                     }`}
-                    placeholder="Wedding Venue"
+                    placeholder="Wedding City"
                     value={formData.weddingVenue}
                     onChange={handleChange}
                   />
-                  <label className="fs-16">Wedding Venue</label>
+                  <label className="fs-16">Wedding City</label>
                   {errors.weddingVenue && (
                     <div className="invalid-feedback">
                       {errors.weddingVenue}

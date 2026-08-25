@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import EinviteCardEditor from "../layouts/einvites/EinviteCardEditor";
 import EinviteShareModal from "../layouts/einvites/EinviteShareModal";
 import { einviteApi } from "../../services/api/einviteApi";
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
+import { MdOutlineFileDownload } from "react-icons/md";
 
 const EinviteEditorPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const editorRef = useRef(null);
   const [card, setCard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -158,22 +160,36 @@ const EinviteEditorPage = () => {
 
   return (
     <div className="einvite-editor-page">
-      <div className="einvite-editor-header">
+      <div className="einvite-editor-header bg-white border-bottom py-3">
         <div className="container">
-          <div className="row align-items-center mt-3">
-            <div className="col-md-6">
+          <div className="row align-items-center">
+            <div className="col-md-4">
               <h4 className="mb-0">Editing: {card.name}</h4>
             </div>
-            <div className="col-md-6 text-end">
-              <div className="einvite-editor-actions">
+            <div className="col-md-8 text-end">
+              <div className="einvite-editor-actions d-flex align-items-center justify-content-end gap-3">
+                <button 
+                  className="btn btn-outline-secondary d-flex align-items-center gap-1"
+                  onClick={() => editorRef.current?.handleSaveDraft()}
+                >
+                  <MdOutlineFileDownload size={18} />
+                  Save Draft
+                </button>
+                <button 
+                  className="btn text-white d-flex align-items-center gap-1"
+                  style={{ backgroundColor: '#ec4899', border: 'none' }}
+                  onClick={() => editorRef.current?.handleSave()}
+                >
+                  Save
+                </button>
                 <button
-                  className="btn btn-outline-secondary me-2"
+                  className="btn btn-outline-secondary"
                   onClick={handleCancel}
                 >
                   Cancel
                 </button>
                 <Link
-                  className="btn btn-outline-primary me-2"
+                  className="btn btn-outline-primary"
                   to={`/einvites/my-cards`}
                 >
                   My Cards
@@ -185,6 +201,7 @@ const EinviteEditorPage = () => {
       </div>
 
       <EinviteCardEditor
+        ref={editorRef}
         card={card}
         onSave={handleSave}
         onCancel={handleCancel}
