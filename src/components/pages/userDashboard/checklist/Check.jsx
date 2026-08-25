@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   FaCheck,
   FaPlus,
@@ -28,7 +28,7 @@ import { Dropdown } from "react-bootstrap";
 import "./Checklist.css";
 
 const CATEGORY_API =
-  "https://happywedz.com/api/vendor-types/with-subcategories/all";
+  "http://localhost:4000/api/vendor-types/with-subcategories/all";
 
 const Check = () => {
   const dispatch = useDispatch();
@@ -56,6 +56,9 @@ const Check = () => {
   const [loading, setLoading] = useState(false);
 
   const hasUserEditedDate = useRef(false);
+
+  const parsedStartDate = useMemo(() => (startDate ? dayjs(startDate) : null), [startDate]);
+  const parsedWeddingDate = useMemo(() => (weddingDate ? dayjs(weddingDate) : null), [weddingDate]);
 
   // Handler for start date change
   const handleStartDateChange = async (newDate) => {
@@ -533,7 +536,7 @@ const Check = () => {
                     dateAdapter={AdapterDayjs}
                   >
                     <DatePicker
-                      value={startDate ? dayjs(startDate) : null}
+                      value={parsedStartDate}
                       format="DD/MM/YYYY"
                       onChange={handleStartDateChange}
                       className="fs-14"
@@ -553,11 +556,11 @@ const Check = () => {
                 <div className="date-input-group fs-14">
                   <label>
                     <FaHeart size={14} />
-                    Wedding Date
+                    Wedding Date (End Date)
                   </label>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      value={weddingDate ? dayjs(weddingDate) : null}
+                      value={parsedWeddingDate}
                       format="DD/MM/YYYY"
                       onChange={handleWeddingDateChange}
                       slotProps={{

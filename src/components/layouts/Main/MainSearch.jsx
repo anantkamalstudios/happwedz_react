@@ -30,6 +30,35 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
     return null;
   };
 
+  /**
+   * Thumbnail for one search result, falling back to the placeholder.
+   *
+   * This walks the same fields the result list checks, which it previously did
+   * not: a vendor whose only picture is vendor.profileImage — Nahata Lawns &
+   * Banquets, for one — was shown the placeholder even though a real image was
+   * available on the record.
+   */
+  const PLACEHOLDER_IMAGE = "/images/imageNotFound.jpg";
+
+  const resolveResultImage = (result) => {
+    if (!result) return PLACEHOLDER_IMAGE;
+    const candidates = [
+      result.attributes?.image_url,
+      result.attributes?.image,
+      result.attributes?.profile_image,
+      result.attributes?.cover_image,
+      result.media?.[0],
+      result.images?.[0],
+      result.vendor?.profileImage,
+      result.vendor?.coverImage,
+    ];
+    for (const candidate of candidates) {
+      const cleaned = cleanMediaUrl(candidate);
+      if (cleaned && !cleaned.includes("imageNotFound")) return cleaned;
+    }
+    return PLACEHOLDER_IMAGE;
+  };
+
   useEffect(() => {
     const fetchHeroInfo = async () => {
       try {
@@ -295,9 +324,12 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
     setLoadingSearch(true);
     try {
       const apiBase = import.meta.env.VITE_API_URL || "https://happywedz.com/api";
+      // No image_exists filter: someone searching by name must be able to find a
+      // vendor whose photo is missing, otherwise most of the catalogue is
+      // unreachable by search. Results without a photo fall back to a placeholder.
       let apiUrl = `${apiBase}/vendor-services?search=${encodeURIComponent(
         searchQuery
-      )}&limit=30&image_exists=true`;
+      )}&limit=30`;
 
       if (city) {
         apiUrl += `&city=${encodeURIComponent(city)}`;
@@ -341,26 +373,15 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
         return str;
       };
 
-      // Deduplicate results and strictly filter out vendors without images
+      // Deduplicate results. Vendors without a photo are kept — searching by name
+      // has to reach them — and resolveResultImage() below falls back to the
+      // placeholder when none of the image fields carry a usable URL.
       const uniqueResults = [];
       const seenIds = new Set();
       const seenNames = new Set();
 
       results.forEach((item) => {
         if (!item) return;
-
-        // Skip any item without a valid real image
-        const imgCandidate =
-          cleanImgUrl(item.attributes?.image_url) ||
-          cleanImgUrl(item.attributes?.image) ||
-          cleanImgUrl(item.attributes?.profile_image) ||
-          cleanImgUrl(item.attributes?.cover_image) ||
-          cleanImgUrl(item.vendor?.profileImage) ||
-          cleanImgUrl(item.vendor?.coverImage) ||
-          cleanImgUrl(item.media?.[0]) ||
-          cleanImgUrl(item.images?.[0]);
-
-        if (!imgCandidate) return;
 
         const id = item.id;
         const name = (item.attributes?.name || item.vendor?.businessName || "").trim().toLowerCase();
@@ -635,11 +656,7 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
                                 style={{ borderRadius: "10px" }}
                               >
                                 <img
-                                  src={
-                                    result.attributes?.image_url ||
-                                    cleanMediaUrl(result.media?.[0]) ||
-                                    "/images/imageNotFound.jpg"
-                                  }
+                                  src={resolveResultImage(result)}
                                   alt={result.attributes?.name || "Vendor"}
                                   className="result-image"
                                   style={{

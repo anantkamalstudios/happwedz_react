@@ -9,8 +9,9 @@ import {
   extractReviewFilters,
 } from "../utils/priceFilterUtils";
 import { hasView360 } from "../utils/view360Helper";
+import { IMAGE_BASE_URL as UPLOADS_BASE_URL, toCdnUrl } from "../config/constants";
 
-const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
+const IMAGE_BASE_URL = UPLOADS_BASE_URL.replace(/\/+$/, "");
 
 const useInfiniteScroll = (
   section,
@@ -66,12 +67,8 @@ const useInfiniteScroll = (
         : [];
       const normalizeUrl = (u) => {
         if (!u) return null;
-        let cleaned = String(u);
-        // Rewrite S3 URLs to happywedz.com (S3 returns 403)
-        cleaned = cleaned.replace(
-          "https://happywedz-s3-bucket.s3.ap-south-1.amazonaws.com",
-          "https://happywedz.com"
-        );
+        // Serve bucket-hosted media from whichever origin is configured for it.
+        const cleaned = toCdnUrl(String(u));
         if (/^https?:\/\//i.test(cleaned)) return cleaned;
         return `${IMAGE_BASE_URL}${cleaned.startsWith("/") ? cleaned : "/" + cleaned}`;
       };
@@ -404,6 +401,10 @@ const useInfiniteScroll = (
 
         const VENUE_FALLBACK_IMG = "/images/imageNotFound.jpg";
 
+        // Keep the order the API returned. It already ranks every venue that has
+        // photos ahead of every venue that has none across the whole result set,
+        // which a page-at-a-time sort here cannot reproduce — it would only shuffle
+        // the current batch and make already-rendered cards jump as more pages load.
         const transformed = transformApiData(itemsRaw)
           .map((item) => {
             if (!item) return null;
@@ -412,14 +413,7 @@ const useInfiniteScroll = (
             }
             return item;
           })
-          .filter(Boolean)
-          .sort((a, b) => {
-            const aHasImg = a.image && a.image !== VENUE_FALLBACK_IMG && !a.image.includes("imageNotFound");
-            const bHasImg = b.image && b.image !== VENUE_FALLBACK_IMG && !b.image.includes("imageNotFound");
-            if (aHasImg && !bHasImg) return -1;
-            if (!aHasImg && bHasImg) return 1;
-            return 0;
-          });
+          .filter(Boolean);
 
         // Determine if there are more pages
         let hasMorePages = true;
@@ -447,14 +441,9 @@ const useInfiniteScroll = (
             const newItems = transformed.filter(
               (item) => !existingIds.has(item.id)
             );
-            const combined = [...prevData, ...newItems];
-            return combined.sort((a, b) => {
-              const aHasImg = a.image && a.image !== VENUE_FALLBACK_IMG && !a.image.includes("imageNotFound");
-              const bHasImg = b.image && b.image !== VENUE_FALLBACK_IMG && !b.image.includes("imageNotFound");
-              if (aHasImg && !bHasImg) return -1;
-              if (!aHasImg && bHasImg) return 1;
-              return 0;
-            });
+            // Append in API order — re-sorting the accumulated list here would move
+            // cards the visitor has already scrolled past.
+            return [...prevData, ...newItems];
           });
         }
 
@@ -497,9 +486,18 @@ const useInfiniteScroll = (
 
   // Reset when dependencies change
   const reset = useCallback(() => {
+    // A scroll-triggered load that is still inside its debounce window belongs to
+    // the city/filters we are leaving: its closure holds the previous fetchData, so
+    // letting it fire would abort the incoming request and append the old city's
+    // venues to the new city's list. Drop it before starting over.
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
     setPage(1);
     setHasMore(true);
     setError(null);
+    setData([]);
     loadedPagesRef.current.clear();
     cacheRef.current.clear();
     setLoading(true);

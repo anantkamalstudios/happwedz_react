@@ -283,10 +283,12 @@ const Herosection = () => {
     setVendorLoading(true);
     setShowVendorDropdown(true);
     try {
+      // No image_exists filter: someone searching by name must be able to find a
+      // vendor whose photo is missing, otherwise most of the catalogue is
+      // unreachable by search. Results without a photo fall back to a placeholder.
       const params = new URLSearchParams({
         search: q,
         limit: "30",
-        image_exists: "true",
       });
       if (
         reduxLocation &&
@@ -299,9 +301,9 @@ const Herosection = () => {
         `/vendor-services?${params.toString()}`,
       );
       const items = Array.isArray(data?.data) ? data.data : [];
-      // Strictly exclude any vendor without a real image
-      const vendorsWithImages = items.filter(hasVendorImage);
-      setVendorResults(vendorsWithImages);
+      // Vendors without a photo stay in the results — searching by name has to
+      // reach them, and getVendorImage() falls back to the placeholder for them.
+      setVendorResults(items);
       setShowVendorDropdown(true);
     } catch (e) {
       console.error("Vendor search error:", e);

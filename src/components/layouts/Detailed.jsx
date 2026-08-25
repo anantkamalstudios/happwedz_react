@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { IMAGE_BASE_URL } from "../../config/constants";
 import { Container, Row, Col, Button, Modal } from "react-bootstrap";
 import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -2143,10 +2144,22 @@ const Detailed = () => {
             .filter((url) => url);
         }
 
+        if (!parsedImages.length) {
+          // Last resort: the vendor's own profile/cover photo. Search results
+          // already fall back to it, so without this a venue like Nahata Lawns &
+          // Banquets showed a real picture in the dropdown and "image not found"
+          // on the page it linked to.
+          parsedImages = [data.vendor?.profileImage, data.vendor?.coverImage]
+            .map((url) => (typeof url === "string" ? url.trim() : ""))
+            .filter(Boolean);
+        }
+
         if (parsedImages.length > 0) {
           parsedImages = parsedImages.map(img => {
             if (typeof img === 'string' && img.startsWith('/uploads/')) {
-              return `https://happywedz.com${img}`;
+              // Uploads are served by the backend host; happywedz.com has no
+              // /uploads route and answers with the SPA shell instead of a file.
+              return `${IMAGE_BASE_URL.replace(/\/+$/, "")}${img}`;
             }
             return img;
           });

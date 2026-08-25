@@ -202,7 +202,7 @@ const Budget = () => {
           </div>
 
           <div className="wb-budget-card">
-            <div className="wb-budget-label">FINAL COST</div>
+            <div className="wb-budget-label">FINAL COST (expenditure)</div>
             <div className="wb-budget-amount">
               {formatCurrency(totalFinalCost)}
             </div>
@@ -278,7 +278,7 @@ const Budget = () => {
                 <th style={{ width: "24%" }}>CATEGORY</th>
                 <th style={{ width: "32%" }}>SUB CATEGORY</th>
                 <th style={{ width: "12%" }}>ESTIMATED BUDGET</th>
-                <th style={{ width: "12%" }}>FINAL COST</th>
+                <th style={{ width: "12%" }}>FINAL COST (expenditure)</th>
                 <th style={{ width: "12%" }}>PAID</th>
                 <th style={{ width: "8%", textAlign: "center" }}>ACTIONS</th>
               </tr>
