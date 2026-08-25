@@ -203,12 +203,6 @@ const Storefront = ({ setCompletion }) => {
                 actualData.attributes.video ||
                 actualData.attributes.vedio ||
                 [];
-              const panoImagesAttr = actualData.attributes.view360_images || [];
-              const panoVideosAttr = actualData.attributes.view360_video || [];
-              const panoImagesTop =
-                actualData.view360_images || actualData.view360_image || [];
-              const panoVideosTop =
-                actualData.view360_video || actualData.view360Videos || [];
               if (Array.isArray(videosFromAttr)) {
                 const normalizedVideos = videosFromAttr
                   .map((v) =>
@@ -217,60 +211,38 @@ const Storefront = ({ setCompletion }) => {
                   .filter(Boolean);
                 videos = [...new Set([...videos, ...normalizedVideos])];
               }
-              if (Array.isArray(panoImagesAttr)) {
-                panoImages = panoImagesAttr
-                  .map((v) =>
-                    typeof v === "string" ? v : v.url || v.path || null
-                  )
-                  .filter(Boolean);
-              } else if (
-                typeof panoImagesAttr === "string" &&
-                panoImagesAttr.trim()
-              ) {
-                panoImages = [panoImagesAttr];
-              }
-              if (Array.isArray(panoVideosAttr)) {
-                panoVideos = panoVideosAttr
-                  .map((v) =>
-                    typeof v === "string" ? v : v.url || v.path || null
-                  )
-                  .filter(Boolean);
-              } else if (
-                typeof panoVideosAttr === "string" &&
-                panoVideosAttr.trim()
-              ) {
-                panoVideos = [panoVideosAttr];
-              }
-              if (Array.isArray(panoImagesTop)) {
-                panoImages = [
-                  ...panoImages,
-                  ...panoImagesTop
+
+              // Prefer whichever source is actually present rather than merging both:
+              // a union can only grow, so a stale entry left behind in either location
+              // (e.g. after a removal that only updated one of the two) would otherwise
+              // resurrect forever.
+              const toUrlList = (val) => {
+                if (Array.isArray(val)) {
+                  return val
                     .map((v) =>
                       typeof v === "string" ? v : v.url || v.path || null
                     )
-                    .filter(Boolean),
-                ];
-              } else if (
-                typeof panoImagesTop === "string" &&
-                panoImagesTop.trim()
-              ) {
-                panoImages = [...panoImages, panoImagesTop];
-              }
-              if (Array.isArray(panoVideosTop)) {
-                panoVideos = [
-                  ...panoVideos,
-                  ...panoVideosTop
-                    .map((v) =>
-                      typeof v === "string" ? v : v.url || v.path || null
-                    )
-                    .filter(Boolean),
-                ];
-              } else if (
-                typeof panoVideosTop === "string" &&
-                panoVideosTop.trim()
-              ) {
-                panoVideos = [...panoVideos, panoVideosTop];
-              }
+                    .filter(Boolean);
+                }
+                if (typeof val === "string" && val.trim()) return [val];
+                return null; // not provided by this source
+              };
+
+              const topImages = toUrlList(
+                actualData.view360_images ?? actualData.view360_image
+              );
+              const attrImages = toUrlList(
+                actualData.attributes.view360_images
+              );
+              panoImages = topImages ?? attrImages ?? [];
+
+              const topVideos = toUrlList(
+                actualData.view360_video ?? actualData.view360Videos
+              );
+              const attrVideos = toUrlList(
+                actualData.attributes.view360_video
+              );
+              panoVideos = topVideos ?? attrVideos ?? [];
             }
 
             // Deduplicate 360 media
@@ -1019,6 +991,34 @@ const Storefront = ({ setCompletion }) => {
             url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
           )
         : data.attributes?.video || [],
+      view360_images: Array.isArray(view360Images)
+        ? view360Images
+          .map((v) => v.url || v.preview || "")
+          .filter(
+            (url) =>
+              url &&
+              typeof url === "string" &&
+              !url.startsWith("blob:") &&
+              !url.startsWith("data:")
+          )
+          .map((url) =>
+            url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
+          )
+        : [],
+      view360_video: Array.isArray(view360Videos)
+        ? view360Videos
+          .map((v) => v.url || v.preview || "")
+          .filter(
+            (url) =>
+              url &&
+              typeof url === "string" &&
+              !url.startsWith("blob:") &&
+              !url.startsWith("data:")
+          )
+          .map((url) =>
+            url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
+          )
+        : [],
       // Preferred vendors selection
       preferred_vendors:
         data.attributes?.preferred_vendors ||
@@ -1541,7 +1541,7 @@ const Storefront = ({ setCompletion }) => {
       icon: <CiLocationOn size={20} />,
     },
     { id: "photos", label: "Photos", icon: <IoCameraOutline size={20} /> },
-    ...(normalizedVendorTypeName.includes("venue")
+    ...(isVenueType
       ? [
         {
           id: "vendor-360-view",
