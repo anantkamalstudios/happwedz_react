@@ -13,6 +13,7 @@ import {
   verifyCabPayment,
 } from "../../../../services/api/cabApi";
 import { formatDateTime as fmtDateTime } from "../../../../utils/dateFormat";
+import { loginRedirect } from "../../../../utils/bookingDraft";
 import "./index.css";
 
 const formatFare = (value) =>
@@ -54,13 +55,13 @@ export default function CabBookingPage() {
   const [paymentError, setPaymentError] = useState("");
   const [canCheckStatus, setCanCheckStatus] = useState(false);
 
-  // Booking is login-gated; a direct visit without a session goes to login.
+  // Booking is login-gated. The quote and journey arrive in history state, and
+  // login forwards that state back, so the page rebuilds itself on return.
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
-      toast.error("Please login before booking a cab.");
-      navigate("/customer-login");
+      navigate(...loginRedirect(location, "cab"), { replace: true });
     }
-  }, [isAuthenticated, user?.id, navigate]);
+  }, [isAuthenticated, user?.id, navigate, location]);
 
   // Prefill from the logged-in profile where we can.
   useEffect(() => {
@@ -398,9 +399,18 @@ export default function CabBookingPage() {
             </a>
           ) : null}
 
-          <button type="button" onClick={() => navigate("/honeymoon?tab=car-rental")}>
-            Book another cab
-          </button>
+          <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+            <button type="button" onClick={() => navigate("/user-dashboard/booking/travel/cabs")}>
+              View my bookings
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/honeymoon?tab=car-rental")}
+              style={{ backgroundColor: "transparent", color: "#ed1173", border: "1px solid #ed1173" }}
+            >
+              Book another cab
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -515,7 +515,7 @@ export default function HotelBookingDetailsPage() {
             ) : null}
           </div>
           <Link
-            to="/hotels/all-booking"
+            to="/user-dashboard/booking/travel/hotels"
             style={{
               border: "1px solid #132238",
               background: "#132238",

@@ -296,7 +296,7 @@ export default function FlightHero() {
                         </div>
                       </div>
                       <Link
-                        to="/hotels/all-booking"
+                        to="/user-dashboard/booking/travel/hotels"
                         style={{
                           background: "#ffffff",
                           color: "#1f2937",

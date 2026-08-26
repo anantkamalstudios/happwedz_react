@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosInstance from "./axiosInstance";
 
 const API_BASE = (
   import.meta.env.VITE_API_URL || "http://localhost:4000"
@@ -326,6 +327,22 @@ export const mapTripSafeBookingDetails = (payload) => {
   };
 };
 
+/**
+ * The logged-in user's insurance bookings — GET /insurance_payment/bookings
+ *
+ * The route has existed on the backend since insurance shipped but nothing
+ * called it, so a bought policy had no list screen to appear on. Rows come back
+ * with travellers already extracted from the booking payload.
+ *
+ * @param {{status?: string}} params optional booking_status filter
+ */
+export const getMyInsuranceBookings = async (params = {}) => {
+  const response = await axiosInstance.get("/insurance_payment/bookings", {
+    params,
+  });
+  return response.data;
+};
+
 export const getTripSafeBookingDetails = async (bookingId) => {
   const response = await axios.post(`${TRIPSAFE_BASE}/booking-details`, {
     bookingId,
@@ -344,6 +361,22 @@ export const getTripSafeBookingDetails = async (bookingId) => {
     status: true,
     ...mapTripSafeBookingDetails(body.data || body),
   };
+};
+
+export const downloadTripSafePolicyPdf = async (bookingId) => {
+  const response = await axiosInstance.get(
+    `/insurance_payment/policy/${encodeURIComponent(bookingId)}`,
+    { responseType: "blob" },
+  );
+
+  const blobUrl = window.URL.createObjectURL(response.data);
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = `insurance-policy-${bookingId}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(blobUrl);
 };
 
 export const buildCancellationTravellerKeys = (

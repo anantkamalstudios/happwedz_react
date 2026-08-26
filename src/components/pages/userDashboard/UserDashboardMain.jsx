@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import UserDashboardNavbar from "../../layouts/UserDashboardNavbar";
@@ -13,16 +13,31 @@ import Booking from "./booking/Booking";
 import Messages from "./messages/Messages";
 import RealWeddingForm from "./realWeddingForm/RealWeddingForm";
 import UserProfile from "./userProfile/UserProfile";
-import FlightBookings from "./flightBookings/FlightBookings";
+import CabBookingDetail from "./cabBookings/CabBookingDetail";
+
+// The flight and cab lists are now panels inside the Booking tab. Their old
+// standalone URLs still work — they redirect to the matching sub-tab, so
+// bookmarks and links from the honeymoon flow keep resolving.
+const REDIRECTS = {
+  "my-bookings": "/user-dashboard/booking/travel/flights",
+  "my-cab-bookings": "/user-dashboard/booking/travel/cabs",
+};
 
 const UserDashboardMain = () => {
-  const { slug } = useParams();
+  const { slug, id, category, sub } = useParams();
   const { user, token } = useSelector((state) => state.auth);
-  const currentSlug = slug || "my-wedding";
+
+  // Only the /user-dashboard/booking/... routes carry :category.
+  const isBookingRoute = category !== undefined;
+  const currentSlug = isBookingRoute ? "booking" : slug || "my-wedding";
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentSlug]);
+
+  if (!id && REDIRECTS[currentSlug]) {
+    return <Navigate to={REDIRECTS[currentSlug]} replace />;
+  }
 
   return (
     <div>
@@ -36,12 +51,12 @@ const UserDashboardMain = () => {
       {currentSlug === "user-profile" && (
         <UserProfile user={user} token={token} />
       )}
-      {currentSlug === "booking" && <Booking user={user} token={token} />}
+      {currentSlug === "booking" && <Booking category={category} sub={sub} />}
       {currentSlug === "message" && <Messages user={user} token={token} />}
       {currentSlug === "real-wedding" && (
         <RealWeddingForm user={user} token={token} />
       )}
-      {currentSlug === "my-bookings" && <FlightBookings />}
+      {currentSlug === "cab-bookings" && id && <CabBookingDetail />}
     </div>
   );
 };

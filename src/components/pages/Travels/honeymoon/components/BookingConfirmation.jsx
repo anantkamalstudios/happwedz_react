@@ -117,7 +117,7 @@ export default function BookingConfirmation({ bookingData, trip, returnTrip, tra
               </button>
               <button 
                 className="btn btn-outline-primary btn-lg"
-                onClick={() => navigate('/user-dashboard/my-bookings')}
+                onClick={() => navigate('/user-dashboard/booking/travel/flights')}
               >
                 <FaList className="me-2" />
                 Go to My Bookings

@@ -521,12 +521,20 @@
   .hotel-image-placeholder {
     width: 100%;
     height: 100%;
-    background: #f3f4f6;
+    background: linear-gradient(135deg, #fdeef5 0%, #f7f3f5 100%);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #9ca3af;
-    font-size: 14px;
+    gap: 6px;
+    color: #c980a4;
+  }
+
+  .hotel-image-placeholder span {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .image-count-badge {
@@ -612,6 +620,9 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    /* Always reserve two lines. A one-line name would otherwise pull the
+       inclusion and amenity rows up and leave the row of cards ragged. */
+    min-height: calc(2 * 1.25 * 18px);
   }
 
   .hotel-location {

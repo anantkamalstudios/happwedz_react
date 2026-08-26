@@ -1,0 +1,23 @@
+# Encoding is pinned in .editorconfig (charset = utf-8) — that is what prevents
+# a repeat of the mojibake that hit the Travels/ files. This file only keeps git
+# from treating binaries as text.
+#
+# Deliberately absent: `text=auto` and any `eol=` directive. The working tree is
+# CRLF throughout, so declaring either would rewrite every file in the repo and
+# bury real changes under a whole-project diff.
+
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.eot   binary
+*.mp4   binary
+*.webm  binary
+*.zip   binary

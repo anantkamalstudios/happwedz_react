@@ -10,8 +10,9 @@ import {
   FileText,
   CheckCircle2,
   Loader2,
+  Download,
 } from 'lucide-react';
-import { getTripSafeBookingDetails } from '../../../../services/api/tripSafeApi';
+import { getTripSafeBookingDetails, downloadTripSafePolicyPdf } from '../../../../services/api/tripSafeApi';
 import InsuranceBenefitsModal from './InsuranceBenefitsModal';
 import InsuranceCancellationModal from './InsuranceCancellationModal';
 import { formatDate as fmtDate, formatDateTime as fmtDateTime } from '../../../../utils/dateFormat';
@@ -40,6 +41,24 @@ const InsuranceBookingDetailsPage = () => {
   const [details, setDetails] = useState(null);
   const [benefitsOpen, setBenefitsOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [downloadingPolicy, setDownloadingPolicy] = useState(false);
+
+  const handleDownloadPolicy = async () => {
+    if (!routeBookingId || downloadingPolicy) return;
+    setDownloadingPolicy(true);
+    setError(null);
+    try {
+      await downloadTripSafePolicyPdf(routeBookingId);
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Unable to download insurance policy receipt',
+      );
+    } finally {
+      setDownloadingPolicy(false);
+    }
+  };
 
   const reloadDetails = () => {
     if (!routeBookingId) return;
@@ -276,6 +295,24 @@ const InsuranceBookingDetailsPage = () => {
                     <small>{details.deliveryInfo.contacts[0]}</small>
                   </div>
                 )}
+                {isSuccess && (
+                  <button
+                    type="button"
+                    className="btn ins-policy-download-btn w-100 mt-3"
+                    onClick={handleDownloadPolicy}
+                    disabled={downloadingPolicy}
+                  >
+                    {downloadingPolicy ? (
+                      <span className="d-inline-flex align-items-center gap-2">
+                        <Loader2 size={16} className="spin" /> Preparing PDF...
+                      </span>
+                    ) : (
+                      <span className="d-inline-flex align-items-center gap-2">
+                        <Download size={16} /> Download Policy Receipt
+                      </span>
+                    )}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="btn ins-select-btn w-100 mt-3"
@@ -337,6 +374,18 @@ const InsuranceBookingDetailsPage = () => {
           border-radius: 16px;
           padding: 24px;
           border: 1px solid #f0e0e8;
+        }
+        .ins-policy-download-btn {
+          background: #ed1173;
+          color: #fff;
+          border: 1px solid #ed1173;
+          font-weight: 700;
+        }
+        .ins-policy-download-btn:hover,
+        .ins-policy-download-btn:focus {
+          background: #c9005c;
+          color: #fff;
+          border-color: #c9005c;
         }
         .ins-details-card-title {
           display: flex;

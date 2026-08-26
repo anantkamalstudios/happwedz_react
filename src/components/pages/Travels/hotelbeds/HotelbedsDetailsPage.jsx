@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Modal, Offcanvas } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import {
@@ -40,6 +40,14 @@ import {
 import { formatDate as fmtDate, formatDateTime } from "../../../../utils/dateFormat";
 import TripJackBookingReview from "./TripJackBookingReview";
 import TripJackBookingStatus from "./TripJackBookingStatus";
+import {
+  saveBookingDraft,
+  readBookingDraft,
+  clearBookingDraft,
+  mergeBookingForm,
+  draftNeedsPan,
+  loginRedirect,
+} from "../../../../utils/bookingDraft";
 import HotelSearchForm from "../honeymoon/components/HotelSearchForm";
 import "./hotelbedsStyles.css";
 import {
@@ -417,7 +425,7 @@ function HotelAboutModal({ show, onHide, sections = {} }) {
 }
 
 function HotelPropertyInfoSection({ propertyInfo = {} }) {
-  const range = (from, till) => [from, till].filter(Boolean).join(" â€“ ");
+  const range = (from, till) => [from, till].filter(Boolean).join(" – ");
   const rows = [
     ["Property type", propertyInfo.propertyType],
     ["Check-in", range(propertyInfo.checkInFrom, propertyInfo.checkInTill)],
@@ -680,7 +688,7 @@ function MarkupModal({ show, onHide, onUpdate }) {
         <div className="mb-3">
           <label className="form-label">As Value</label>
           <div className="input-group">
-            <span className="input-group-text">â‚¹</span>
+            <span className="input-group-text">₹</span>
             <input
               type="number"
               className="form-control"
@@ -858,7 +866,7 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
                 onClick={handlePrevImage}
                 aria-label="Previous image"
               >
-                â€¹
+                ‹
               </button>
               <button
                 type="button"
@@ -866,14 +874,14 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
                 onClick={handleNextImage}
                 aria-label="Next image"
               >
-                â€º
+                ›
               </button>
             </>
           )}
           
           <button type="button" className="hotel-photo-overlay">
             <Images size={14} />
-            {images.length > 0 ? `+${images.length} Photos â†’` : "+4 Photos â†’"}
+            {images.length > 0 ? `+${images.length} Photos →` : "+4 Photos →"}
           </button>
         </div>
 
@@ -1149,7 +1157,12 @@ function HotelDetailsPage({
   setRoomModalOpen,
 }) {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+  const location = useLocation();
   const roomSectionRef = useRef(null);
+  // Restoring a parked booking must happen once per mount, never on every
+  // re-render of the room list.
+  const draftRestoreRef = useRef(false);
   const [selectedOptionId, setSelectedOptionId] = useState("");
   const [roomSearch, setRoomSearch] = useState("");
   const [filterState, setFilterState] = useState({
@@ -1242,7 +1255,7 @@ function HotelDetailsPage({
       selectedHotel?.raw?.hid ||
       "";
     // Static content (amenities, descriptions, address, policies, room amenities)
-    // is keyed only by the hotel id â€” TripJack's /content/fetch-hotel-content does
+    // is keyed only by the hotel id — TripJack's /content/fetch-hotel-content does
     // NOT need a searchId, so we must not gate the fetch on it.
     if (!tjHotelId) {
       if (import.meta.env.DEV) {
@@ -1311,7 +1324,7 @@ function HotelDetailsPage({
   const mealPlans = useMemo(() => getMealPlanOptions(detailModel.options), [detailModel.options]);
 
   // Whether the "View more" (About) and "Important information" buttons have
-  // anything to show â€” so we hide them when the static content is empty.
+  // anything to show — so we hide them when the static content is empty.
   const hasPropertyDetails = useMemo(() => {
     const sections = detailModel.aboutSections || {};
     return [
@@ -1432,7 +1445,10 @@ function HotelDetailsPage({
     }
   };
 
-  const handleReviewRoomOption = async (option, { openRoomModal = false } = {}) => {
+  const handleReviewRoomOption = async (
+    option,
+    { openRoomModal = false, restoreForm = null, isRestore = false } = {},
+  ) => {
     handleSelectRoom(option, openRoomModal);
 
     const resolvedCorrelationId =
@@ -1563,17 +1579,106 @@ function HotelDetailsPage({
         errorCode: "",
       });
       setReviewResponse(enrichedReviewResponse);
-      setBookingForm(createInitialBookingForm(enrichedReviewResponse));
+
+      // A restored draft is merged onto the form built from the *fresh* review,
+      // so room counts and required fields follow current availability. PAN is
+      // never in the draft, so it comes back blank on purpose.
+      const freshForm = createInitialBookingForm(enrichedReviewResponse);
+      const mergedForm = restoreForm ? mergeBookingForm(freshForm, restoreForm) : freshForm;
+      setBookingForm(mergedForm);
+
+      if (isRestore) {
+        toast.success(
+          draftNeedsPan(mergedForm)
+            ? "Your booking details are back. Please re-enter PAN and accept the terms."
+            : "Your booking details are back. Please review and accept the terms.",
+        );
+      }
       setShowReviewModal(false);
       setShowBookingFormModal(true);
       setRoomModalOpen(false);
     } catch (error) {
       console.error("Unable to review hotel room option", error);
-      toast.error("Unable to review this room option. Please try another room or search again.");
+      if (isRestore) {
+        // The parked option expired or sold out while the user was logging in.
+        // Drop the draft and put them back on the room list rather than let
+        // them walk into a payment that cannot succeed.
+        clearBookingDraft();
+        setShowBookingFormModal(false);
+        setShowReviewModal(false);
+        toast.error(
+          "That room is no longer available at the saved price. Please pick a room again.",
+        );
+        roomSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        toast.error("Unable to review this room option. Please try another room or search again.");
+      }
     } finally {
       setReviewLoadingOptionId("");
     }
   };
+
+  // ── Coming back from login ──────────────────────────────────────────────
+  // Runs once the room options for this hotel are on screen. The draft supplies
+  // only the option to ask about and the fields the user typed; the review call
+  // below fetches a fresh bookingId, fare and cancellation policy.
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      // TEMP DIAGNOSTIC — remove once the restore path is confirmed.
+      console.log("[draft:restore-check]", {
+        alreadyRan: draftRestoreRef.current,
+        isAuthenticated,
+        userId: user?.id,
+        optionCount: detailModel?.options?.length || 0,
+        hotelIdForRead: String(selectedHotel?.id || detailModel?.id || ""),
+        rawDraft: window.sessionStorage.getItem("hw:bookingDraft")?.slice(0, 80) || null,
+      });
+    }
+
+    if (draftRestoreRef.current) return;
+    if (!isAuthenticated || !user?.id) return;
+    if (!detailModel?.options?.length) return;
+
+    const hotelId = String(selectedHotel?.id || detailModel?.id || "");
+    if (!hotelId) return;
+
+    const draft = readBookingDraft({ kind: "hotel", hotelId });
+    if (import.meta.env.DEV) {
+      console.log("[draft:read]", {
+        found: Boolean(draft),
+        savedOptionId: draft?.optionId,
+        availableOptionIds: (detailModel?.options || []).slice(0, 5).map((o) => String(o?.id)),
+      });
+    }
+    if (!draft) return;
+
+    draftRestoreRef.current = true;
+
+    const option = detailModel.options.find(
+      (candidate) => String(candidate?.id) === String(draft.optionId),
+    );
+
+    if (!option) {
+      clearBookingDraft();
+      toast.error("That room is no longer listed. Please pick a room again.");
+      return;
+    }
+
+    // Consumed on the way in: a draft must never be replayable.
+    clearBookingDraft();
+    handleReviewRoomOption(option, { restoreForm: draft.form, isRestore: true });
+    // handleReviewRoomOption is stable for the life of this mount and the ref
+    // guard makes this single-shot; listing it would re-run on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.id, detailModel?.options, selectedHotel?.id, detailModel?.id]);
+
+  // Once TripJack has accepted the booking the draft is spent — clear it so a
+  // back-button or second tab cannot resubmit the same details.
+  useEffect(() => {
+    if (["polling", "success"].includes(bookingStatusState?.phase)) {
+      clearBookingDraft();
+    }
+  }, [bookingStatusState?.phase]);
 
   const handleOpenBookingForm = () => {
     if (!reviewResponse?.bookingId) {
@@ -1769,6 +1874,33 @@ function HotelDetailsPage({
     };
   };
 
+  // Parks what the user typed, then sends them to login with a way back.
+  // PAN is stripped inside saveBookingDraft; nothing time-sensitive from the
+  // supplier is kept, because the review is re-run on return.
+  const parkBookingAndLogin = (reason) => {
+    const draftHotelId = String(selectedHotel?.id || detailModel?.id || "");
+    const saved = saveBookingDraft({
+      kind: "hotel",
+      hotelId: draftHotelId,
+      optionId: String(selectedOptionId || ""),
+      searchPayload: initialPayload,
+      suggestion: initialSuggestion,
+      form: bookingForm,
+    });
+    if (import.meta.env.DEV) {
+      // TEMP DIAGNOSTIC — remove once the restore path is confirmed.
+      console.log("[draft:save]", {
+        saved,
+        hotelId: draftHotelId,
+        optionId: String(selectedOptionId || ""),
+        hasForm: Boolean(bookingForm),
+        hasSearchPayload: Boolean(initialPayload),
+        readBack: window.sessionStorage.getItem("hw:bookingDraft")?.slice(0, 80),
+      });
+    }
+    navigate(...loginRedirect(location, reason));
+  };
+
   const handleProceedToBook = async () => {
     if (!reviewResponse?.bookingId || !bookingForm) {
       toast.error("Booking review data is missing. Please review the room again.");
@@ -1776,8 +1908,7 @@ function HotelDetailsPage({
     }
 
     if (!isAuthenticated || !user?.id) {
-      toast.error("Please login before booking a hotel.");
-      navigate("/customer-login");
+      parkBookingAndLogin("booking");
       return;
     }
 
@@ -2213,8 +2344,7 @@ const retryWithoutRepayment =
     }
 
     if (!isAuthenticated || !user?.id) {
-      toast.error("Please login before creating hold booking.");
-      navigate("/customer-login");
+      parkBookingAndLogin("hold");
       return;
     }
 
@@ -2545,7 +2675,11 @@ const retryWithoutRepayment =
         {showBookingFormModal && reviewResponse && bookingForm ? (
           <TripJackBookingReview
             show={showBookingFormModal}
-            onClose={() => setShowBookingFormModal(false)}
+            onClose={() => {
+              // "Back to Hotel Details" is an explicit abandon.
+              clearBookingDraft();
+              setShowBookingFormModal(false);
+            }}
             reviewResponse={reviewResponse}
             bookingForm={bookingForm}
             onTravellerFieldChange={handleTravellerFieldChange}
@@ -3046,7 +3180,7 @@ const retryWithoutRepayment =
                     <div className="hotel-room-modal-section-subtitle">
                       {hasRoomAmenities
                         ? "Popular with Guests"
-                        : "Room-specific amenities aren't listed for this room â€” showing what the property offers."}
+                        : "Room-specific amenities aren't listed for this room — showing what the property offers."}
                     </div>
                     <div className="hotel-room-modal-amenities">
                       {list.length > 0 ? (
@@ -3066,8 +3200,8 @@ const retryWithoutRepayment =
               {Array.isArray(activeOption.cancellation?.penalties) && activeOption.cancellation.penalties.length > 0 ? (
                 <div className="fs-12 text-muted">
                   {activeOption.cancellation.penalties
-                    .map((penalty) => `${penalty.from || "â€”"} to ${penalty.to || "â€”"} (${penalty.amount ?? "â€”"})`)
-                    .join(" â€¢ ")}
+                    .map((penalty) => `${penalty.from || "—"} to ${penalty.to || "—"} (${penalty.amount ?? "—"})`)
+                    .join(" • ")}
                 </div>
               ) : (
                 <div className="fs-12 text-muted">Cancellation policy not available.</div>

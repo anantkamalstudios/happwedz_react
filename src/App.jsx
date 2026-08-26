@@ -713,6 +713,30 @@ function App() {
                 }
               />
               <Route
+                path="/user-dashboard/booking/:category"
+                element={
+                  <UserPrivateRoute>
+                    <UserDashboardMain />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/user-dashboard/booking/:category/:sub"
+                element={
+                  <UserPrivateRoute>
+                    <UserDashboardMain />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/user-dashboard/:slug/:id"
+                element={
+                  <UserPrivateRoute>
+                    <UserDashboardMain />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
                 path="/vendor-dashboard"
                 element={
                   <VendorPrivateRoute>

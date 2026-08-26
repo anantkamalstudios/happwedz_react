@@ -1,0 +1,23 @@
+# Four source files under Travels/ were once read as Windows-1252 and re-saved
+# as UTF-8, which permanently replaced every bullet, rupee sign, arrow and emoji
+# in them with mojibake — 📍 became "ðŸ“", • became "â€¢", ₹ became "â‚¹".
+# Pinning the charset here is what stops an editor round-trip doing it again;
+# VS Code, JetBrains and most editors honour this file.
+
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# The working tree is CRLF throughout, so this records that rather than
+# changing it — flipping to LF would rewrite every file in the repo.
+end_of_line = crlf
+
+[*.{js,jsx,ts,tsx,css,scss,json,html}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false

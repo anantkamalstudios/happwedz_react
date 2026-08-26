@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
 import {
   ArrowRight,
   Briefcase,
@@ -13,6 +12,12 @@ import {
 } from "lucide-react";
 import { fetchCabQuotes, flattenCabQuotes } from "../../../../services/api/cabApi";
 import { formatDateTime as fmtDateTime } from "../../../../utils/dateFormat";
+import {
+  saveBookingDraft,
+  readBookingDraft,
+  clearBookingDraft,
+  loginRedirect,
+} from "../../../../utils/bookingDraft";
 import "./index.css";
 
 const formatFare = (value) =>
@@ -213,17 +218,35 @@ export default function CabSearchResults() {
   const journeyInfo = data?.journeyInfo;
   const route = data?.routeDetails;
 
-  const handleSelectQuote = (quote) => {
-    if (!isAuthenticated || !user?.id) {
-      toast.error("Please login before booking a cab.");
-      navigate("/customer-login");
-      return;
-    }
-
+  const goToBooking = (quote) => {
     navigate("/honeymoon/cabs/book", {
       state: { quote, journeyInfo, routeDetails: route, searchPayload: payload },
     });
   };
+
+  const handleSelectQuote = (quote) => {
+    if (!isAuthenticated || !user?.id) {
+      // Park the chosen quote so signing in resumes the booking instead of
+      // dropping the user back on an undifferentiated list of quotes.
+      saveBookingDraft({
+        kind: "cab",
+        meta: { quote, journeyInfo, routeDetails: route, searchPayload: payload },
+      });
+      navigate(...loginRedirect(location, "cab"));
+      return;
+    }
+
+    goToBooking(quote);
+  };
+
+  // Returning from login with a parked quote: pick the booking back up.
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return;
+    const draft = readBookingDraft({ kind: "cab" });
+    if (!draft?.meta?.quote) return;
+    clearBookingDraft();
+    navigate("/honeymoon/cabs/book", { state: draft.meta });
+  }, [isAuthenticated, user?.id, navigate]);
 
   if (!payload) {
     return (

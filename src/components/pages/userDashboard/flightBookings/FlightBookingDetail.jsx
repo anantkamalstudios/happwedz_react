@@ -7,6 +7,7 @@ import {
   FaChevronDown, FaChevronUp, FaCreditCard,
 } from "react-icons/fa";
 import CancellationModal from "./CancellationModal";
+import InvoiceDownloadButton from "../../../ui/InvoiceDownloadButton";
 import { formatDateTime } from "../../../../utils/dateFormat";
 
 const loadRazorpay = () =>
@@ -96,6 +97,18 @@ export default function FlightBookingDetail() {
   const [fareRuleLoading, setFareRuleLoading] = useState(false);
   const [liveDataLoading, setLiveDataLoading] = useState(false);
   const [paying, setPaying] = useState(false);
+
+  // DEBUG: Log booking object
+  useEffect(() => {
+    if (booking) {
+      console.log("=== FLIGHT BOOKING DEBUG ===");
+      console.log("Full booking:", booking);
+      console.log("razorpay_order_id:", booking.razorpay_order_id);
+      console.log("razorpay_payment_id:", booking.razorpay_payment_id);
+      console.log("payment_id:", booking.payment_id);
+      console.log("order_id:", booking.order_id);
+    }
+  }, [booking]);
 
   // Pay for a HELD booking → Razorpay → confirm-book (tickets the held PNR).
   const payConfirm = async () => {
@@ -235,7 +248,7 @@ export default function FlightBookingDetail() {
 
   // If no booking passed via state, redirect back to list
   if (!booking) {
-    navigate("/user-dashboard/my-bookings", { replace: true });
+    navigate("/user-dashboard/booking/travel/flights", { replace: true });
     return null;
   }
 
@@ -247,7 +260,7 @@ export default function FlightBookingDetail() {
       {/* Back */}
       <button
         className="btn btn-link ps-0 mb-3 fs-16 text-decoration-none"
-        onClick={() => navigate("/user-dashboard/my-bookings")}
+        onClick={() => navigate("/user-dashboard/booking/travel/flights")}
       >
         <FaArrowLeft className="me-2" />
         Back to My Bookings
@@ -427,27 +440,38 @@ export default function FlightBookingDetail() {
           )}
 
           {/* Action buttons */}
-          {!isCancelled && !cancelRequested && (
-            <div className="d-flex justify-content-end gap-2">
-              {isOnHold && (
+          <div className="d-flex justify-content-end gap-2 flex-wrap">
+            {booking.razorpay_order_id && (
+              <InvoiceDownloadButton
+                paymentId={booking.razorpay_order_id}
+                invoiceNumber={booking.order_id}
+                bookingType="flight"
+                className="btn btn-outline-secondary px-4"
+                label="Download Invoice"
+              />
+            )}
+            {!isCancelled && !cancelRequested && (
+              <>
+                {isOnHold && (
+                  <button
+                    className="btn btn-primary px-4"
+                    onClick={payConfirm}
+                    disabled={paying}
+                  >
+                    <FaCreditCard className="me-2" />
+                    {paying ? "Processing…" : "Pay & Confirm"}
+                  </button>
+                )}
                 <button
-                  className="btn btn-primary px-4"
-                  onClick={payConfirm}
-                  disabled={paying}
+                  className="btn btn-danger px-4"
+                  onClick={() => setCancelModalOpen(true)}
                 >
-                  <FaCreditCard className="me-2" />
-                  {paying ? "Processing…" : "Pay & Confirm"}
+                  <FaBan className="me-2" />
+                  Cancel Booking
                 </button>
-              )}
-              <button
-                className="btn btn-danger px-4"
-                onClick={() => setCancelModalOpen(true)}
-              >
-                <FaBan className="me-2" />
-                Cancel Booking
-              </button>
-            </div>
-          )}
+              </>
+            )}
+          </div>
 
           {isCancelled && (
             <div className="alert alert-danger mb-0 fs-14">
