@@ -1,4 +1,5 @@
 import { formatDateWithWeekday } from "./dateFormat";
+import { airlineLogo } from './airlineLogo';
 
 /**
  * Build TripJack-shaped search query from form inputs
@@ -104,7 +105,7 @@ export const mapTripJackFlight = (flight) => {
   const lastSegment = flight.sI[flight.sI.length - 1];
   const airline = firstSegment.fD.aI;
   const stops = flight.sI.length - 1;
-  const duration = flight.sI.reduce((sum, seg) => sum + seg.duration, 0);
+  const duration = getTripDurationMinutes(flight);
 
   const fares = flight.totalPriceList.map((fare) => ({
     id: fare.id,
@@ -122,7 +123,7 @@ export const mapTripJackFlight = (flight) => {
     airline: {
       code: airline.code,
       name: airline.name,
-      logo: `https://airlines.airhex.com/airlines-logo/${airline.code.toLowerCase()}.png`,
+      logo: airlineLogo(airline.code),
     },
     flightNumber: firstSegment.fD.fN,
     departure: {
@@ -169,6 +170,29 @@ export const mapTripJackFlight = (flight) => {
 export const formatPrice = (price) => {
   return `₹${Number(price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 };
+
+/**
+ * Total journey time for a TripJack trip, in minutes.
+ *
+ * `sI[].duration` is only the airborne time of that segment, so summing it
+ * alone understates any connecting itinerary by the whole layover — a BOM-PNQ
+ * 1-stop reads 4h 40m instead of its real 13h 00m.
+ *
+ * `sI[].cT` is the connection time that follows a segment (verified against the
+ * certification logs: it matches the gap to the next departure on 587/587
+ * connections, and is absent on the final segment). Adding both is also
+ * timezone-safe — they are elapsed minutes, not wall-clock differences, so this
+ * stays correct across international itineraries where subtracting the local
+ * departure from the local arrival does not.
+ *
+ * @param {object} trip - TripJack tripInfo (expects `sI`)
+ * @returns {number} total minutes from first departure to final arrival
+ */
+export const getTripDurationMinutes = (trip) =>
+  (trip?.sI || []).reduce(
+    (total, seg) => total + (seg?.duration || 0) + (seg?.cT || 0),
+    0,
+  );
 
 /**
  * Format duration in hours and minutes

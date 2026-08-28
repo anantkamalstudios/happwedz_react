@@ -163,11 +163,21 @@ export const loadRazorpayScript = () => {
  * Creates a Razorpay order to collect the fare from the customer.
  * Response: { keyId, razorpayOrderId, amount (paise), currency, bookingId }
  */
-export const createCabPaymentOrder = async ({ bookingId, amount }, options = {}) => {
+/**
+ * @param amount          what the customer pays, markup included
+ * @param supplierAmount  what TripJack is owed for the quote, markup excluded
+ *
+ * These are separate because the settlement call validates against the quote:
+ * sending the marked-up figure is rejected with "Net Payable Amount is <quote>".
+ */
+export const createCabPaymentOrder = async (
+  { bookingId, amount, supplierAmount },
+  options = {},
+) => {
   try {
     const response = await axiosInstance.post(
       "tripjack-cabs/payment/create-order",
-      { bookingId, amount },
+      { bookingId, amount, supplierAmount },
       { signal: options?.signal },
     );
     return response?.data || null;

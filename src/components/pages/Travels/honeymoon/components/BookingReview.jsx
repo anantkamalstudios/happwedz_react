@@ -1,56 +1,16 @@
 import { useState, useMemo } from 'react';
-import { FaPlane, FaUser, FaEnvelope, FaPhone, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { createFlightPaymentOrder, verifyAndBookFlight, getFareRule, holdFlightBooking } from '../../../../../services/api/flightApi';
-import FlightAddons from './FlightAddons';
-import { formatDate as fmtDate } from '../../../../../utils/dateFormat';
+import { FaSuitcase, FaUtensils } from 'react-icons/fa';
+import { createFlightPaymentOrder, verifyAndBookFlight, holdFlightBooking } from '../../../../../services/api/flightApi';
+import { ssrForTraveller, addOnTotal, addOnBreakdown } from './FlightAddOn';
+import FareSummary from './FareSummary';
+import FlightSegments from './FlightSegments';
+import { shortDob } from './flightFormat';
 
-const policyLabel = (type) => ({ CANCELLATION: 'Cancellation', DATECHANGE: 'Date Change', NO_SHOW: 'No Show', SEAT_CHARGEABLE: 'Seat' }[type] || type);
-const timeLabel = (p) => {
-  if (p.pp) return p.pp.replace(/_/g, ' ');
-  if (p.et != null && p.st != null) return `${p.st}h – ${p.et}h before departure`;
-  return 'As per policy';
-};
-function FareRuleDisplay({ data }) {
-  const rule = data?.farerule || {};
-  const routes = Object.keys(rule);
-  if (!routes.length) return <p className="text-muted small mb-0">No fare rules available.</p>;
-  return (
-    <div>
-      {routes.map((route) => {
-        const { tfr, miscInfo } = rule[route];
-        return (
-          <div key={route} className="mb-3">
-            <div className="fw-semibold fs-14 mb-2">{route.replace('-', ' → ')}</div>
-            {miscInfo?.length ? (
-              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', maxHeight: 200, overflowY: 'auto' }}>{miscInfo.join('\n')}</pre>
-            ) : tfr ? (
-              Object.keys(tfr).map((type) => {
-                const policies = Array.isArray(tfr[type]) ? tfr[type] : [tfr[type]];
-                return (
-                  <div key={type} className="mb-2">
-                    <div className="fw-medium fs-13 text-secondary mb-1">{policyLabel(type)}</div>
-                    {policies.map((p, i) => (
-                      <div key={i} className="d-flex flex-wrap gap-3 fs-13 py-1 border-bottom">
-                        <span className="text-muted">{timeLabel(p)}</span>
-                        <span>Airline fee: <strong>₹{Number(p.amount || 0).toLocaleString('en-IN')}</strong></span>
-                        {p.additionalFee ? <span>Platform fee: <strong>₹{Number(p.additionalFee).toLocaleString('en-IN')}</strong></span> : null}
-                        {p.policyInfo ? <span className="text-muted fst-italic">{p.policyInfo}</span> : null}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })
-            ) : (
-              <p className="text-muted small mb-0">Contact support for fare rules.</p>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+/** The portal marks each traveller with their type initial after the name. */
+const PAX_INITIAL = { ADULT: 'A', CHILD: 'C', INFANT: 'I' };
 
 export default function BookingReview({ 
+  markup = 0,
   trip, 
   returnTrip, 
   fare, 
@@ -60,7 +20,8 @@ export default function BookingReview({
   contact,
   gstInfo,
   emergencyContact,
-  seatSelections,
+  addOns,
+  agentNote,
   bookingId,
   reviewData,
   onBack,
@@ -68,63 +29,41 @@ export default function BookingReview({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [fareRuleOpen, setFareRuleOpen] = useState(false);
-  const [fareRuleData, setFareRuleData] = useState(null);
-  const [fareRuleLoading, setFareRuleLoading] = useState(false);
-  const [mealSel, setMealSel] = useState({}); // `${paxIdx}_${segId}` -> {code, amount}
-  const [bagSel, setBagSel] = useState({});
+
 
   // SSR meal/baggage options per segment, from the review response.
-  const ssrSegments = useMemo(() => {
-    const ti = reviewData?.tripInfos;
-    const trips = Array.isArray(ti) ? ti : Object.values(ti || {}).flat();
-    const segs = [];
-    for (const t of trips) {
-      for (const s of (t?.sI || [])) {
-        segs.push({
-          id: String(s.id),
-          label: `${s.da?.code || ''} → ${s.aa?.code || ''}`,
-          meals: s.ssrInfo?.MEAL || [],
-          baggage: s.ssrInfo?.BAGGAGE || [],
-        });
-      }
+  // Everything seat/meal/baggage was chosen on the passenger step; the review
+  // only has to price it and fold it into the traveller payload.
+  const addonsTotal = addOnTotal(addOns);
+
+  // Add-ons are keyed by TripJack's segment id; the review labels each choice
+  // by its leg ("BOM-BLR : 2E"), so map ids back to route codes once.
+  const segRoute = useMemo(() => {
+    const map = {};
+    for (const leg of [trip, returnTrip]) {
+      for (const s of leg?.sI || []) map[s.id] = `${s.da.code}-${s.aa.code}`;
     }
-    return segs;
-  }, [reviewData]);
+    return map;
+  }, [trip, returnTrip]);
 
-  // Total cost of selected meals + baggage.
-  const addonsTotal = useMemo(() => {
-    let t = 0;
-    Object.values(mealSel).forEach((s) => { t += Number(s.amount) || 0; });
-    Object.values(bagSel).forEach((s) => { t += Number(s.amount) || 0; });
-    return t;
-  }, [mealSel, bagSel]);
-
-  // Build per-traveller ssrMealInfos / ssrBaggageInfos from the selections.
-  const ssrForTraveller = (idx) => {
-    const ssrMealInfos = ssrSegments
-      .map((seg) => { const sel = mealSel[`${idx}_${seg.id}`]; return sel ? { key: seg.id, code: sel.code } : null; })
-      .filter(Boolean);
-    const ssrBaggageInfos = ssrSegments
-      .map((seg) => { const sel = bagSel[`${idx}_${seg.id}`]; return sel ? { key: seg.id, code: sel.code } : null; })
-      .filter(Boolean);
-    return { ssrMealInfos, ssrBaggageInfos };
-  };
-
-  const handleToggleFareRule = async () => {
-    setFareRuleOpen((prev) => !prev);
-    if (!fareRuleOpen && !fareRuleData && bookingId) {
-      setFareRuleLoading(true);
-      try {
-        const data = await getFareRule(bookingId, 'REVIEW');
-        setFareRuleData(data);
-      } catch {
-        setFareRuleData({ error: true });
-      } finally {
-        setFareRuleLoading(false);
-      }
-    }
-  };
+  /**
+   * Flatten one passenger's picks for a kind into [{ route, text }].
+   * Seats store a single object per leg; meals and baggage store a map of
+   * code -> item, so both shapes are handled here.
+   */
+  const segmentChoices = (bySeg) =>
+    Object.entries(bySeg || {})
+      .map(([segId, val]) => {
+        const route = segRoute[segId] || segId;
+        const text = val?.code
+          ? val.code
+          : Object.values(val || {})
+              .filter((i) => i?.qty)
+              .map((i) => (i.qty > 1 ? `${i.desc || i.code} × ${i.qty}` : i.desc || i.code))
+              .join(', ');
+        return { route, text };
+      })
+      .filter((x) => x.text);
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -140,116 +79,52 @@ export default function BookingReview({
     });
   };
 
-  const formatTime = (dateStr) => {
-    return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  };
-
-  const formatDate = (dateStr) => fmtDate(dateStr);
-
-  const formatDuration = (minutes) => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h}h ${m}m`;
-  };
-
   // Get confirmed amount from review API response
-  const getConfirmedAmount = () => {
-    if (!reviewData) {
-      // Fallback to calculated amount if reviewData is not available
-      return calculateTotalAmount();
-    }
-
-    // Try different possible paths in the review response
-    let totalFlightAmount = 0;
-
-    // Path 1: reviewData.results[] shape
-    if (Array.isArray(reviewData.results) && reviewData.results.length > 0) {
-      totalFlightAmount = reviewData.results.reduce((sum, r) => {
-        const fare = r?.fare?.fd?.ADULT?.fC?.TF || r?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
-        return sum + Number(fare || 0);
-      }, 0);
-    }
-    // Path 2: reviewData.totalPriceList[] shape
-    else if (Array.isArray(reviewData.totalPriceList) && reviewData.totalPriceList.length > 0) {
-      totalFlightAmount = Number(reviewData.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0);
-    }
-    // Path 3a: reviewData.tripInfos is ARRAY (your current response)
-    else if (Array.isArray(reviewData.tripInfos) && reviewData.tripInfos.length > 0) {
-      totalFlightAmount = reviewData.tripInfos.reduce((sum, trip) => {
-        const fare = trip?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
-        return sum + Number(fare || 0);
-      }, 0);
-    }
-    // Path 3b: reviewData.tripInfos is OBJECT with numeric keys
-    else if (reviewData.tripInfos && typeof reviewData.tripInfos === 'object') {
-      const tripInfosValues = Object.values(reviewData.tripInfos);
-      totalFlightAmount = tripInfosValues.reduce((sum, routeTrips) => {
-        if (!Array.isArray(routeTrips) || routeTrips.length === 0) return sum;
-        const routeFare = routeTrips[0]?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
-        return sum + Number(routeFare || 0);
-      }, 0);
-    }
-    // Path 4: direct totalFare
-    else if (reviewData.totalFare) {
-      totalFlightAmount = Number(reviewData.totalFare || 0);
-    }
-
-    if (!totalFlightAmount || Number.isNaN(totalFlightAmount)) {
-      console.warn('Could not find confirmed amount in reviewData, using calculated amount');
-      totalFlightAmount = calculateTotalAmount();
-    }
-
-    // Add seat + add-on (meal/baggage) charges
-    const seatTotal = seatSelections?.reduce((sum, seat) => sum + (seat.amount || 0), 0) || 0;
-
-    return totalFlightAmount + seatTotal + addonsTotal;
+  const paxCounts = {
+    ADULT: Number(searchParams.adults || 1),
+    CHILD: Number(searchParams.children || 0),
+    INFANT: Number(searchParams.infants || 0),
   };
+
+  /**
+   * Sum a fare component across every passenger type.
+   *
+   * `fd` is keyed by pax type and each amount is per passenger, so reading
+   * `fd.ADULT` alone prices the booking for one adult regardless of who is
+   * actually travelling.
+   */
+  const sumAcrossPax = (tripFare, key) =>
+    Object.entries(paxCounts).reduce((total, [type, count]) => {
+      const amount = tripFare?.fd?.[type]?.fC?.[key];
+      return total + (amount ? amount * count : 0);
+    }, 0);
+
+  /** Grand total TripJack quoted for this session, across all passengers. */
+  const reviewGrandTotal = () =>
+    Number(
+      reviewData?.totalPriceInfo?.totalFareDetail?.fC?.TF ??
+        reviewData?.totalPriceInfo?.totalFareDetail?.fC?.NF ??
+        0,
+    );
 
   const calculateTotalAmount = () => {
-    const adults = searchParams.adults || 1;
-    const onwardTotal = fare.fd.ADULT.fC.TF * adults;
-    const returnTotal = returnFare ? returnFare.fd.ADULT.fC.TF * adults : 0;
-    const seatTotal = seatSelections?.reduce((sum, seat) => sum + (seat.amount || 0), 0) || 0;
-    return onwardTotal + returnTotal + seatTotal;
+    const legs = [fare, returnFare].filter(Boolean);
+    return legs.reduce((n, f) => n + sumAcrossPax(f, 'TF'), 0) + addonsTotal;
   };
 
-  const renderFlightSummary = (flightTrip, flightFare, title) => {
-    const first = flightTrip.sI[0];
-    const last = flightTrip.sI[flightTrip.sI.length - 1];
-    const airline = first.fD.aI;
-    const duration = flightTrip.sI.reduce((sum, seg) => sum + seg.duration, 0);
-    const stops = flightTrip.sI.length - 1;
-
-    return (
-      <div className="flight-summary-compact mb-3">
-        <h6 className="flight-summary-title">{title}</h6>
-        <div className="d-flex align-items-center gap-3">
-          <img
-            src={`https://logos.skyscnr.com/images/airlines/favicon/${airline.code}.png`}
-            alt={airline.name}
-            className="airline-logo-sm"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = `https://airlines.airhex.com/airlines-logo/${airline.code.toLowerCase()}.png`;
-            }}
-          />
-          <div className="flex-grow-1">
-            <div className="d-flex justify-content-between align-items-center">
-              <div>
-                <div className="airline-name-sm">{airline.name} {first.fD.fN}</div>
-                <div className="flight-route-sm">
-                  {first.da.code} {formatTime(first.dt)} → {last.aa.code} {formatTime(last.at)}
-                </div>
-              </div>
-              <div className="text-end">
-                <div className="flight-duration-sm">{formatDuration(duration)}</div>
-                <div className="flight-stops-sm">{stops === 0 ? 'Non-Stop' : `${stops} Stop${stops > 1 ? 's' : ''}`}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  /**
+   * What the traveller is charged.
+   *
+   * `totalPriceInfo.totalFareDetail` is TripJack's own grand total for the
+   * session and is authoritative — it already spans every passenger. Deriving
+   * it by walking `tripInfos[].fd.ADULT` instead charged for a single adult
+   * while TripJack was still paid in full for the whole party.
+   */
+  const getConfirmedAmount = () => {
+    const flightAmount = reviewGrandTotal() || calculateTotalAmount() - addonsTotal;
+    // The markup is deliberately excluded from `paymentInfos` below — TripJack
+    // validates that against its own session fare and rejects any difference.
+    return flightAmount + addonsTotal + Number(markup || 0);
   };
 
   // Build the TripJack book payload + create_order/hold fields (shared by Pay & Hold).
@@ -266,24 +141,18 @@ export default function BookingReview({
 
     // Attach selected seats + meals + baggage (SSR) to each traveller, keyed by segment id.
     const travellerInfoWithSsr = travellerInfo.map((t, idx) => {
-      const seatsForPax = (seatSelections || []).filter((s) => s.passengerId === `passenger_${idx}`);
-      const { ssrMealInfos, ssrBaggageInfos } = ssrForTraveller(idx);
-      const out = { ...t };
-      if (seatsForPax.length) out.ssrSeatInfos = seatsForPax.map((s) => ({ key: String(s.segmentId), code: s.seatNo }));
-      if (ssrMealInfos.length) out.ssrMealInfos = ssrMealInfos;
-      if (ssrBaggageInfos.length) out.ssrBaggageInfos = ssrBaggageInfos;
-      return out;
+      return { ...t, ...ssrForTraveller(addOns, idx, reviewData) };
     });
 
-    const seatTotal = (seatSelections || []).reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
-    // TripJack validates paymentInfos.amount against TF + all SSR (seat/meal/baggage) charges.
-    const tripjackPaymentAmount = tripjackFare + seatTotal + addonsTotal;
+    // TripJack validates paymentInfos.amount against TF plus every SSR charge.
+    const tripjackPaymentAmount = tripjackFare + addonsTotal;
 
     const payload = {
       bookingId: bookingId,
       paymentInfos: [{ amount: tripjackPaymentAmount }],
       travellerInfo: travellerInfoWithSsr,
       deliveryInfo: { emails: [contact.email], contacts: [fullPhoneNumber] },
+      ...(agentNote?.trim() && { remarks: agentNote.trim() }),
       ...(gstInfo && {
         gstInfo: {
           gstNumber: gstInfo.gstNumber,
@@ -432,7 +301,7 @@ export default function BookingReview({
     <div className="row">
       <div className="col-lg-8">
         <div className="booking-card">
-          <h4 className="booking-card-title">Review Your Booking</h4>
+          <h4 className="booking-card-title">Review</h4>
           
           {error && (
             <div className="alert alert-danger" role="alert">
@@ -440,101 +309,68 @@ export default function BookingReview({
             </div>
           )}
           
-          <div className="review-section">
-            <h5 className="review-section-title">
-              <FaPlane className="me-2" />
-              Flight Details
-            </h5>
-            {renderFlightSummary(trip, fare, 'Onward Journey')}
-            {returnTrip && renderFlightSummary(returnTrip, returnFare, 'Return Journey')}
-          </div>
-          
-          {/* Fare Rules — fetched with REVIEW flowType so rules reflect the confirmed booking session */}
-          <div className="review-section mt-3">
-            <button
-              type="button"
-              className="btn btn-link p-0 fs-14 text-decoration-none d-flex align-items-center gap-2"
-              onClick={handleToggleFareRule}
-            >
-              {fareRuleOpen ? <FaChevronUp /> : <FaChevronDown />}
-              View Fare Rules (Cancellation &amp; Date Change policy)
-            </button>
-            {fareRuleOpen && (
-              <div className="mt-2 p-3 rounded" style={{ background: '#f8f9fa' }}>
-                {fareRuleLoading && (
-                  <div className="text-center py-2">
-                    <span className="spinner-border spinner-border-sm me-2" />
-                    Loading fare rules…
-                  </div>
-                )}
-                {!fareRuleLoading && fareRuleData?.error && (
-                  <p className="text-muted small mb-0">Fare rules unavailable. Please contact support.</p>
-                )}
-                {!fareRuleLoading && !fareRuleData?.error && (
-                  <FareRuleDisplay data={fareRuleData} />
-                )}
-              </div>
-            )}
-          </div>
+          <FlightSegments trip={trip} fare={fare} />
 
-          <div className="review-section mt-4">
-            <h5 className="review-section-title">
-              <FaUser className="me-2" />
-              Passenger Details
-            </h5>
-            {travellerInfo.map((traveller, index) => (
-              <div key={index} className="passenger-review-item">
-                <div className="passenger-review-number">Passenger {index + 1}</div>
-                <div className="passenger-review-details">
-                  <strong>{traveller.ti} {traveller.fN} {traveller.lN}</strong>
-                  <span className="ms-3 text-muted">{traveller.pt}</span>
-                  <span className="ms-3 text-muted">DOB: {traveller.dob}</span>
-                </div>
+          {returnTrip && <FlightSegments trip={returnTrip} fare={returnFare} className="mt-3" />}
+
+          {/* The portal lays passengers out as a table with their seat and
+              per-segment meal and baggage choices beside each name. */}
+          <div className="rv-paxblock">
+            <h4 className="rv-heading">Passenger Details <span>({travellerInfo.length})</span></h4>
+
+            <div className="rv-table">
+              <div className="rv-thead">
+                <div>Sr.</div>
+                <div>Name, Age &amp; Passport</div>
+                <div>Seat Booking</div>
+                <div>Meal &amp; Baggage Preference</div>
               </div>
-            ))}
-          </div>
-          
-          <div className="review-section mt-4">
-            <h5 className="review-section-title">
-              <FaEnvelope className="me-2" />
-              Contact Information
-            </h5>
-            <div className="contact-review">
-              <div className="contact-review-item">
-                <FaPhone className="me-2" />
-                {contact.countryCode} {contact.mobile}
-              </div>
-              <div className="contact-review-item">
-                <FaEnvelope className="me-2" />
-                {contact.email}
-              </div>
+
+              {travellerInfo.map((t, i) => {
+                const seats = segmentChoices(addOns?.seats?.[i]);
+                const bags = segmentChoices(addOns?.baggage?.[i]);
+                const meals = segmentChoices(addOns?.meals?.[i]);
+                return (
+                  <div className="rv-trow" key={i}>
+                    <div className="rv-td-sr">{i + 1}</div>
+                    <div className="rv-td-name">
+                      <span className="rv-paxname">
+                        {t.ti} {t.fN} {t.lN} ({PAX_INITIAL[t.pt] || 'A'})
+                      </span>
+                      {t.dob ? <span className="rv-paxdob">{shortDob(t.dob)}</span> : null}
+                      {t.pNum ? <span className="rv-paxdob">{t.pNum}</span> : null}
+                    </div>
+                    <div className="rv-td-seat">
+                      {seats.length
+                        ? seats.map((s) => <span key={s.route} className="rv-chip">{s.route} : {s.text}</span>)
+                        : <span className="rv-chip">NA</span>}
+                    </div>
+                    <div className="rv-td-ssr">
+                      {bags.map((s) => (
+                        <div key={`b-${s.route}`} className="rv-ssr-line">
+                          <FaSuitcase size={11} /> - <b>{s.route} : </b><span>{s.text}</span>
+                        </div>
+                      ))}
+                      {meals.map((s) => (
+                        <div key={`m-${s.route}`} className="rv-ssr-line">
+                          <FaUtensils size={11} /> - <b>{s.route} : </b><span>{s.text}</span>
+                        </div>
+                      ))}
+                      {!bags.length && !meals.length ? <span className="rv-none">—</span> : null}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          <FlightAddons
-            segments={ssrSegments}
-            travellers={travellerInfo}
-            mealSel={mealSel}
-            bagSel={bagSel}
-            setMealSel={setMealSel}
-            setBagSel={setBagSel}
-          />
+          <div className="rv-contact">
+            <h4 className="rv-heading">Contact Details</h4>
+            <p>email : <span className="rv-contact-value">{contact.email}</span></p>
+            <p>mobile : <span className="rv-contact-value">{contact.countryCode} {contact.mobile}</span></p>
+          </div>
 
-          {seatSelections && seatSelections.length > 0 && (
-            <div className="review-section mt-4">
-              <h5 className="review-section-title">Selected Seats</h5>
-              <div className="seats-review">
-                {seatSelections.map((seat, index) => (
-                  <div key={index} className="seat-review-item">
-                    <span className="seat-passenger">{seat.passengerName || `Passenger ${index + 1}`}</span>
-                    <span className="seat-number-badge">{seat.seatNo}</span>
-                    <span className="seat-amount">₹{Number(seat.amount).toLocaleString('en-IN')}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
+
           {gstInfo && (
             <div className="review-section mt-4">
               <h5 className="review-section-title">GST Details</h5>
@@ -543,81 +379,42 @@ export default function BookingReview({
                 <div><strong>GST Number:</strong> {gstInfo.gstNumber}</div>
                 <div><strong>Email:</strong> {gstInfo.companyEmail}</div>
               </div>
+
             </div>
           )}
+          <div className="rv-footer">
+            <div className="rv-footer-left">
+              <span className="rv-terms">
+                By proceeding, I acknowledge and agree to the{' '}
+                <a href="/terms" target="_blank" rel="noreferrer">Terms of Use and Privacy Policy.</a>
+              </span>
+              <button type="button" className="itin-btn itin-btn-back" onClick={onBack} disabled={loading}>
+                « Back
+              </button>
+            </div>
+            <div className="rv-footer-right">
+              {/* Blocking is only offered when the fare allows it (conditions.isBA). */}
+              {reviewData?.conditions?.isBA && (
+                <button type="button" className="itin-btn itin-btn-next" onClick={handleHold} disabled={loading}>
+                  {loading ? 'Please wait…' : '⌛ Block'}
+                </button>
+              )}
+              <button type="button" className="itin-btn itin-btn-next" onClick={handleProceedToPayment} disabled={loading}>
+                {loading ? 'Processing…' : '» PROCEED TO PAY'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       
       <div className="col-lg-4">
-        <div className="booking-card sticky-summary">
-          <h5 className="booking-card-title">Fare Summary</h5>
-          
-          <div className="fare-summary-review">
-            <div className="fare-row">
-              <span>Onward Flight</span>
-              <span>₹{Number(fare.fd.ADULT.fC.TF * (searchParams.adults || 1)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-            </div>
-            {returnFare && (
-              <div className="fare-row">
-                <span>Return Flight</span>
-                <span>₹{Number(returnFare.fd.ADULT.fC.TF * (searchParams.adults || 1)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </div>
-            )}
-            {seatSelections && seatSelections.length > 0 && (
-              <div className="fare-row">
-                <span>Seat Charges</span>
-                <span>₹{Number(seatSelections.reduce((sum, seat) => sum + (seat.amount || 0), 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </div>
-            )}
-            {addonsTotal > 0 && (
-              <div className="fare-row">
-                <span>Meals &amp; Baggage</span>
-                <span>₹{Number(addonsTotal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </div>
-            )}
-            <div className="fare-row fare-total mt-3 pt-3">
-              <span>Total Amount</span>
-              <span>₹{Number(getConfirmedAmount()).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-            </div>
-          </div>
-          
-          <div className="terms-notice mt-3">
-            <small className="text-muted">
-              By proceeding, you agree to our Terms & Conditions and Privacy Policy.
-            </small>
-          </div>
-          
-          <div className="d-flex gap-2 mt-4">
-            <button
-              type="button"
-              className="btn btn-outline-secondary flex-grow-1"
-              onClick={onBack}
-              disabled={loading}
-            >
-              Back
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary flex-grow-1"
-              onClick={handleProceedToPayment}
-              disabled={loading}
-            >
-              {loading ? 'Processing...' : 'Confirm Booking'}
-            </button>
-          </div>
-
-          {/* Hold option — only when TripJack allows blocking this fare (conditions.isBA) */}
-          {reviewData?.conditions?.isBA && (
-            <button
-              type="button"
-              className="btn btn-outline-primary w-100 mt-2"
-              onClick={handleHold}
-              disabled={loading}
-            >
-              {loading ? 'Please wait…' : 'Hold this fare (pay later)'}
-            </button>
-          )}
-        </div>
+        <FareSummary
+          fare={fare}
+          returnFare={returnFare}
+          searchParams={searchParams}
+          markup={markup}
+          extras={Object.entries(addOnBreakdown(addOns)).map(([label, amount]) => ({ label, amount }))}
+        />
       </div>
     </div>
   );
