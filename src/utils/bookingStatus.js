@@ -13,7 +13,12 @@ export const STATUS_META = {
   confirmed: { label: "Confirmed", tone: "ok" },
   booked: { label: "Booked", tone: "ok" },
   replied: { label: "Replied", tone: "ok" },
+  // Shop orders move Pending → Processing → Delivered. Delivered is its own
+  // state rather than "Confirmed": a confirmed order and one already in your
+  // hands are not the same news.
+  delivered: { label: "Delivered", tone: "ok" },
   pending: { label: "Pending", tone: "warn" },
+  processing: { label: "Processing", tone: "info" },
   hold: { label: "On Hold", tone: "info" },
   cancelled: { label: "Cancelled", tone: "stop" },
   failed: { label: "Failed", tone: "stop" },
@@ -79,6 +84,18 @@ const MAPS = {
     CANCELED: "cancelled",
     FAILED: "failed",
   },
+  // The store's Order.status enum is exactly ["Pending", "Processing",
+  // "Delivered", "Cancel"] — note "Cancel", not "Cancelled". The other two
+  // spellings are here so a later widening of that enum still lands somewhere
+  // sensible rather than falling through to "unknown".
+  shop: {
+    PENDING: "pending",
+    PROCESSING: "processing",
+    DELIVERED: "delivered",
+    CANCEL: "cancelled",
+    CANCELLED: "cancelled",
+    CANCELED: "cancelled",
+  },
 };
 
 // Where the generic display label loses information the user needs.
@@ -125,6 +142,7 @@ export const normalizeStatus = (raw, source) => {
 const CANONICAL_FILTERS = {
   quotation: ["pending", "replied", "booked", "cancelled"],
   travel: ["confirmed", "pending", "hold", "cancelled"],
+  shop: ["pending", "processing", "delivered", "cancelled"],
 };
 
 /**

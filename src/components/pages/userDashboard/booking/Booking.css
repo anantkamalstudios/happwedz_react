@@ -577,3 +577,72 @@
 .hw-bk-actions .invoice-download-button-wrapper .hw-bk-btn {
   width: 100%;
 }
+
+/* ── Shop order line items ───────────────────────────────────────────────
+   Rendered inside BookingCard's children slot when a card is expanded, so it
+   sits between the price and the actions row. Same muted palette as .hw-bk-row
+   above — the items are supporting detail, not a second headline. */
+.hw-bk-items {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0.6rem 0 0;
+  border-top: 1px solid #f4ebef;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.hw-bk-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.hw-bk-item img,
+.hw-bk-item-noimg {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #f6eff3;
+}
+
+.hw-bk-item-noimg {
+  display: grid;
+  place-items: center;
+  color: #a094a0;
+}
+
+/* min-width: 0 so a long product name truncates instead of pushing the line
+   total out of the card. */
+.hw-bk-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.hw-bk-item-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #5c525a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hw-bk-item-meta {
+  font-size: 0.72rem;
+  color: #a094a0;
+  font-variant-numeric: tabular-nums;
+}
+
+.hw-bk-item-total {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6d6069;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}

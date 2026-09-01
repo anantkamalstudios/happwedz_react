@@ -723,16 +723,19 @@ const ShaadiAI = () => {
     // Load chat list on mount
     useEffect(() => {
         fetchChatList();
-        
-        // Add scroll padding to account for sticky header and sticky input
-        document.documentElement.style.scrollPaddingTop = "80px";
-        document.documentElement.style.scrollPaddingBottom = "120px";
-        
-        return () => {
-            document.documentElement.style.scrollPaddingTop = "";
-            document.documentElement.style.scrollPaddingBottom = "";
-        };
     }, []);
+
+    // scroll-padding used to be set on the document here, to stop scrollIntoView
+    // from parking a new message behind the sticky header and sticky input bar.
+    //
+    // It also applied to the browser's own "keep the caret visible" scrolling.
+    // The input bar is position: sticky; bottom: 0, so with a 120px bottom
+    // padding the browser decided the caret was obscured, scrolled to lift it
+    // clear, and the bar moved down with the page — every keystroke, which is
+    // why the chat jumped while typing.
+    //
+    // The clearance is only ever needed by the one element we scroll to, so it
+    // lives on that element as scroll-margin instead. See .chatEndMarker.
 
     const fetchChatList = () => {
         try {
@@ -769,10 +772,27 @@ const ShaadiAI = () => {
 
     const handleInput = (e) => {
         setInput(e.target.value);
-        if (textareaRef.current) {
-            textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
-        }
+
+        const el = textareaRef.current;
+        if (!el) return;
+
+        // The textarea grows with its content, and measuring that requires
+        // collapsing it to `auto` first — scrollHeight cannot report a smaller
+        // height than the element already has.
+        //
+        // But collapsing it shortens the page for one frame, and the browser
+        // compensates by scrolling. On every keystroke that reads as the chat
+        // jumping around while you type. So the scroll position is captured
+        // before the measurement and put back after it, and the height is only
+        // written when it actually changed.
+        const scrollY = window.scrollY;
+        const previous = el.style.height;
+
+        el.style.height = 'auto';
+        const next = `${Math.min(el.scrollHeight, 200)}px`;
+        el.style.height = next === previous ? previous : next;
+
+        if (window.scrollY !== scrollY) window.scrollTo({ top: scrollY });
     };
 
     // Auto-save chat after each AI response to Local Storage
@@ -814,6 +834,8 @@ const ShaadiAI = () => {
                 role: m.role,
                 content: m.content,
                 ...(m.vendors && { vendors: m.vendors }),
+                ...(m.products && m.products.length > 0 && { products: m.products }),
+                ...(m.orders && m.orders.length > 0 && { orders: m.orders }),
                 ...(m.comparisons && m.comparisons.length > 0 && { comparisons: m.comparisons }),
                 ...(m.budget_breakdown && Object.keys(m.budget_breakdown).length > 0 && { budget_breakdown: m.budget_breakdown }),
                 ...(m.suggestions && m.suggestions.length > 0 && { suggestions: m.suggestions }),
@@ -985,6 +1007,8 @@ const ShaadiAI = () => {
                 role: "ai",
                 content: data.summary,
                 vendors: data.vendors,
+                products: data.products,
+                orders: data.orders,
                 comparisons: data.comparisons,
                 suggestions: data.suggestions,
                 budget_breakdown: data.budget_breakdown
@@ -1288,6 +1312,95 @@ const ShaadiAI = () => {
                                                                     <FaTags /> <span>{vendor.why_recommended?.join(" • ")}</span>
                                                                 </div>
                                                             </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* The user's own orders, when they asked about them.
+                                                    Only the orders the answer is about appear here —
+                                                    showing all of them under a reply about one would
+                                                    contradict the text above. */}
+                                                {msg.orders && msg.orders.length > 0 && (
+                                                    <div className={styles.ordersContainer}>
+                                                        {msg.orders.map((order) => (
+                                                            <div className={styles.orderCard} key={order.id}>
+                                                                <div className={styles.orderTop}>
+                                                                    <span className={styles.orderInvoice}>
+                                                                        Invoice #{order.invoice}
+                                                                    </span>
+                                                                    <span
+                                                                        className={`${styles.orderStatus} ${
+                                                                            styles["orderStatus" + String(order.status).replace(/\s/g, "")] || ""
+                                                                        }`}
+                                                                    >
+                                                                        {order.status}
+                                                                    </span>
+                                                                </div>
+                                                                <ul className={styles.orderItems}>
+                                                                    {order.items.map((item, k) => (
+                                                                        <li key={item.id || k}>
+                                                                            {item.image && (
+                                                                                <img src={item.image} alt="" loading="lazy" />
+                                                                            )}
+                                                                            <span className={styles.orderItemTitle}>
+                                                                                {item.title}
+                                                                            </span>
+                                                                            <span className={styles.orderItemQty}>
+                                                                                ×{item.quantity}
+                                                                            </span>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                                <div className={styles.orderFoot}>
+                                                                    <span>{order.itemCount} item{order.itemCount === 1 ? "" : "s"}</span>
+                                                                    <strong>₹{Number(order.total).toLocaleString("en-IN")}</strong>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Store products. Unlike vendor cards these leave the
+                                                    site — the store is a separate app on its own domain,
+                                                    so each card is an <a target="_blank"> rather than a
+                                                    click handler that pushes a route. */}
+                                                {msg.products && msg.products.length > 0 && (
+                                                    <div className={styles.productsContainer}>
+                                                        {msg.products.map((product, i) => (
+                                                            <a
+                                                                key={product.id || i}
+                                                                className={styles.productCard}
+                                                                href={product.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                <div className={styles.productThumb}>
+                                                                    {product.image
+                                                                        ? <img src={product.image} alt={product.title} loading="lazy" />
+                                                                        : <FaTags />}
+                                                                    {!product.inStock && (
+                                                                        <span className={styles.productSoldOut}>Sold out</span>
+                                                                    )}
+                                                                </div>
+                                                                <div className={styles.productBody}>
+                                                                    <span className={styles.productCategory}>{product.category}</span>
+                                                                    <h4 className={styles.productTitle}>{product.title}</h4>
+                                                                    <div className={styles.productPrice}>
+                                                                        <strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>
+                                                                        {product.originalPrice > product.price && (
+                                                                            <s>₹{Number(product.originalPrice).toLocaleString("en-IN")}</s>
+                                                                        )}
+                                                                    </div>
+                                                                    {/* Why this was picked, when it was picked for a reason
+                                                                        specific to this shopper. Only the first — the card is
+                                                                        small, and the strongest reason is listed first. */}
+                                                                    {product.reasons?.length > 0 && (
+                                                                        <span className={styles.productReason}>
+                                                                            {product.reasons[0]}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </a>
                                                         ))}
                                                     </div>
                                                 )}

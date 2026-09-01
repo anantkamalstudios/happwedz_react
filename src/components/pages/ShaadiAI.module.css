@@ -433,8 +433,15 @@
     gap: 2rem;
 }
 
+/* The sentinel scrollToBottom() scrolls to. The margin keeps the last message
+   clear of the sticky input bar below it.
+
+   This clearance used to be scroll-padding on the document, which also applied
+   to the browser's caret-into-view scrolling and made the page jump on every
+   keystroke. Scoped to this element, only our own scrollIntoView is affected. */
 .chatEndMarker {
     height: 16px;
+    scroll-margin-bottom: 130px;
 }
 
 .chatInputWrapper {
@@ -820,4 +827,233 @@
     .compVs {
         padding: 0.5rem 0;
     }
+}
+
+/* ── Store product cards ─────────────────────────────────────────────────
+   A grid rather than the vendor list's single column: products are chosen by
+   how they look, so the image has to lead. Same neutral palette as
+   .vendorCard so the two card types read as one family. */
+.productsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.9rem;
+}
+
+.productCard {
+    display: flex;
+    flex-direction: column;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+}
+
+.productCard:hover {
+    background: #ffffff;
+    border-color: #d1d5db;
+    box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.productThumb {
+    position: relative;
+    aspect-ratio: 1;
+    background: #eef0f3;
+    display: grid;
+    place-items: center;
+    color: #9ca3af;
+}
+
+.productThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.productSoldOut {
+    position: absolute;
+    inset: auto 0 0 0;
+    background: rgba(17, 24, 39, 0.78);
+    color: #fff;
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+    text-align: center;
+    padding: 0.2rem 0;
+}
+
+.productBody {
+    padding: 0.6rem 0.7rem 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.productCategory {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+}
+
+/* Two-line clamp: product names vary from "Yellow Bloom" to
+   "Sangam ( gold & silver fusion)", and a ragged card grid looks broken. */
+.productTitle {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.productPrice {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    margin-top: 0.15rem;
+}
+
+.productPrice strong {
+    color: #be185d;
+    font-weight: 700;
+}
+
+.productPrice s {
+    color: #9ca3af;
+    font-size: 0.72rem;
+}
+
+/* Why this product was suggested to this shopper — "You have nothing for the
+   reception yet". Tinted rather than plain grey so it reads as a reason the
+   assistant is giving, not as more product metadata. */
+.productReason {
+    margin-top: 0.3rem;
+    font-size: 0.66rem;
+    line-height: 1.35;
+    color: #9d174d;
+    background: #fdf2f8;
+    border-radius: 5px;
+    padding: 0.25rem 0.4rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ── The user's own orders, shown in chat ────────────────────────────────
+   A vertical list, not the product grid: an order is a receipt to read, not
+   a thing to browse and pick between. */
+.ordersContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 0.9rem;
+}
+
+.orderCard {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+}
+
+.orderTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-bottom: 0.55rem;
+}
+
+.orderInvoice {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #374151;
+    font-variant-numeric: tabular-nums;
+}
+
+.orderStatus {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+/* Status carries meaning, so it carries colour: green has arrived, amber is
+   waiting, blue is moving, red is cancelled. */
+.orderStatusDelivered { background: #dcfce7; color: #166534; }
+.orderStatusProcessing { background: #dbeafe; color: #1e40af; }
+.orderStatusPending { background: #fef3c7; color: #92400e; }
+.orderStatusCancel { background: #fee2e2; color: #991b1b; }
+
+.orderItems {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.orderItems li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.orderItems img {
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    object-fit: cover;
+    flex: none;
+    background: #eef0f3;
+}
+
+.orderItemTitle {
+    font-size: 0.78rem;
+    color: #374151;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.orderItemQty {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    flex: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.orderFoot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #eef0f3;
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.orderFoot strong {
+    font-size: 0.88rem;
+    color: #be185d;
+    font-variant-numeric: tabular-nums;
 }

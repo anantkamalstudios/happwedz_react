@@ -8,11 +8,13 @@ import HotelPanel from "./panels/HotelPanel";
 import FlightPanel from "./panels/FlightPanel";
 import CabPanel from "./panels/CabPanel";
 import InsurancePanel from "./panels/InsurancePanel";
+import ShopPanel from "./panels/ShopPanel";
 import "./Booking.css";
 
 const CATEGORIES = [
   { key: "services", label: "Wedding Services" },
   { key: "travel", label: "Honeymoon Travel" },
+  { key: "shop", label: "Shop Orders" },
 ];
 
 const TRAVEL_TABS = [
@@ -28,11 +30,16 @@ const DEFAULT_SUB = "hotels";
 /**
  * The Booking tab.
  *
- * Two horizontal categories in the pink header — Wedding Services (vendor
- * quotation requests) and Honeymoon Travel — with Travel splitting into a left
- * rail of Hotels / Flights / Cabs / Insurance.
+ * Three horizontal categories in the pink header — Wedding Services (vendor
+ * quotation requests), Honeymoon Travel, and Shop Orders — with Travel splitting
+ * into a left rail of Hotels / Flights / Cabs / Insurance.
  *
- * All five lists load together with the tab, because the rail and category
+ * Shop Orders come from the store backend, a separate service on its own
+ * MongoDB. They arrive here already reshaped into the same row vocabulary as
+ * everything else, which is why they slot in as one more category rather than
+ * needing a parallel structure.
+ *
+ * All six lists load together with the tab, because the rail and category
  * badges count them. Panels are presentational: they filter and render the rows
  * handed to them, so switching sub-tabs is instant.
  */
@@ -59,10 +66,12 @@ export default function Booking({ category, sub }) {
 
   const goToCategory = useCallback(
     (key) => {
+      // Travel is the only category with sub-tabs, so it is the only one that
+      // needs a second path segment. The rest map straight to their own key.
       navigate(
         key === "travel"
           ? `/user-dashboard/booking/travel/${lastSub.current}`
-          : "/user-dashboard/booking/services"
+          : `/user-dashboard/booking/${key}`
       );
     },
     [navigate]
@@ -84,7 +93,11 @@ export default function Booking({ category, sub }) {
     ? TRAVEL_KEYS.reduce((sum, key) => sum + countOf(key), 0)
     : null;
 
-  const categoryCount = (key) => (key === "travel" ? travelTotal : countOf("services"));
+  const categoryCount = (key) => {
+    if (key === "travel") return travelTotal;
+    if (key === "shop") return countOf("orders");
+    return countOf("services");
+  };
 
   const activeTab = TRAVEL_TABS.find((tab) => tab.key === activeSub) || TRAVEL_TABS[0];
   const ActivePanel = activeTab.Panel;
@@ -124,16 +137,27 @@ export default function Booking({ category, sub }) {
         </div>
       </div>
 
-      {activeCategory === "services" ? (
+      {activeCategory !== "travel" ? (
+        // Travel is the only category that needs the left rail, so everything
+        // else shares the solo stage.
         <div className="hw-bk-stage hw-bk-stage--solo">
           <div>
-            <WeddingServicesPanel
-              rows={state.services.rows}
-              loading={state.services.loading}
-              error={state.services.error}
-              onRetry={() => reload("services")}
-              onUpdate={(updater) => update("services", updater)}
-            />
+            {activeCategory === "shop" ? (
+              <ShopPanel
+                rows={state.orders.rows}
+                loading={state.orders.loading}
+                error={state.orders.error}
+                onRetry={() => reload("orders")}
+              />
+            ) : (
+              <WeddingServicesPanel
+                rows={state.services.rows}
+                loading={state.services.loading}
+                error={state.services.error}
+                onRetry={() => reload("services")}
+                onUpdate={(updater) => update("services", updater)}
+              />
+            )}
           </div>
         </div>
       ) : (

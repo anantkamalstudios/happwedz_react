@@ -66,6 +66,21 @@ const SOURCES = {
       return res?.status ? res.bookings || [] : [];
     },
   },
+  // Orders placed on the store (store.happywedz.com), a separate service with
+  // its own MongoDB. The HappyWedz backend resolves which store customer this
+  // user is and reshapes the orders into rows before they get here, so this
+  // fetcher looks like the other five even though the data crossed a service
+  // and a database engine to arrive.
+  //
+  // A user who has never shopped comes back { linked: false, orders: [] } — an
+  // empty panel, not an error.
+  orders: {
+    error: "Could not load your shop orders.",
+    fetch: async () => {
+      const res = await axiosInstance.get("/store/orders/mine");
+      return res.data?.success ? res.data.orders || [] : [];
+    },
+  },
 };
 
 export const SOURCE_KEYS = Object.keys(SOURCES);
