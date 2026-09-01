@@ -1,7 +1,58 @@
-import { useState } from 'react';
-import { FaUser, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
-export default function PassengerDetails({ searchParams, reviewData, onBack, onContinue }) {
+/** TripJack accepts Mr/Mrs/Ms for adults and Master/Miss for the young. */
+const titleOptions = (paxType) =>
+  paxType === 'ADULT' ? ['Mr', 'Mrs', 'Ms'] : ['Master', 'Miss'];
+
+/** Dialling codes for the markets this route set actually serves. */
+const COUNTRY_CODES = [
+  { code: '+91', name: 'India' },
+  { code: '+971', name: 'UAE' },
+  { code: '+966', name: 'Saudi Arabia' },
+  { code: '+974', name: 'Qatar' },
+  { code: '+968', name: 'Oman' },
+  { code: '+973', name: 'Bahrain' },
+  { code: '+965', name: 'Kuwait' },
+  { code: '+65', name: 'Singapore' },
+  { code: '+66', name: 'Thailand' },
+  { code: '+60', name: 'Malaysia' },
+  { code: '+94', name: 'Sri Lanka' },
+  { code: '+977', name: 'Nepal' },
+  { code: '+880', name: 'Bangladesh' },
+  { code: '+44', name: 'United Kingdom' },
+  { code: '+1', name: 'USA / Canada' },
+  { code: '+61', name: 'Australia' },
+  { code: '+64', name: 'New Zealand' },
+  { code: '+49', name: 'Germany' },
+  { code: '+33', name: 'France' },
+  { code: '+81', name: 'Japan' },
+];
+import { FaUser, FaPhone, FaEnvelope } from 'react-icons/fa';
+import TripSummaryStrip from './TripSummaryStrip';
+import FareSummary from './FareSummary';
+import FlightAddOn, { addOnBreakdown } from './FlightAddOn';
+import { FloatField, FloatSelect } from './FloatField';
+import TravellerPicker from './TravellerPicker';
+import { loadSuppressed, saveSuppressed, travellerKey } from './travellerStore';
+import { getSavedTravellers } from '../../../../../services/api/flightApi';
+
+export default function PassengerDetails({
+  searchParams,
+  reviewData,
+  trip,
+  returnTrip,
+  fare,
+  returnFare,
+  markup = 0,
+  onMarkupChange,
+  bookingId,
+  addOns,
+  onAddOnsChange,
+  onBack,
+  onContinue,
+  saved,
+}) {
   const adults = searchParams.adults || 1;
   const children = searchParams.children || 0;
   const infants = searchParams.infants || 0;
@@ -15,47 +66,195 @@ export default function PassengerDetails({ searchParams, reviewData, onBack, onC
   // Document id (student / senior citizen fares)
   const docIdApplicable = !!conditions?.dc?.ida || (searchParams.paxType && searchParams.paxType !== 'REGULAR');
   const docIdMandatory = !!conditions?.dc?.idm;
-  // PAN required for this fare (docs: conditions.ipa — Is PAN Applicable)
-  const panRequired = !!conditions?.ipa;
   // Emergency contact required (docs: conditions.iecr)
   const emergencyRequired = !!conditions?.iecr;
-  // DOB requirements per pax type
-  const adultDobReq = conditions?.dob?.adobr !== false;
+  // DOB requirements per pax type — TripJack states these per fare.
+  const dobRequired = {
+    ADULT: conditions?.dob?.adobr !== false,
+    CHILD: conditions?.dob?.cdobr !== false,
+    INFANT: conditions?.dob?.idobr !== false,
+  };
+  // anlm carries the airline's own name limits: max length and minimum length
+  // per field, plus a combined cap. The portal's "0/50" counter is this value —
+  // it is per fare, so it reads 0/32 on carriers that allow less.
+  const nameLimits = {
+    firstMax: Number(conditions?.anlm?.fN || 50),
+    lastMax: Number(conditions?.anlm?.lN || 50),
+    firstMin: Number(conditions?.anlm?.finml || 1),
+    lastMin: Number(conditions?.anlm?.lnml || 1),
+    combinedMax: Number(conditions?.anlm?.n || 0),
+  };
+  /**
+   * Age is assessed on the travel date, not today — TripJack's own picker on a
+   * 28 Aug 2026 departure allows 28 Aug 2014 as the last adult DOB and greys
+   * out everything after it, which is departure minus twelve years to the day.
+   * Anchoring on today would pass a child who turns twelve before the flight
+   * and have them refused at check-in.
+   */
+  const departureDate = trip?.sI?.[0]?.dt || null;
 
-  const [passengers, setPassengers] = useState(
-    Array.from({ length: adults + children + infants }, (_, i) => ({
-      title: 'Mr',
+  const shiftYears = (iso, years) => {
+    const d = iso ? new Date(iso) : new Date();
+    if (Number.isNaN(d.getTime())) return null;
+    d.setFullYear(d.getFullYear() - years);
+    return d;
+  };
+  const asISO = (d) => (d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : undefined);
+  const dayAfter = (d) => {
+    if (!d) return null;
+    const x = new Date(d);
+    x.setDate(x.getDate() + 1);
+    return x;
+  };
+
+  /**
+   * ADULT  12+ on the travel date        -> dob <= departure - 12y
+   * CHILD  2 to under 12 on that date    -> departure - 12y < dob <= departure - 2y
+   * INFANT under 2 on that date          -> dob > departure - 2y (and already born)
+   */
+  const dobBounds = (type) => {
+    const twelve = shiftYears(departureDate, 12);
+    const two = shiftYears(departureDate, 2);
+    const today = asISO(new Date());
+    if (type === 'CHILD') return { min: asISO(dayAfter(twelve)), max: asISO(two) };
+    if (type === 'INFANT') return { min: asISO(dayAfter(two)), max: today };
+    return { min: undefined, max: asISO(twelve) };
+  };
+
+  // Airlines on this itinerary that accept a frequent-flier number.
+  const ffAirlines = Array.isArray(conditions?.ffas) ? conditions.ffas : [];
+
+  // `saved` is the snapshot handed up on the last submit. Seeding from it is
+  // what makes Back from Review return a filled form instead of a blank one.
+  const [passengers, setPassengers] = useState(() =>
+    saved?.passengers?.length === adults + children + infants
+      ? saved.passengers
+      : Array.from({ length: adults + children + infants }, (_, i) => ({
+      title: i < adults ? 'Mr' : 'Master',
       firstName: '',
       lastName: '',
       dob: '',
-      gender: 'Male',
       nationality: 'IN',
       passportNumber: '',
       passportExpiry: '',
       passportIssueDate: '',
       documentId: '',
-      pan: '',
+      ffAirline: ffAirlines[0] || '',
+      ffNumber: '',
       type: i < adults ? 'ADULT' : i < adults + children ? 'CHILD' : 'INFANT',
-    }))
+    })),
   );
 
-  const [contact, setContact] = useState({
-    countryCode: '+91',
-    mobile: '',
-    email: '',
-  });
+  const [contact, setContact] = useState(
+    saved?.contact || { countryCode: '+91', mobile: '', email: '' },
+  );
 
   // Emergency contact (only collected when conditions.iecr is true)
-  const [emergency, setEmergency] = useState({ name: '', email: '', mobile: '' });
+  const [emergency, setEmergency] = useState(
+    saved?.emergency || { name: '', email: '', mobile: '' },
+  );
   
-  const [gst, setGst] = useState({
+  const [gst, setGst] = useState(saved?.gst || {
     enabled: false,
     companyName: '',
     gstNumber: '',
     companyEmail: '',
+    phone: '',
+    address: '',
+    save: true,
   });
+  const [note, setNote] = useState(saved?.note || '');
+  const [noteOpen, setNoteOpen] = useState(!!saved?.note);
+
+  // TripJack has no endpoint for saved GST profiles — it is their own CRM — so
+  // the history lives in this browser until we add a table for it.
+  const GST_STORE = 'hw_gst_history';
+  const [gstHistory, setGstHistory] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(GST_STORE) || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const applyGstFromHistory = (gstNumber) => {
+    const saved = gstHistory.find((g) => g.gstNumber === gstNumber);
+    if (saved) setGst((p) => ({ ...p, ...saved, enabled: true }));
+  };
+
+  const persistGst = () => {
+    if (!gst.enabled || !gst.save || !gst.gstNumber.trim()) return;
+    const entry = {
+      gstNumber: gst.gstNumber.trim().toUpperCase(),
+      companyName: gst.companyName.trim(),
+      companyEmail: gst.companyEmail.trim(),
+      phone: gst.phone.trim(),
+      address: gst.address.trim(),
+    };
+    const next = [entry, ...gstHistory.filter((g) => g.gstNumber !== entry.gstNumber)].slice(0, 8);
+    setGstHistory(next);
+    try {
+      localStorage.setItem(GST_STORE, JSON.stringify(next));
+    } catch {
+      // Storage can be unavailable (private windows, blocked site data) —
+      // the booking must not fail because a convenience feature could not save.
+    }
+  };
   
+  // Travellers this account has booked for before, for the picker at the top
+  // of each panel. A failed lookup yields [] and the picker hides itself.
+  const [savedTravellers, setSavedTravellers] = useState([]);
+  const [suppressed, setSuppressed] = useState(loadSuppressed);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getSavedTravellers(controller.signal).then(setSavedTravellers);
+    return () => controller.abort();
+  }, []);
+
+  const visibleTravellers = savedTravellers.filter((t) => !suppressed.has(t.key));
+
+  /** Fill a panel from a previously booked traveller. */
+  const applyTraveller = (index, t) => {
+    setPassengers((prev) => {
+      const next = [...prev];
+      next[index] = {
+        ...next[index],
+        title: t.ti || next[index].title,
+        firstName: t.fN || '',
+        lastName: t.lN || '',
+        dob: t.dob || '',
+        nationality: t.pNat || next[index].nationality,
+        passportNumber: t.pNum || '',
+        passportExpiry: t.eD || '',
+        passportIssueDate: t.pid || '',
+      };
+      return next;
+    });
+    setErrors((prev) => {
+      const next = { ...prev };
+      for (const f of ['firstName', 'lastName', 'dob', 'passportNumber', 'passportExpiry']) {
+        delete next[`passenger_${index}_${f}`];
+      }
+      return next;
+    });
+  };
+
+  /**
+   * Kept per row rather than per name. Every panel starts blank, so a
+   * name-based key is "||" for all of them and unticking one passenger would
+   * untick every other. The real keys are written on submit, once the names
+   * that identify these people actually exist.
+   */
+  const [saveTraveller, setSaveTraveller] = useState(saved?.saveTraveller || {});
+  const toggleSaveTraveller = (index, keep) =>
+    setSaveTraveller((prev) => ({ ...prev, [index]: keep }));
+
   const [errors, setErrors] = useState({});
+  const [openPax, setOpenPax] = useState(saved?.openPax || { 0: true });
+  const [openFf, setOpenFf] = useState({});
+  const toggleFf = (i) => setOpenFf((p) => ({ ...p, [i]: p[i] === false }));
+  const togglePax = (i) => setOpenPax((p) => ({ ...p, [i]: !p[i] }));
 
   const handlePassengerChange = (index, field, value) => {
     const updated = [...passengers];
@@ -69,15 +268,24 @@ export default function PassengerDetails({ searchParams, reviewData, onBack, onC
     }
   };
 
+  /**
+   * Checked against the same bounds the picker enforces, so a typed date cannot
+   * pass where a picked one would be greyed out. Compares ISO strings rather
+   * than dividing by 365.25 days, which drifted around birthdays.
+   */
   const validateAge = (dob, type) => {
-    const birthDate = new Date(dob);
-    const today = new Date();
-    const age = Math.floor((today - birthDate) / (365.25 * 24 * 60 * 60 * 1000));
-    
-    if (type === 'ADULT' && age < 12) return 'Adult must be 12 years or older';
-    if (type === 'CHILD' && (age < 2 || age >= 12)) return 'Child must be between 2-12 years';
-    if (type === 'INFANT' && age >= 2) return 'Infant must be under 2 years';
-    
+    if (!dob) return null;
+    const { min, max } = dobBounds(type);
+    const label = { ADULT: 'Adult', CHILD: 'Child', INFANT: 'Infant' }[type] || 'Passenger';
+    if (max && dob > max) {
+      if (type === 'ADULT') return `An adult must be 12 or older on the travel date (born on or before ${max})`;
+      if (type === 'CHILD') return `A child must be at least 2 on the travel date (born on or before ${max})`;
+      return `${label} date of birth cannot be in the future`;
+    }
+    if (min && dob < min) {
+      if (type === 'CHILD') return `A child must be under 12 on the travel date (born after ${min})`;
+      if (type === 'INFANT') return `An infant must be under 2 on the travel date (born after ${min})`;
+    }
     return null;
   };
 
@@ -85,15 +293,37 @@ export default function PassengerDetails({ searchParams, reviewData, onBack, onC
     const newErrors = {};
     
     passengers.forEach((passenger, index) => {
-      if (!passenger.firstName.trim()) {
+      const first = passenger.firstName.trim();
+      const last = passenger.lastName.trim();
+      if (!first) {
         newErrors[`passenger_${index}_firstName`] = 'First name is required';
+      } else if (first.length < nameLimits.firstMin) {
+        newErrors[`passenger_${index}_firstName`] =
+          `First name needs at least ${nameLimits.firstMin} character${nameLimits.firstMin > 1 ? 's' : ''}`;
+      } else if (first.length > nameLimits.firstMax) {
+        newErrors[`passenger_${index}_firstName`] =
+          `This airline allows up to ${nameLimits.firstMax} characters`;
       }
-      if (!passenger.lastName.trim()) {
+      if (!last) {
         newErrors[`passenger_${index}_lastName`] = 'Last name is required';
+      } else if (last.length < nameLimits.lastMin) {
+        newErrors[`passenger_${index}_lastName`] =
+          `Last name needs at least ${nameLimits.lastMin} character${nameLimits.lastMin > 1 ? 's' : ''}`;
+      } else if (last.length > nameLimits.lastMax) {
+        newErrors[`passenger_${index}_lastName`] =
+          `This airline allows up to ${nameLimits.lastMax} characters`;
       }
-      if (!passenger.dob) {
+      // Some carriers cap the full name too, not just each field.
+      if (nameLimits.combinedMax && first && last &&
+          `${first} ${last}`.length > nameLimits.combinedMax) {
+        newErrors[`passenger_${index}_lastName`] =
+          `Full name must be ${nameLimits.combinedMax} characters or fewer`;
+      }
+
+      const needsDob = dobRequired[passenger.type] !== false;
+      if (needsDob && !passenger.dob) {
         newErrors[`passenger_${index}_dob`] = 'Date of birth is required';
-      } else {
+      } else if (passenger.dob) {
         const ageError = validateAge(passenger.dob, passenger.type);
         if (ageError) {
           newErrors[`passenger_${index}_dob`] = ageError;
@@ -121,13 +351,6 @@ export default function PassengerDetails({ searchParams, reviewData, onBack, onC
 
       if (docIdMandatory && !passenger.documentId.trim()) {
         newErrors[`passenger_${index}_documentId`] = 'Document ID is required for this fare';
-      }
-
-      if (panRequired) {
-        const pan = (passenger.pan || '').trim().toUpperCase();
-        if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) {
-          newErrors[`passenger_${index}_pan`] = 'Valid 10-character PAN is required (e.g. ABCDE1234F)';
-        }
       }
     });
 
@@ -181,7 +404,10 @@ export default function PassengerDetails({ searchParams, reviewData, onBack, onC
         ...(p.passportIssueDate && { pid: p.passportIssueDate }),
       }),
       ...(docIdApplicable && p.documentId && { di: p.documentId }),
-      ...(panRequired && p.pan && { pan: p.pan.trim().toUpperCase() }),
+      ...(p.ffNumber?.trim() && {
+        fFNumber: p.ffNumber.trim(),
+        fFAirline: p.ffAirline || undefined,
+      }),
     }));
 
     // Emergency contact (contactInfo) — only when the fare requires it (iecr).
@@ -193,7 +419,27 @@ export default function PassengerDetails({ searchParams, reviewData, onBack, onC
         }
       : null;
 
-    onContinue(travellerInfo, contact, gst.enabled ? gst : null, emergencyContact);
+    // Names are filled in by now, so each row's choice can be recorded
+    // against the key the picker will actually look it up by.
+    const nextSuppressed = new Set(suppressed);
+    passengers.forEach((p, i) => {
+      const key = travellerKey(p.firstName, p.lastName, p.dob);
+      if (saveTraveller[i] === false) nextSuppressed.add(key);
+      else nextSuppressed.delete(key);
+    });
+    setSuppressed(nextSuppressed);
+    saveSuppressed(nextSuppressed);
+
+    persistGst();
+    onContinue(travellerInfo, contact, gst.enabled ? gst : null, emergencyContact, note.trim(), {
+      passengers,
+      contact,
+      gst,
+      note,
+      emergency,
+      saveTraveller,
+      openPax,
+    });
   };
 
   const renderPassengerForm = (passenger, index) => {
@@ -203,177 +449,208 @@ export default function PassengerDetails({ searchParams, reviewData, onBack, onC
       ? `Child ${index - adults + 1}` 
       : `Infant ${index - adults - children + 1}`;
     
+    const ageBand =
+      passenger.type === 'ADULT' ? '(12 + yrs)'
+        : passenger.type === 'CHILD' ? '(2 - 12 yrs)'
+        : '(0 - 2 yrs)';
+    const isOpen = openPax[index] !== false;
+
     return (
       <div key={index} className="passenger-form-card mb-3">
-        <h6 className="passenger-form-title">
-          <FaUser className="me-2" />
-          {passengerLabel}
-        </h6>
-        
-        <div className="row g-3">
-          <div className="col-md-2">
-            <label className="form-label">Title *</label>
-            <select
-              className="form-select"
+        <button
+          type="button"
+          className="passenger-form-title"
+          onClick={() => togglePax(index)}
+          aria-expanded={isOpen}
+        >
+          <span>
+            <FaUser className="me-2" />
+            {passengerLabel.toUpperCase()}: <small>{ageBand}</small>
+          </span>
+          {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {!isOpen ? null : (
+        <>
+        <TravellerPicker
+          travellers={visibleTravellers}
+          paxType={passenger.type}
+          onPick={(t) => applyTraveller(index, t)}
+        />
+
+        <div className="paxlist-box">
+          <div className="pax-col-title">
+            <FloatSelect
+              id={`pax${index}_ti`}
+              label="Title"
               value={passenger.title}
               onChange={(e) => handlePassengerChange(index, 'title', e.target.value)}
-            >
-              <option value="Mr">Mr</option>
-              <option value="Mrs">Mrs</option>
-              <option value="Ms">Ms</option>
-              <option value="Master">Master</option>
-            </select>
+              options={titleOptions(passenger.type)}
+            />
           </div>
-          
-          <div className="col-md-5">
-            <label className="form-label">First Name *</label>
-            <input
-              type="text"
-              className={`form-control ${errors[`passenger_${index}_firstName`] ? 'is-invalid' : ''}`}
+
+          <div className="pax-col-name">
+            <FloatField
+              id={`pax${index}_fN`}
+              label="First Name"
               value={passenger.firstName}
+              maxLength={nameLimits.firstMax}
+              counter
+              uppercase
+              info="Enter the given name exactly as printed on the passenger's passport or photo ID."
+              error={errors[`passenger_${index}_firstName`]}
               onChange={(e) => handlePassengerChange(index, 'firstName', e.target.value)}
-              placeholder="As per passport/ID"
             />
-            {errors[`passenger_${index}_firstName`] && (
-              <div className="invalid-feedback">{errors[`passenger_${index}_firstName`]}</div>
-            )}
           </div>
-          
-          <div className="col-md-5">
-            <label className="form-label">Last Name *</label>
-            <input
-              type="text"
-              className={`form-control ${errors[`passenger_${index}_lastName`] ? 'is-invalid' : ''}`}
+
+          <div className="pax-col-name">
+            <FloatField
+              id={`pax${index}_lN`}
+              label="Last Name"
               value={passenger.lastName}
+              maxLength={nameLimits.lastMax}
+              counter
+              uppercase
+              info="Enter the surname exactly as printed on the passenger's passport or photo ID."
+              error={errors[`passenger_${index}_lastName`]}
               onChange={(e) => handlePassengerChange(index, 'lastName', e.target.value)}
-              placeholder="As per passport/ID"
             />
-            {errors[`passenger_${index}_lastName`] && (
-              <div className="invalid-feedback">{errors[`passenger_${index}_lastName`]}</div>
-            )}
           </div>
           
-          <div className="col-md-4">
-            <label className="form-label">Date of Birth *</label>
-            <input
+          <div className="pax-col-dob">
+            <FloatField
+              id={`pax${index}_dob`}
               type="date"
-              className={`form-control ${errors[`passenger_${index}_dob`] ? 'is-invalid' : ''}`}
+              alwaysFloat
+              label={`Date of Birth ${dobRequired[passenger.type] !== false ? '*' : '(optional)'}`}
               value={passenger.dob}
+              min={dobBounds(passenger.type).min}
+              max={dobBounds(passenger.type).max}
+              error={errors[`passenger_${index}_dob`]}
               onChange={(e) => handlePassengerChange(index, 'dob', e.target.value)}
-              max={new Date().toISOString().split('T')[0]}
             />
-            {errors[`passenger_${index}_dob`] && (
-              <div className="invalid-feedback">{errors[`passenger_${index}_dob`]}</div>
-            )}
-          </div>
-          
-          <div className="col-md-4">
-            <label className="form-label">Gender *</label>
-            <select
-              className="form-select"
-              value={passenger.gender}
-              onChange={(e) => handlePassengerChange(index, 'gender', e.target.value)}
-            >
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </select>
           </div>
           
           {passportMandatory && (
             <>
-              <div className="col-md-4">
-                <label className="form-label">Nationality *</label>
-                <input
-                  type="text"
-                  className="form-control"
+              <div className="pax-col-half">
+                <FloatField
+                  id={`pax${index}_pNat`}
+                  label="Nationality"
                   value={passenger.nationality}
-                  onChange={(e) => handlePassengerChange(index, 'nationality', e.target.value.toUpperCase())}
-                  placeholder="IN"
                   maxLength={2}
+                  uppercase
+                  onChange={(e) => handlePassengerChange(index, 'nationality', e.target.value.toUpperCase())}
                 />
               </div>
 
-              <div className="col-md-4">
-                <label className="form-label">Passport Number *</label>
-                <input
-                  type="text"
-                  className={`form-control ${errors[`passenger_${index}_passportNumber`] ? 'is-invalid' : ''}`}
+              <div className="pax-col-half">
+                <FloatField
+                  id={`pax${index}_pNum`}
+                  label="Passport Number"
                   value={passenger.passportNumber}
+                  uppercase
+                  error={errors[`passenger_${index}_passportNumber`]}
                   onChange={(e) => handlePassengerChange(index, 'passportNumber', e.target.value.toUpperCase())}
-                  placeholder="PASS1234"
                 />
-                {errors[`passenger_${index}_passportNumber`] && (
-                  <div className="invalid-feedback">{errors[`passenger_${index}_passportNumber`]}</div>
-                )}
               </div>
 
-              <div className="col-md-4">
-                <label className="form-label">Passport Expiry *</label>
-                <input
+              <div className="pax-col-half">
+                <FloatField
+                  id={`pax${index}_eD`}
                   type="date"
-                  className={`form-control ${errors[`passenger_${index}_passportExpiry`] ? 'is-invalid' : ''}`}
+                  alwaysFloat
+                  label="Passport Expiry"
                   value={passenger.passportExpiry}
+                  error={errors[`passenger_${index}_passportExpiry`]}
                   onChange={(e) => handlePassengerChange(index, 'passportExpiry', e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
                 />
-                {errors[`passenger_${index}_passportExpiry`] && (
-                  <div className="invalid-feedback">{errors[`passenger_${index}_passportExpiry`]}</div>
-                )}
               </div>
 
               {passportIssueDateReq && (
-                <div className="col-md-4">
-                  <label className="form-label">Passport Issue Date *</label>
-                  <input
+                <div className="pax-col-half">
+                  <FloatField
+                    id={`pax${index}_pid`}
                     type="date"
-                    className={`form-control ${errors[`passenger_${index}_passportIssueDate`] ? 'is-invalid' : ''}`}
+                    alwaysFloat
+                    label="Passport Issue Date"
                     value={passenger.passportIssueDate}
+                    error={errors[`passenger_${index}_passportIssueDate`]}
                     onChange={(e) => handlePassengerChange(index, 'passportIssueDate', e.target.value)}
-                    max={new Date().toISOString().split('T')[0]}
                   />
-                  {errors[`passenger_${index}_passportIssueDate`] && (
-                    <div className="invalid-feedback">{errors[`passenger_${index}_passportIssueDate`]}</div>
-                  )}
                 </div>
               )}
             </>
           )}
 
           {docIdApplicable && (
-            <div className="col-md-6">
-              <label className="form-label">
-                Document ID {docIdMandatory ? '*' : '(Student/Senior ID)'}
-              </label>
-              <input
-                type="text"
-                className={`form-control ${errors[`passenger_${index}_documentId`] ? 'is-invalid' : ''}`}
+            <div className="pax-col-half">
+              <FloatField
+                id={`pax${index}_di`}
+                label={docIdMandatory ? 'Document ID' : 'Document ID (Student/Senior)'}
                 value={passenger.documentId}
-                onChange={(e) => handlePassengerChange(index, 'documentId', e.target.value)}
-                placeholder="Student / Senior Citizen ID"
+                uppercase
+                error={errors[`passenger_${index}_documentId`]}
+                onChange={(e) => handlePassengerChange(index, 'documentId', e.target.value.toUpperCase())}
               />
-              {errors[`passenger_${index}_documentId`] && (
-                <div className="invalid-feedback">{errors[`passenger_${index}_documentId`]}</div>
-              )}
-            </div>
-          )}
-
-          {panRequired && (
-            <div className="col-md-6">
-              <label className="form-label">PAN Number *</label>
-              <input
-                type="text"
-                className={`form-control ${errors[`passenger_${index}_pan`] ? 'is-invalid' : ''}`}
-                value={passenger.pan}
-                onChange={(e) => handlePassengerChange(index, 'pan', e.target.value.toUpperCase())}
-                placeholder="ABCDE1234F"
-                maxLength={10}
-              />
-              {errors[`passenger_${index}_pan`] && (
-                <div className="invalid-feedback">{errors[`passenger_${index}_pan`]}</div>
-              )}
             </div>
           )}
         </div>
+
+        {/* Only offered for carriers this fare says accept a FF number. */}
+        {ffAirlines.length > 0 && passenger.type !== 'INFANT' && (
+          <div className="ff-block">
+            <button
+              type="button"
+              className="ff-title"
+              onClick={() => toggleFf(index)}
+              aria-expanded={openFf[index] !== false}
+            >
+              FREQUENT FLIER NUMBER <small>(OPTIONAL)</small>
+              <i className={`ff-caret${openFf[index] === false ? '' : ' is-open'}`} aria-hidden="true" />
+            </button>
+            {openFf[index] === false ? null : (
+            <div className="paxlist-box">
+              <div className="pax-col-ff">
+                <FloatSelect
+                  id={`pax${index}_ffAirline`}
+                  label="Airline"
+                  value={passenger.ffAirline}
+                  onChange={(e) => handlePassengerChange(index, 'ffAirline', e.target.value)}
+                  options={ffAirlines}
+                />
+              </div>
+              <div className="pax-col-ff">
+                <FloatField
+                  id={`pax${index}_ffNumber`}
+                  label="FF Number"
+                  value={passenger.ffNumber}
+                  uppercase
+                  onChange={(e) => handlePassengerChange(index, 'ffNumber', e.target.value.toUpperCase())}
+                />
+              </div>
+            </div>
+            )}
+          </div>
+        )}
+
+        <div className="saveDetails_wrapper">
+          <label className="tj-checkbox-label">
+            <input
+              type="checkbox"
+              checked={saveTraveller[index] !== false}
+              onChange={(e) => toggleSaveTraveller(index, e.target.checked)}
+            />
+            <span className="save-pax__label">
+              Add this to My Travellers List
+              <span className="save-pax__sub-label">
+                (Saves retyping their details on your next booking)
+              </span>
+            </span>
+          </label>
+        </div>
+        </>
+        )}
       </div>
     );
   };
@@ -384,6 +661,13 @@ export default function PassengerDetails({ searchParams, reviewData, onBack, onC
         <div className="col-lg-8">
           <div className="booking-card">
             <h4 className="booking-card-title">Passenger Details</h4>
+
+            <TripSummaryStrip
+              trip={trip}
+              fare={fare}
+              returnTrip={returnTrip}
+              tripType={searchParams?.tripType}
+            />
             
             {passengers.map((passenger, index) => renderPassengerForm(passenger, index))}
             
@@ -393,45 +677,35 @@ export default function PassengerDetails({ searchParams, reviewData, onBack, onC
                 Contact Details
               </h5>
               
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <label className="form-label">Mobile Number *</label>
-                  <div className="input-group">
-                    <select
-                      className="form-select"
-                      style={{ maxWidth: '100px' }}
-                      value={contact.countryCode}
-                      onChange={(e) => setContact({ ...contact, countryCode: e.target.value })}
-                    >
-                      <option value="+91">+91</option>
-                      <option value="+1">+1</option>
-                      <option value="+44">+44</option>
-                    </select>
-                    <input
-                      type="tel"
-                      className={`form-control ${errors.mobile ? 'is-invalid' : ''}`}
-                      value={contact.mobile}
-                      onChange={(e) => setContact({ ...contact, mobile: e.target.value })}
-                      placeholder="9876543210"
-                    />
-                    {errors.mobile && (
-                      <div className="invalid-feedback">{errors.mobile}</div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="col-md-6">
-                  <label className="form-label">Email Address *</label>
-                  <input
-                    type="email"
-                    className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                    value={contact.email}
-                    onChange={(e) => setContact({ ...contact, email: e.target.value })}
-                    placeholder="email@example.com"
+              <div className="paxlist-box">
+                <div className="pax-col-title">
+                  <FloatSelect
+                    id="contact_cc"
+                    label="Code"
+                    value={contact.countryCode}
+                    onChange={(e) => setContact({ ...contact, countryCode: e.target.value })}
+                    options={COUNTRY_CODES.map((c) => ({ value: c.code, label: `${c.code} ${c.name}` }))}
                   />
-                  {errors.email && (
-                    <div className="invalid-feedback">{errors.email}</div>
-                  )}
+                </div>
+                <div className="pax-col-half">
+                  <FloatField
+                    id="contact_mobile"
+                    type="tel"
+                    label="Mobile Number *"
+                    value={contact.mobile}
+                    error={errors.mobile}
+                    onChange={(e) => setContact({ ...contact, mobile: e.target.value })}
+                  />
+                </div>
+                <div className="pax-col-half">
+                  <FloatField
+                    id="contact_email"
+                    type="email"
+                    label="Email ID *"
+                    value={contact.email}
+                    error={errors.email}
+                    onChange={(e) => setContact({ ...contact, email: e.target.value })}
+                  />
                 </div>
               </div>
             </div>
@@ -442,138 +716,211 @@ export default function PassengerDetails({ searchParams, reviewData, onBack, onC
                   <FaPhone className="me-2" />
                   Emergency Contact <small className="text-muted">(required by airline)</small>
                 </h5>
-                <div className="row g-3">
-                  <div className="col-md-4">
-                    <label className="form-label">Contact Name *</label>
-                    <input
-                      type="text"
-                      className={`form-control ${errors.emergencyName ? 'is-invalid' : ''}`}
+                <div className="paxlist-box">
+                  <div className="pax-col-half">
+                    <FloatField
+                      id="em_name"
+                      label="Contact Name *"
                       value={emergency.name}
+                      error={errors.emergencyName}
                       onChange={(e) => setEmergency({ ...emergency, name: e.target.value })}
-                      placeholder="Full name"
                     />
-                    {errors.emergencyName && <div className="invalid-feedback">{errors.emergencyName}</div>}
                   </div>
-                  <div className="col-md-4">
-                    <label className="form-label">Email *</label>
-                    <input
+                  <div className="pax-col-half">
+                    <FloatField
+                      id="em_email"
                       type="email"
-                      className={`form-control ${errors.emergencyEmail ? 'is-invalid' : ''}`}
+                      label="Email *"
                       value={emergency.email}
+                      error={errors.emergencyEmail}
                       onChange={(e) => setEmergency({ ...emergency, email: e.target.value })}
-                      placeholder="email@example.com"
                     />
-                    {errors.emergencyEmail && <div className="invalid-feedback">{errors.emergencyEmail}</div>}
                   </div>
-                  <div className="col-md-4">
-                    <label className="form-label">Mobile *</label>
-                    <input
+                  <div className="pax-col-half">
+                    <FloatField
+                      id="em_mobile"
                       type="tel"
-                      className={`form-control ${errors.emergencyMobile ? 'is-invalid' : ''}`}
+                      label="Mobile *"
                       value={emergency.mobile}
+                      error={errors.emergencyMobile}
                       onChange={(e) => setEmergency({ ...emergency, mobile: e.target.value })}
-                      placeholder="9876543210"
                     />
-                    {errors.emergencyMobile && <div className="invalid-feedback">{errors.emergencyMobile}</div>}
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="gst-section mt-4">
-              <div className="form-check mb-3">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="gstCheck"
-                  checked={gst.enabled}
-                  onChange={(e) => setGst({ ...gst, enabled: e.target.checked })}
-                />
-                <label className="form-check-label" htmlFor="gstCheck">
-                  I have a GST number (Optional)
-                </label>
+            <div className="addon-toggles mt-4">
+              <button
+                type="button"
+                className={`addon-toggle-btn ${noteOpen ? 'is-open' : ''}`}
+                onClick={() => setNoteOpen((v) => !v)}
+              >
+                {noteOpen ? '−' : '+'} Add notes (Optional)
+              </button>
+              <button
+                type="button"
+                className={`addon-toggle-btn ${gst.enabled ? 'is-open' : ''}`}
+                onClick={() => setGst((p) => ({ ...p, enabled: !p.enabled }))}
+              >
+                {gst.enabled ? '−' : '+'} Add GST Details (Optional)
+              </button>
+            </div>
+
+            {noteOpen && (
+              <div className="addon-panel">
+                <div className="addon-panel-head">Agent Note (Optional)</div>
+                <div className="addon-panel-body">
+                  <FloatField
+                    id="agent_note"
+                    label="Add Notes"
+                    value={note}
+                    maxLength={200}
+                    counter
+                    onChange={(e) => setNote(e.target.value)}
+                  />
+                  <p className="addon-panel-hint">
+                    *These notes are for agent reference only, no action will be taken against this.
+                  </p>
+                </div>
               </div>
-              
-              {gst.enabled && (
-                <div className="gst-form-card">
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <label className="form-label">Company Name *</label>
-                      <input
-                        type="text"
-                        className={`form-control ${errors.gstCompanyName ? 'is-invalid' : ''}`}
+            )}
+
+            {gst.enabled && (
+              <div className="addon-panel">
+                <div className="addon-panel-head">GST Number for Business Travel (Optional)</div>
+                <div className="addon-panel-body">
+                  {gstHistory.length > 0 && (
+                    <div className="gst-history">
+                      <select
+                        className="form-select"
+                        value=""
+                        onChange={(e) => applyGstFromHistory(e.target.value)}
+                      >
+                        <option value="">Select from History</option>
+                        {gstHistory.map((g) => (
+                          <option key={g.gstNumber} value={g.gstNumber}>
+                            {g.gstNumber} — {g.companyName}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        className="gst-clear"
+                        onClick={() =>
+                          setGst((p) => ({
+                            ...p,
+                            companyName: '',
+                            gstNumber: '',
+                            companyEmail: '',
+                            phone: '',
+                            address: '',
+                          }))
+                        }
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+
+                  <p className="addon-panel-hint mb-3">
+                    To claim credit of GST charged by airlines, please enter your company&apos;s GST number.
+                  </p>
+
+                  <div className="paxlist-box">
+                    <div className="pax-col-half">
+                      <FloatField
+                        id="gst_number"
+                        label="Registration Number *"
+                        value={gst.gstNumber}
+                        maxLength={15}
+                        uppercase
+                        error={errors.gstNumber}
+                        onChange={(e) => setGst({ ...gst, gstNumber: e.target.value.toUpperCase() })}
+                      />
+                    </div>
+                    <div className="pax-col-half">
+                      <FloatField
+                        id="gst_company"
+                        label="Registered Company Name *"
                         value={gst.companyName}
+                        error={errors.gstCompanyName}
                         onChange={(e) => setGst({ ...gst, companyName: e.target.value })}
                       />
-                      {errors.gstCompanyName && (
-                        <div className="invalid-feedback">{errors.gstCompanyName}</div>
-                      )}
                     </div>
-                    
-                    <div className="col-md-6">
-                      <label className="form-label">GST Number *</label>
-                      <input
-                        type="text"
-                        className={`form-control ${errors.gstNumber ? 'is-invalid' : ''}`}
-                        value={gst.gstNumber}
-                        onChange={(e) => setGst({ ...gst, gstNumber: e.target.value.toUpperCase() })}
-                        placeholder="22AAAAA0000A1Z5"
-                        maxLength={15}
-                      />
-                      {errors.gstNumber && (
-                        <div className="invalid-feedback">{errors.gstNumber}</div>
-                      )}
-                    </div>
-                    
-                    <div className="col-12">
-                      <label className="form-label">Company Email *</label>
-                      <input
+                    <div className="pax-col-half">
+                      <FloatField
+                        id="gst_email"
                         type="email"
-                        className={`form-control ${errors.gstEmail ? 'is-invalid' : ''}`}
+                        label="Registered Email *"
                         value={gst.companyEmail}
+                        error={errors.gstEmail}
                         onChange={(e) => setGst({ ...gst, companyEmail: e.target.value })}
                       />
-                      {errors.gstEmail && (
-                        <div className="invalid-feedback">{errors.gstEmail}</div>
-                      )}
+                    </div>
+                    <div className="pax-col-half">
+                      <FloatField
+                        id="gst_phone"
+                        type="tel"
+                        label="Registered Phone"
+                        value={gst.phone}
+                        onChange={(e) => setGst({ ...gst, phone: e.target.value })}
+                      />
+                    </div>
+                    <div className="pax-col-full">
+                      <FloatField
+                        id="gst_address"
+                        label="Registered Address"
+                        value={gst.address}
+                        onChange={(e) => setGst({ ...gst, address: e.target.value })}
+                      />
                     </div>
                   </div>
+
+                  <label className="tj-checkbox-label mt-3">
+                    <input
+                      type="checkbox"
+                      checked={gst.save}
+                      onChange={(e) => setGst({ ...gst, save: e.target.checked })}
+                    />
+                    <span>Save GST Details</span>
+                  </label>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
+
+          <FlightAddOn
+            reviewData={reviewData}
+            bookingId={bookingId}
+            passengers={passengers}
+            value={addOns}
+            onChange={onAddOnsChange}
+          />
+
+          <div className="itinerary-actions">
+            <button type="button" className="itin-btn itin-btn-back" onClick={onBack}>
+              « Back
+            </button>
+            <button type="submit" className="itin-btn itin-btn-next">
+              PROCEED TO REVIEW »
+            </button>
           </div>
         </div>
         
         <div className="col-lg-4">
-          <div className="booking-card sticky-summary">
-            <h5 className="booking-card-title">Important Information</h5>
-            
-            <div className="info-list">
-              <div className="info-item">
-                <strong>Name Accuracy:</strong> Ensure passenger names match exactly as per government ID/passport.
-              </div>
-              <div className="info-item">
-                <strong>Age Validation:</strong> Adult (12+), Child (2-12), Infant (0-2).
-              </div>
-              <div className="info-item">
-                <strong>Contact Details:</strong> Booking confirmation will be sent to the provided email and mobile.
-              </div>
-              {passportMandatory && (
-                <div className="info-item">
-                  <strong>Passport:</strong> Must be valid for at least 6 months from travel date.
-                </div>
-              )}
-            </div>
-            
-            <div className="d-flex gap-2 mt-4">
-              <button type="button" className="btn btn-outline-secondary flex-grow-1" onClick={onBack}>
-                Back
-              </button>
-              <button type="submit" className="btn btn-primary flex-grow-1">
-                Continue
-              </button>
-            </div>
-          </div>
+          <FareSummary
+            fare={fare}
+            returnFare={returnFare}
+            searchParams={searchParams}
+            markup={markup}
+            onMarkupChange={onMarkupChange}
+            extras={Object.entries(addOnBreakdown(addOns)).map(([label, amount]) => ({
+              label,
+              amount,
+            }))}
+          >
+          </FareSummary>
         </div>
       </div>
     </form>

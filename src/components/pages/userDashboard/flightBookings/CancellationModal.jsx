@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import { formatDateWithWeekday } from "../../../../utils/dateFormat";
+import { getTripDurationMinutes } from "../../../../utils/flightSearchUtils";
+import { airlineLogo } from '../../../../utils/airlineLogo';
 
 const REASONS = [
   {
@@ -205,7 +207,7 @@ export default function CancellationModal({ booking, onClose, onCancelled }) {
     const first = segs[0] || {};
     const last = segs[segs.length - 1] || first;
     const airline = first.fD?.aI || {};
-    const duration = segs.reduce((s, seg) => s + (seg.duration || 0), 0);
+    const duration = getTripDurationMinutes(trip);
     const flightNums = segs.map((s) => `${s.fD?.aI?.code || ""}-${s.fD?.fN || ""}`).join(", ");
     const stops = segs.length - 1;
     const sel = selected[ti] || new Set();
@@ -214,7 +216,7 @@ export default function CancellationModal({ booking, onClose, onCancelled }) {
       <div key={ti} className="border rounded p-3 mb-3">
         <div className="d-flex align-items-start gap-3 mb-3">
           <img
-            src={`https://airlines.airhex.com/airlines-logo/${(airline.code || "").toLowerCase()}.png`}
+            src={airlineLogo(airline.code)}
             alt={airline.name}
             style={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }}
             onError={(e) => { e.target.style.display = "none"; }}

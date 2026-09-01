@@ -103,7 +103,7 @@ export default function FlightSearchForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tripType, departureDate, returnDate, cabinClass, paxType, adults, children, infants, preferredAirline, directFlight, fromCode, toCode, fromSearch.query, toSearch.query, multiCityLegs]);
 
-  // Prefill the form from elsewhere (Book Return / Recent Searches â†’ "Search again").
+  // Prefill the form from elsewhere (Book Return / Recent Searches → "Search again").
   useEffect(() => {
     const handler = (e) => {
       const s = e.detail || {};
@@ -127,7 +127,7 @@ export default function FlightSearchForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Run a search immediately from saved params (Recent Searches â†’ "Search again").
+  // Run a search immediately from saved params (Recent Searches → "Search again").
   useEffect(() => {
     const runHandler = (e) => {
       const r = e.detail || {};
@@ -241,7 +241,7 @@ export default function FlightSearchForm() {
     }
   };
 
-  // Core one-way/round search â€” runs with explicit params (so "Search again" can
+  // Core one-way/round search — runs with explicit params (so "Search again" can
   // trigger it directly without first repopulating the form and waiting for state).
   const runSearch = async (p) => {
     const from = p.from;
@@ -279,7 +279,7 @@ export default function FlightSearchForm() {
       const directQuery = { ...searchQuery, searchModifiers: { ...searchQuery.searchModifiers, isDirectFlight: true, isConnectingFlight: false } };
 
       if (p.directFlight) {
-        // Direct Flight checked â†’ only non-stop results (docs Â§Search Modifiers).
+        // Direct Flight checked → only non-stop results (docs §Search Modifiers).
         const [d] = await Promise.allSettled([searchFlights(directQuery)]);
         navigate("/honeymoon/flights", { state: { searchParams, initialResults: { direct: d.status === "fulfilled" ? d.value : null, connecting: null } } });
       } else {
@@ -309,7 +309,7 @@ export default function FlightSearchForm() {
   const totalPax = adults + children + infants;
 
   // Shared passenger + class popup (TripJack-style: Adult / Children / Infant counters + cabin class).
-  // Constraints per docs: total â‰¤ 9, infants â‰¤ adults (1 infant per adult lap).
+  // Constraints per docs: total ≤ 9, infants ≤ adults (1 infant per adult lap).
   const renderTravelersDropdown = () => (
     <div className="tj-travelers-dropdown" onClick={(e) => e.stopPropagation()}>
       <div className="tj-traveler-row">

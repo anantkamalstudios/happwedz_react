@@ -799,7 +799,7 @@ function CountryDropdown({ value, onChange, label, onClose }) {
           >
             <span className="tripjack-country-name">{country.name}</span>
             {country.code === value && (
-              <span className="tripjack-country-check">âœ“</span>
+              <span className="tripjack-country-check">✓</span>
             )}
           </button>
         ))}
@@ -909,7 +909,7 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
                 onClick={() => updateRoom(roomIndex, "adults", Math.max(1, room.adults - 1))}
                 disabled={room.adults <= 1}
               >
-                âˆ’
+                −
               </button>
               <div className="tripjack-guests-counter-value">{room.adults}</div>
               <button
@@ -935,7 +935,7 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
                 onClick={() => updateRoom(roomIndex, "children", Math.max(0, room.children - 1))}
                 disabled={room.children <= 0}
               >
-                âˆ’
+                −
               </button>
               <div className="tripjack-guests-counter-value">{room.children}</div>
               <button
@@ -1316,7 +1316,7 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
               className="tripjack-more-options-link"
               onClick={handleMoreOptionsClick}
             >
-              More options â€º
+              More options ›
             </button>
             {showMoreOptions && (
               <div className="tripjack-more-options-meta">
@@ -1440,7 +1440,7 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
             className="tripjack-more-options-link"
             onClick={handleMoreOptionsClick}
           >
-            More options â€º
+            More options ›
           </button>
           {showMoreOptions && (
             <div className="tripjack-more-options-meta">

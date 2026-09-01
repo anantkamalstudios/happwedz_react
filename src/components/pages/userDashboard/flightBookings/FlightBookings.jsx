@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import { FaPlane, FaTicketAlt, FaBan, FaClock, FaCheckCircle, FaEye } from "react-icons/fa";
 import Loader from "../../../ui/Loader";
+import InvoiceDownloadButton from "../../../ui/InvoiceDownloadButton";
 import { formatDateTime } from "../../../../utils/dateFormat";
 
 const statusIcon = (status) => {
@@ -131,15 +132,24 @@ export default function FlightBookings() {
                     Booked on {fmt(booking.booked_at || booking.createdAt)}
                   </div>
 
-                  {/* View Details */}
+                  {/* View Details & Invoice */}
                   <div className="mt-auto">
                     <button
-                      className="btn btn-outline-primary btn-sm w-100 fs-14"
+                      className="btn btn-outline-primary btn-sm w-100 fs-14 mb-2"
                       onClick={() => goToDetail(booking)}
                     >
                       <FaEye className="me-2" />
                       View Details
                     </button>
+                    {booking.razorpay_order_id && (
+                      <InvoiceDownloadButton
+                        paymentId={booking.razorpay_order_id}
+                        invoiceNumber={booking.order_id}
+                        bookingType="flight"
+                        className="btn btn-outline-secondary btn-sm w-100 fs-14"
+                        label="Download Invoice"
+                      />
+                    )}
                   </div>
 
                 </div>

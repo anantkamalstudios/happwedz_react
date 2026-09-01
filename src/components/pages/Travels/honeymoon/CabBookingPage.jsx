@@ -2,7 +2,19 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { ArrowRight, CheckCircle2, Loader2, MapPin } from "lucide-react";
+import {
+  ArrowRight,
+  Briefcase,
+  CalendarDays,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Info,
+  Loader2,
+  MapPin,
+  Pencil,
+  Users,
+} from "lucide-react";
 import {
   buildCabBookingPayload,
   createCabBooking,
@@ -13,7 +25,30 @@ import {
   verifyCabPayment,
 } from "../../../../services/api/cabApi";
 import { formatDateTime as fmtDateTime } from "../../../../utils/dateFormat";
+import { loginRedirect } from "../../../../utils/bookingDraft";
+import CabPolicyModal from "./components/CabPolicyModal";
 import "./index.css";
+import "./components/CabBooking.css";
+
+/** "One Way" / "Round Trip" from the API's tripType. */
+const titleTrip = (value) =>
+  String(value || "").toLowerCase() === "roundtrip" ? "Round Trip" : "One Way";
+
+/** What happens after payment, as the portal spells it out. */
+const STEPS = [
+  {
+    title: "Booking Confirmed",
+    body: "You'll receive your booking voucher right after the payment.",
+  },
+  {
+    title: "Cab & Driver Details",
+    body: "We'll share your cab and driver details 6 hours before your trip.",
+  },
+  {
+    title: "On-Time Pickup",
+    body: "Your cab will arrive at the pickup point at the scheduled time. Enjoy your trip!",
+  },
+];
 
 const formatFare = (value) =>
   `₹${Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
@@ -46,6 +81,12 @@ export default function CabBookingPage() {
     serviceRequest: "",
   });
   const [errors, setErrors] = useState({});
+  const [paxOpen, setPaxOpen] = useState(true);
+  const [policyOpen, setPolicyOpen] = useState(false);
+  const [consent, setConsent] = useState(false);
+  const [markup, setMarkup] = useState(Number(location.state?.markup) || 0);
+  const [markupDraft, setMarkupDraft] = useState("");
+  const [markupOpen, setMarkupOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [stage, setStage] = useState("");
   const [booking, setBooking] = useState(null);
@@ -54,13 +95,13 @@ export default function CabBookingPage() {
   const [paymentError, setPaymentError] = useState("");
   const [canCheckStatus, setCanCheckStatus] = useState(false);
 
-  // Booking is login-gated; a direct visit without a session goes to login.
+  // Booking is login-gated. The quote and journey arrive in history state, and
+  // login forwards that state back, so the page rebuilds itself on return.
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
-      toast.error("Please login before booking a cab.");
-      navigate("/customer-login");
+      navigate(...loginRedirect(location, "cab"), { replace: true });
     }
-  }, [isAuthenticated, user?.id, navigate]);
+  }, [isAuthenticated, user?.id, navigate, location]);
 
   // Prefill from the logged-in profile where we can.
   useEffect(() => {
@@ -146,10 +187,18 @@ export default function CabBookingPage() {
       return;
     }
 
-    const amount = quote.grossFare;
+    // Charge what the page shows. The markup is our margin: Razorpay collects
+    // it, the supplier payload below is left at the quoted gross, exactly as the
+    // flights flow treats it. Leaving it out here billed the traveller less than
+    // the total they had just agreed to.
+    const amount = quote.grossFare + Number(markup || 0);
     let order;
     try {
-      order = await createCabPaymentOrder({ bookingId: createdBooking.id, amount });
+      order = await createCabPaymentOrder({
+        bookingId: createdBooking.id,
+        amount,
+        supplierAmount: quote.grossFare,
+      });
     } catch {
       setPaymentError("Could not start the payment. Please retry.");
       return;
@@ -398,146 +447,282 @@ export default function CabBookingPage() {
             </a>
           ) : null}
 
-          <button type="button" onClick={() => navigate("/honeymoon?tab=car-rental")}>
-            Book another cab
-          </button>
+          <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+            <button type="button" onClick={() => navigate("/user-dashboard/booking/travel/cabs")}>
+              View my bookings
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/honeymoon?tab=car-rental")}
+              style={{ backgroundColor: "transparent", color: "#ed1173", border: "1px solid #ed1173" }}
+            >
+              Book another cab
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="cab-results-page">
-      <div className="cab-results-header">
-        <div className="container">
-          <div className="cab-route-line">
-            <span>
-              <MapPin size={16} /> {routeDetails.origin?.displayAddress}
-            </span>
-            <ArrowRight size={16} />
-            <span>
-              <MapPin size={16} /> {routeDetails.destination?.displayAddress}
-            </span>
-          </div>
-          <div className="cab-route-meta">
-            <span>{formatDateTime(journeyInfo.pickupDateTime)}</span>
-            {journeyInfo.distance ? <span>{journeyInfo.distance}</span> : null}
-          </div>
-        </div>
+    <div className="cab-results-page cbk-page">
+      <div className="container cbk-crumbs">
+        <button type="button" onClick={() => navigate("/honeymoon?tab=car-rental")}>Home</button>
+        <span>/</span>
+        <button type="button" onClick={() => navigate(-1)}>
+          Cabs in {routeDetails.origin?.city || routeDetails.origin?.displayAddress}
+        </button>
+        <span>/</span>
+        <span>Cab Review</span>
       </div>
 
-      <div className="container cab-results-body">
-        <div className="cab-booking-layout">
-          <div className="cab-booking-form">
-            <h3>Passenger details</h3>
-
-            <div className="cab-form-grid">
-              <div className="cab-form-field">
-                <label htmlFor="cab-first-name">First name</label>
-                <input
-                  id="cab-first-name"
-                  type="text"
-                  value={form.firstName}
-                  onChange={(event) => setField("firstName", event.target.value)}
-                />
-                {errors.firstName ? <span>{errors.firstName}</span> : null}
+      <div className="container cbk-body">
+        <div className="cbk-main">
+          {/* trip summary */}
+          <div className="cbk-card">
+            <div className="cbk-trip-head">
+              Cab Booking <span>|</span> {titleTrip(journeyInfo.tripType)}
+            </div>
+            <div className="cbk-trip-route">
+              <div className="cbk-trip-end">
+                <small>Pickup</small>
+                <strong>{routeDetails.origin?.displayAddress}</strong>
               </div>
-
-              <div className="cab-form-field">
-                <label htmlFor="cab-last-name">Last name</label>
-                <input
-                  id="cab-last-name"
-                  type="text"
-                  value={form.lastName}
-                  onChange={(event) => setField("lastName", event.target.value)}
-                />
-                {errors.lastName ? <span>{errors.lastName}</span> : null}
+              <span className="cbk-trip-dash" aria-hidden="true" />
+              <div className="cbk-trip-end">
+                <small>Drop</small>
+                <strong>{routeDetails.destination?.displayAddress}</strong>
               </div>
-
-              <div className="cab-form-field">
-                <label htmlFor="cab-email">Email</label>
-                <input
-                  id="cab-email"
-                  type="email"
-                  value={form.email}
-                  onChange={(event) => setField("email", event.target.value)}
-                />
-                {errors.email ? <span>{errors.email}</span> : null}
-              </div>
-
-              <div className="cab-form-field">
-                <label htmlFor="cab-phone">Phone</label>
-                <input
-                  id="cab-phone"
-                  type="tel"
-                  placeholder="+919876543210"
-                  value={form.phone}
-                  onChange={(event) => setField("phone", event.target.value)}
-                />
-                {errors.phone ? <span>{errors.phone}</span> : null}
-              </div>
-
-              {isAirportTransfer ? (
-                <div className="cab-form-field">
-                  <label htmlFor="cab-flight">Flight number (optional)</label>
-                  <input
-                    id="cab-flight"
-                    type="text"
-                    placeholder="e.g. AI2952"
-                    value={form.flightNumber}
-                    onChange={(event) => setField("flightNumber", event.target.value)}
-                  />
-                </div>
-              ) : null}
-
-              <div className="cab-form-field cab-form-field--full">
-                <label htmlFor="cab-request">Special request (optional)</label>
-                <input
-                  id="cab-request"
-                  type="text"
-                  placeholder="e.g. AC mandatory in car"
-                  value={form.serviceRequest}
-                  onChange={(event) => setField("serviceRequest", event.target.value)}
-                />
-              </div>
+            </div>
+            <div className="cbk-trip-when">
+              <CalendarDays size={14} /> {formatDateTime(journeyInfo.pickupDateTime)}
+              {journeyInfo.distance ? <span> | {journeyInfo.distance}</span> : null}
             </div>
           </div>
 
-          <aside className="cab-booking-aside">
-            <h3>Fare summary</h3>
-            <div className="cab-booking-vehicle">
+          {/* vehicle */}
+          <div className="cbk-card cbk-vehicle">
+            <div className="cbk-veh-media">
+              <span className="cbk-veh-badge">
+                {(quote.label || quote.vehicleType || "").toUpperCase()}
+              </span>
               {quote.image ? <img src={quote.image} alt={quote.label} /> : null}
-              <div>
-                <div className="cab-quote-title">{quote.label}</div>
-                <div className="cab-quote-sub">{quote.model || quote.similarType}</div>
+            </div>
+            <div className="cbk-veh-main">
+              <h3>{quote.label || quote.vehicleType}</h3>
+              <div className="cbk-veh-chips">
+                <span><Users size={13} /> {quote.paxCapacity ?? quote.paxCount ?? "-"} Seats</span>
+                <span><Briefcase size={13} /> {quote.luggageCapacity ?? quote.luggageCount ?? "-"} Bags</span>
               </div>
+              <button type="button" className="cbk-policies" onClick={() => setPolicyOpen(true)}>
+                View policies
+              </button>
             </div>
+            <div className="cbk-veh-fare">
+              <strong>{formatFare(quote.grossFare + markup)}</strong>
+              <small>Inc. GST</small>
+            </div>
+          </div>
 
-            <div className="cab-booking-summary-row">
-              <span>Base fare</span>
-              <strong>{formatFare(quote.netFare)}</strong>
-            </div>
-            <div className="cab-booking-summary-row">
-              <span>Taxes &amp; fees</span>
-              <strong>{formatFare(quote.totalTax)}</strong>
-            </div>
-            <div className="cab-booking-summary-row cab-booking-total">
-              <span>Total payable</span>
-              <strong>{formatFare(quote.grossFare)}</strong>
-            </div>
-
+          {/* traveller */}
+          <div className="cbk-card">
             <button
               type="button"
-              className="cab-quote-book cab-booking-submit"
-              onClick={handleSubmit}
-              disabled={submitting}
+              className="cbk-sec-head"
+              onClick={() => setPaxOpen((v) => !v)}
+              aria-expanded={paxOpen}
             >
-              {submitting ? <Loader2 size={16} className="spin" /> : null}
-              {submitting ? stage || "Booking..." : "Confirm & pay"}
+              Primary traveller details
+              {paxOpen ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
             </button>
-          </aside>
+
+            {paxOpen && (
+              <>
+                <p className="cbk-note">
+                  <Info size={14} /> We will use your email and contact number to share cab and
+                  driver details 6 hours before trip start
+                </p>
+
+                <div className="cbk-grid">
+                  <div className="cbk-field">
+                    <label htmlFor="cab-first-name">First name <i>*</i></label>
+                    <input
+                      id="cab-first-name"
+                      type="text"
+                      placeholder="Enter first name"
+                      value={form.firstName}
+                      onChange={(event) => setField("firstName", event.target.value)}
+                    />
+                    {errors.firstName ? <span className="cbk-err">{errors.firstName}</span> : null}
+                  </div>
+
+                  <div className="cbk-field">
+                    <label htmlFor="cab-last-name">Last name <i>*</i></label>
+                    <input
+                      id="cab-last-name"
+                      type="text"
+                      placeholder="Enter last name"
+                      value={form.lastName}
+                      onChange={(event) => setField("lastName", event.target.value)}
+                    />
+                    {errors.lastName ? <span className="cbk-err">{errors.lastName}</span> : null}
+                  </div>
+
+                  <div className="cbk-field">
+                    <label htmlFor="cab-email">Email address <i>*</i></label>
+                    <input
+                      id="cab-email"
+                      type="email"
+                      placeholder="Enter email address"
+                      value={form.email}
+                      onChange={(event) => setField("email", event.target.value)}
+                    />
+                    {errors.email ? <span className="cbk-err">{errors.email}</span> : null}
+                  </div>
+
+                  <div className="cbk-field">
+                    <label htmlFor="cab-phone">Phone number <i>*</i></label>
+                    <input
+                      id="cab-phone"
+                      type="tel"
+                      placeholder="+91"
+                      value={form.phone}
+                      onChange={(event) => setField("phone", event.target.value)}
+                    />
+                    {errors.phone ? <span className="cbk-err">{errors.phone}</span> : null}
+                  </div>
+
+                  <div className="cbk-field">
+                    <label htmlFor="cab-flight">
+                      Flight Number {isAirportTransfer ? <i>*</i> : <em>(optional)</em>}
+                    </label>
+                    <input
+                      id="cab-flight"
+                      type="text"
+                      placeholder="Enter Flight Number"
+                      value={form.flightNumber}
+                      onChange={(event) => setField("flightNumber", event.target.value)}
+                    />
+                    {errors.flightNumber ? <span className="cbk-err">{errors.flightNumber}</span> : null}
+                  </div>
+
+                  <div className="cbk-field">
+                    <label htmlFor="cab-request">Special service request <em>(optional)</em></label>
+                    <input
+                      id="cab-request"
+                      type="text"
+                      placeholder="Enter request"
+                      value={form.serviceRequest}
+                      onChange={(event) => setField("serviceRequest", event.target.value)}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* what happens next */}
+          <div className="cbk-card cbk-steps">
+            {STEPS.map((step, i) => (
+              <div className="cbk-step" key={step.title}>
+                <span className="cbk-step-tag">Step {i + 1}</span>
+                <strong>{step.title}</strong>
+                <p>{step.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <label className="cbk-consent">
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+            />
+            <span>
+              I confirm that the booking details are accurate, the traveller has consented to this
+              reservation and agrees to the <a href="/terms">Terms &amp; Conditions</a>, and I
+              authorize Happy Wedz to use the traveller&apos;s email and phone number to share cab
+              and driver details.
+            </span>
+          </label>
+
+          <div className="cbk-pay-row">
+            <button
+              type="button"
+              className="cbk-pay"
+              onClick={handleSubmit}
+              disabled={submitting || !consent}
+            >
+              {submitting ? (stage || "Booking...") : "Pay Now"} <ArrowRight size={16} />
+            </button>
+          </div>
         </div>
+
+        {/* price breakup */}
+        <aside className="cbk-side">
+          <div className="cbk-card cbk-price">
+            <h4>Price breakup</h4>
+            <div className="cbk-price-row is-strong">
+              <span>Net fare</span><span>{formatFare(quote.netFare)}</span>
+            </div>
+            <div className="cbk-price-row">
+              <span>Forward Trip</span><span>{formatFare(quote.netFare)}</span>
+            </div>
+            <div className="cbk-price-row">
+              <span>Management Fee</span><span>{formatFare(0)}</span>
+            </div>
+            <div className="cbk-price-row is-strong cbk-price-markup">
+              <span>Other fees</span>
+              <span>
+                {formatFare(markup)}
+                <button
+                  type="button"
+                  onClick={() => setMarkupOpen((v) => !v)}
+                  aria-label="Add markup"
+                >
+                  <Pencil size={13} />
+                </button>
+              </span>
+
+              {markupOpen && (
+                <div className="cbk-markup">
+                  <strong>Add markup</strong>
+                  <label>
+                    <span>&#8377;</span>
+                    <input
+                      type="number"
+                      autoFocus
+                      placeholder="Forward trip markup"
+                      value={markupDraft}
+                      onChange={(e) => setMarkupDraft(e.target.value)}
+                    />
+                  </label>
+                  <div className="cbk-markup-actions">
+                    <button type="button" onClick={() => setMarkupOpen(false)}>Cancel</button>
+                    <button
+                      type="button"
+                      className="is-primary"
+                      onClick={() => { setMarkup(Number(markupDraft) || 0); setMarkupOpen(false); }}
+                    >
+                      Update
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="cbk-price-row">
+              <span>Service Fee</span><span>{formatFare(quote.totalTax)}</span>
+            </div>
+            <div className="cbk-price-total">
+              <span>Total amount</span><span>{formatFare(quote.grossFare + markup)}</span>
+            </div>
+          </div>
+        </aside>
       </div>
+
+      {policyOpen && (
+        <CabPolicyModal quote={quote} onClose={() => setPolicyOpen(false)} />
+      )}
     </div>
   );
 }

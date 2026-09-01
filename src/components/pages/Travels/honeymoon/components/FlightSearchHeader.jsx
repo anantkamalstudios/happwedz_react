@@ -12,7 +12,9 @@ const formatPreferredAirlines = (pref) => {
   return valid.map((code) => AIRLINES.find((a) => a.code === code)?.name || code).join(', ');
 };
 
-export default function FlightSearchHeader({ searchParams, onModify }) {
+// Defaulted: this renders straight from router state, which is empty on a cold
+// load of the results URL, and a missing prop should not take the page down.
+export default function FlightSearchHeader({ searchParams = {}, onModify }) {
   const formatDate = (dateStr) => formatDateWithWeekday(dateStr);
 
   const getTripTypeLabel = () => {

@@ -544,6 +544,11 @@ export default function HotelSearchForm({
   const navigate = useNavigate();
   const destinationRef = useRef(null);
   const suppressNextSuggestionFetchRef = useRef(false);
+  // A suggestion panel opens because someone focused or typed in the field —
+  // never because a fetch happened to come back. The results page seeds
+  // `hotelLocation` from the search already run, so without this the effect
+  // below fired on mount and popped the panel open by itself.
+  const locationFocusedRef = useRef(false);
 
   // --- Prefill (used when the card is rendered on the results / detail pages
   // with an existing search). When no initial values are passed (hero on
@@ -710,7 +715,7 @@ export default function HotelSearchForm({
         });
 
         setHotelSuggestions([...dedupDestinations, ...dedupHotels]);
-        setShowHotelSuggestions(true);
+        setShowHotelSuggestions(locationFocusedRef.current);
       } catch (error) {
         if (!active) return;
         if (error?.name === "CanceledError" || error?.name === "AbortError" || error?.code === "ERR_CANCELED") {
@@ -901,15 +906,20 @@ export default function HotelSearchForm({
                 value={hotelLocation}
                 onChange={(event) => {
                   const value = event.target.value;
+                  locationFocusedRef.current = true;
                   setHotelLocation(value);
                   setSelectedDestination(null);
                   setSelectedHotel(null);
                   setShowHotelSuggestions(value.trim().length >= 2);
                 }}
                 onFocus={() => {
+                  locationFocusedRef.current = true;
                   if (hotelLocation.trim().length >= 2) {
                     setShowHotelSuggestions(true);
                   }
+                }}
+                onBlur={() => {
+                  locationFocusedRef.current = false;
                 }}
               />
               <div className="hotel-main-sub">
@@ -941,6 +951,7 @@ export default function HotelSearchForm({
                           className="suggestion-item"
                           onClick={() => {
                             suppressNextSuggestionFetchRef.current = true;
+                            locationFocusedRef.current = false;
                             setSelectedDestination(suggestion);
                             setSelectedHotel(null);
                             setHotelLocation(suggestion.displayName);
@@ -968,6 +979,7 @@ export default function HotelSearchForm({
                           className="suggestion-item"
                           onClick={() => {
                             suppressNextSuggestionFetchRef.current = true;
+                            locationFocusedRef.current = false;
                             setSelectedHotel(suggestion);
                             setSelectedDestination(null);
                             setHotelLocation(suggestion.displayName);

@@ -289,3 +289,27 @@ export const releaseHeldBooking = async (orderId) => {
   const response = await axiosInstance.post('/tj/oms/release-hold', { order_id: orderId });
   return response.data;
 };
+
+/**
+ * Travellers this user has booked for before, for the Passenger Details
+ * "Traveller List" picker. Returns [] rather than throwing: a convenience
+ * lookup must never block the booking form.
+ */
+export const getSavedTravellers = async (signal) => {
+  try {
+    const response = await axiosInstance.get(`${LEGACY_BASE_URL}/travellers`, { signal });
+    return Array.isArray(response.data?.data) ? response.data.data : [];
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * Re-send the ticket for a booking to the address it was booked with.
+ * The confirmation email fires automatically at booking; this is the
+ * on-demand resend behind the confirmation page's "Email Ticket".
+ */
+export const emailTicket = async (orderId) => {
+  const response = await axiosInstance.post('/flight_payment/email-ticket', { order_id: orderId });
+  return response.data;
+};

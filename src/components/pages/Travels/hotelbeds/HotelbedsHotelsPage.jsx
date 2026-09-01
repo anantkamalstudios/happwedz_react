@@ -74,7 +74,7 @@ const formatMoney = (value, currency = "INR", compact = false) => {
     currency: localeCurrency,
     maximumFractionDigits: 0,
   }).format(amount);
-  return compact ? formatted.replace("â‚¹", "â‚¹") : formatted;
+  return compact ? formatted.replace("₹", "₹") : formatted;
 };
 
 const formatDate = (value) => {
@@ -285,6 +285,16 @@ const getHotelAddress = (hotel, searchPayload) => {
     .join(", ");
 };
 
+// Suppliers return place names shouted in caps ("BHAVANI NAGAR"). Short tokens
+// that are already all-caps and no more than three letters are left alone, so
+// "NEW DELHI NCR" keeps its NCR and "UK" stays UK.
+const toTitleCase = (value) => {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (text !== text.toUpperCase()) return text; // already mixed case, leave it
+  return text.toLowerCase().replace(/\b[a-z]/g, (ch) => ch.toUpperCase());
+};
+
 const getDisplayRating = (score) => {
   const numeric = Number(score);
   if (!Number.isFinite(numeric) || numeric <= 0) return null;
@@ -293,11 +303,11 @@ const getDisplayRating = (score) => {
 
 const getRatingLabel = (hotel) => hotel?.userRating?.label || "No rating";
 
-const getPriceInfo = (hotel) => {
+const getPriceInfo = (hotel, searchPayload) => {
   const rate = Array.isArray(hotel?.rate) ? hotel.rate[0] : hotel?.rate?.[0];
   const rawOption = Array.isArray(hotel?.options) ? hotel.options[0] : null;
   const rawPricing = rawOption?.pricing || null;
-  const nightlyPrice = Number(rate?.nightlyPrice ?? rate?.pricePerNight ?? hotel?.nightlyPrice);
+  const supplierNightly = Number(rate?.nightlyPrice ?? rate?.pricePerNight ?? hotel?.nightlyPrice);
   const totalPrice = Number(
     hotel?.minPrice ??
       rate?.totalPrice ??
@@ -306,8 +316,17 @@ const getPriceInfo = (hotel) => {
       hotel?.price,
   );
 
+  // The search response carries only a total, so every card used to print
+  // "Price on request" directly above a real price. Derive the nightly rate the
+  // same way normalizeRoomOption already does for the detail page.
+  const nights = Math.max(1, getNightCount(searchPayload));
+  const derivedNightly =
+    Number.isFinite(totalPrice) && totalPrice > 0 ? totalPrice / nights : Number.NaN;
+  const nightlyPrice =
+    Number.isFinite(supplierNightly) && supplierNightly > 0 ? supplierNightly : derivedNightly;
+
   return {
-    nightlyPrice: Number.isFinite(nightlyPrice) ? nightlyPrice : null,
+    nightlyPrice: Number.isFinite(nightlyPrice) && nightlyPrice > 0 ? nightlyPrice : null,
     totalPrice: Number.isFinite(totalPrice) ? totalPrice : null,
     currency: rate?.currency || rawPricing?.currency || hotel?.currency || "INR",
     mealBasis: rate?.mealbasis || rate?.mealBasis || rawOption?.mealBasis || hotel?.mealBasis || "Room Only",
@@ -355,11 +374,11 @@ const getAmenities = (hotel) => {
 
 const normalizeHotel = (hotel, searchPayload) => {
   const images = getHotelImages(hotel);
-  const priceInfo = getPriceInfo(hotel);
+  const priceInfo = getPriceInfo(hotel, searchPayload);
   return {
     id: getHotelId(hotel),
     name: hotel?.name || hotel?.hotelName || "Hotel",
-    location: getHotelAddress(hotel, searchPayload),
+    location: toTitleCase(getHotelAddress(hotel, searchPayload)),
     image: images[0] || "",
     imageCount: images.length,
     images,
@@ -584,11 +603,16 @@ const getPriceRangeBucket = (amount) => {
   return "ABOVE_10000";
 };
 
+// Star ratings and price bands are ordinal: they read 5-4-3-2 and cheapest-first,
+// never "whichever bucket happens to have the most hotels". Everything else
+// (amenities, property type) is unordered and stays sorted by popularity.
+const PRICE_RANGE_ORDER = ["UNDER_3000", "3000_6000", "6000_10000", "ABOVE_10000"];
+
 const PRICE_RANGE_LABELS = {
-  UNDER_3000: "Under â‚¹3,000",
-  "3000_6000": "â‚¹3,000 - â‚¹6,000",
-  "6000_10000": "â‚¹6,000 - â‚¹10,000",
-  ABOVE_10000: "Above â‚¹10,000",
+  UNDER_3000: "Under ₹3,000",
+  "3000_6000": "₹3,000 - ₹6,000",
+  "6000_10000": "₹6,000 - ₹10,000",
+  ABOVE_10000: "Above ₹10,000",
 };
 
 const buildLocalFilterGroups = (hotels = []) => {
@@ -624,7 +648,13 @@ const buildLocalFilterGroups = (hotels = []) => {
           count,
           state: "ENABLED",
         }))
-        .sort((a, b) => b.count - a.count || String(a.label).localeCompare(String(b.label))),
+        .sort((a, b) => {
+          if (key === "ratings") return Number(b.value) - Number(a.value);
+          if (key === "priceRange") {
+            return PRICE_RANGE_ORDER.indexOf(a.value) - PRICE_RANGE_ORDER.indexOf(b.value);
+          }
+          return b.count - a.count || String(a.label).localeCompare(String(b.label));
+        }),
     };
   };
 
@@ -655,7 +685,7 @@ const sanitizeArrayFilterValues = (values = []) => {
     .filter((value) => {
       const text = String(value).trim();
       // Drop stale currency chips like "$2500.0" restored from previous UI state.
-      if (/^[\$â‚¬Â£]\s*\d/.test(text)) return false;
+      if (/^[\$€£]\s*\d/.test(text)) return false;
       return true;
     });
 };
@@ -828,7 +858,7 @@ const getRoomGuestSummary = (roomMeta, roomInfo) => {
   if (maxGuests) parts.push(`Fits max. ${maxGuests} guest${maxGuests > 1 ? "s" : ""}`);
   else if (maxAdults) parts.push(`${maxAdults} adult${maxAdults > 1 ? "s" : ""}`);
   if (maxChildren) parts.push(`${maxChildren} child${maxChildren > 1 ? "ren" : ""}`);
-  return parts.join(" â€¢ ");
+  return parts.join(" • ");
 };
 
 const getCancellationLabel = (cnp) => {
@@ -1061,7 +1091,6 @@ function ResultHeader({
       <div className="hotel-controls-row">
         <div className="hotel-controls-left">
           <div className="hotel-sort-dropdown">
-            <span className="hotel-sort-icon">ðŸ”½</span>
             <span className="hotel-sort-label">Sort By:</span>
             <select 
               className="hotel-sort-select" 
@@ -1076,7 +1105,7 @@ function ResultHeader({
           </div>
           
           <div className="hotel-results-text">
-            Showing {hotelCount} hotels for <strong>{destination}</strong>
+            Showing {hotelCount} hotels for <strong>{toTitleCase(destination)}</strong>
           </div>
         </div>
 
@@ -1110,7 +1139,7 @@ function ResultHeader({
             className={`hotel-favorites-btn ${favoritesOnly ? "active" : ""}`}
             onClick={() => setFavoritesOnly((prev) => !prev)}
           >
-            â¤ï¸ View Favourites
+            ❤️ View Favourites
           </button>
         </div>
       </div>
@@ -1245,7 +1274,14 @@ function HotelFilterSidebar({
     <div className="hotel-sidebar-card">
       <div className="hotel-sidebar-head">
         <div className="hotel-sidebar-title">
-          Filter by: {appliedFiltersCount} filter{appliedFiltersCount !== 1 ? 's' : ''} selected
+          {appliedFiltersCount > 0 ? (
+            <>
+              <span className="filter-active-badge">{appliedFiltersCount}</span>
+              Active Filter{appliedFiltersCount !== 1 ? 's' : ''}
+            </>
+          ) : (
+            'Filters'
+          )}
         </div>
       </div>
 
@@ -1255,7 +1291,7 @@ function HotelFilterSidebar({
         <div className="hotel-filter-content-static">
           <input
             className="hotel-filter-search"
-            placeholder="ðŸ” Select by Hotel Name"
+            placeholder="🔍 Select by Hotel Name"
             value={hotelNameQuery}
             onChange={(e) => setHotelNameQuery(e.target.value)}
           />
@@ -1287,7 +1323,7 @@ function HotelFilterSidebar({
                   className="hotel-applied-filter-remove"
                   onClick={chip.onRemove}
                 >
-                  Ã—
+                  ×
                 </button>
               </div>
             ))}
@@ -1324,7 +1360,7 @@ function HotelFilterSidebar({
               }
             >
               <span>{group.name}</span>
-              <span>{collapsed[group.key] ? "+" : "âˆ’"}</span>
+              <span>{collapsed[group.key] ? "+" : "−"}</span>
             </button>
             {!collapsed[group.key] ? (
               <div className="hotel-filter-content-expandable">
@@ -1411,7 +1447,10 @@ function HotelCard({ hotel, onClick }) {
             alt={`${hotel.name} image ${activeImageIndex + 1}`}
           />
         ) : (
-          <div className="hotel-image-placeholder">No Image</div>
+          <div className="hotel-image-placeholder">
+            <BedDouble size={26} strokeWidth={1.5} />
+            <span>Photo coming soon</span>
+          </div>
         )}
         
         <div className="image-count-badge">{activeImageIndex + 1}/{images.length || 1}</div>
@@ -1423,14 +1462,14 @@ function HotelCard({ hotel, onClick }) {
               className="image-nav-btn prev"
               onClick={handlePrevImage}
             >
-              â€¹
+              ‹
             </button>
             <button
               type="button"
               className="image-nav-btn next"
               onClick={handleNextImage}
             >
-              â€º
+              ›
             </button>
           </>
         )}
@@ -1449,7 +1488,7 @@ function HotelCard({ hotel, onClick }) {
         </div>
 
         <div className="hotel-inclusion">
-          â€¢ {hotel.priceInfo.mealBasis}
+          • {hotel.priceInfo.mealBasis}
         </div>
 
         <div className="hotel-facilities">
@@ -1472,7 +1511,7 @@ function HotelCard({ hotel, onClick }) {
           <div className="total-price">
             {hotel.priceInfo.totalPrice
               ? formatMoney(hotel.priceInfo.totalPrice, hotel.priceInfo.currency)
-              : "â€”"} <span className="total-label">Total</span>
+              : "—"} <span className="total-label">Total</span>
           </div>
           <div className="tax-info">(Incl. of all taxes)</div>
         </div>
@@ -1595,7 +1634,7 @@ function HotelListCard({ hotel, onClick }) {
               <div className="hotel-total-price">
               {hotel.priceInfo.totalPrice
                 ? formatMoney(hotel.priceInfo.totalPrice, hotel.priceInfo.currency, true)
-                : "â€”"}
+                : "—"}
             </div>
               <div className="hotel-total-caption">Total</div>
             </div>
@@ -2038,7 +2077,6 @@ export default function HotelbedsHotelsPage() {
           <div className="top-controls">
           <div className="left-controls">
             <div className="sort-button">
-              <span className="sort-icon">ðŸ”½</span>
               <span className="sort-label">Sort By:</span>
               <select 
                 className="sort-select" 
@@ -2053,7 +2091,7 @@ export default function HotelbedsHotelsPage() {
             </div>
             
             <div className="result-count">
-              Showing {hotelCount} hotels for <strong>{destinationName}</strong>
+              Showing {hotelCount} hotels for <strong>{toTitleCase(destinationName)}</strong>
             </div>
           </div>
 
@@ -2087,7 +2125,7 @@ export default function HotelbedsHotelsPage() {
               className={`favorites-btn ${favoritesOnly ? "active" : ""}`}
               onClick={() => setFavoritesOnly((prev) => !prev)}
             >
-              â¤ï¸ View Favourites
+              ❤️ View Favourites
             </button>
           </div>
           </div>
@@ -2104,7 +2142,7 @@ export default function HotelbedsHotelsPage() {
           <div className="content-layout">
             <aside className="filter-sidebar">
               <button className="see-on-map-btn">
-                ðŸ“ See on Map
+                See on Map
               </button>
               
               {filtersLoading ? (

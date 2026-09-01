@@ -1,143 +1,109 @@
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import axiosInstance from "../../../../services/api/axiosInstance";
-import {
-  Row,
-  Col,
-  Card,
-  Spinner,
-  Dropdown,
-  Badge,
-  Button,
-} from "react-bootstrap";
-import {
-  FaUser,
-  FaEnvelope,
-  FaPhone,
-  FaCalendarAlt,
-  FaMapMarkerAlt,
-  FaCheckCircle,
-  FaClock,
-  FaTimesCircle,
-  FaBan,
-  FaChevronDown,
-  FaChevronUp,
-  FaCalendarCheck
-} from "react-icons/fa";
-import { CiBookmarkCheck } from "react-icons/ci";
-import Swal from "sweetalert2";
-import Loader from "../../../ui/Loader";
+import React, { useCallback, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaHotel, FaPlane, FaTaxi, FaShieldAlt } from "react-icons/fa";
+
+import useBookingData from "./useBookingData";
+import WeddingServicesPanel from "./panels/WeddingServicesPanel";
+import HotelPanel from "./panels/HotelPanel";
+import FlightPanel from "./panels/FlightPanel";
+import CabPanel from "./panels/CabPanel";
+import InsurancePanel from "./panels/InsurancePanel";
+import ShopPanel from "./panels/ShopPanel";
 import StoreCartSection from "./StoreCartSection";
+import "./Booking.css";
 
-const Booking = () => {
-  const { user } = useSelector((state) => state.auth);
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [expandedCards, setExpandedCards] = useState({});
-  const [cancelling, setCancelling] = useState({});
+const CATEGORIES = [
+  { key: "services", label: "Wedding Services" },
+  { key: "travel", label: "Honeymoon Travel" },
+  { key: "shop", label: "Shop Orders" },
+];
 
+const TRAVEL_TABS = [
+  { key: "hotels", label: "Hotels", icon: <FaHotel />, Panel: HotelPanel },
+  { key: "flights", label: "Flights", icon: <FaPlane />, Panel: FlightPanel },
+  { key: "cabs", label: "Cabs", icon: <FaTaxi />, Panel: CabPanel },
+  { key: "insurance", label: "Insurance", icon: <FaShieldAlt />, Panel: InsurancePanel },
+];
+
+const TRAVEL_KEYS = TRAVEL_TABS.map((tab) => tab.key);
+const DEFAULT_SUB = "hotels";
+
+/**
+ * The Booking tab.
+ *
+ * Three horizontal categories in the pink header — Wedding Services (vendor
+ * quotation requests), Honeymoon Travel, and Shop Orders — with Travel splitting
+ * into a left rail of Hotels / Flights / Cabs / Insurance.
+ *
+ * Shop Orders come from the store backend, a separate service on its own
+ * MongoDB. They arrive here already reshaped into the same row vocabulary as
+ * everything else, which is why they slot in as one more category rather than
+ * needing a parallel structure.
+ *
+ * All six lists load together with the tab, because the rail and category
+ * badges count them. Panels are presentational: they filter and render the rows
+ * handed to them, so switching sub-tabs is instant.
+ */
+export default function Booking({ category, sub }) {
+  const navigate = useNavigate();
+  const { state, reload, update } = useBookingData();
+
+  const activeCategory = CATEGORIES.some((c) => c.key === category) ? category : "services";
+  const activeSub = TRAVEL_KEYS.includes(sub) ? sub : DEFAULT_SUB;
+
+  // Coming back to Travel should land where you left it, not always on Hotels.
+  const lastSub = useRef(DEFAULT_SUB);
   useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const res = await axiosInstance.get(
-          "https://happywedz.com/api/request-pricing/user/quotations"
-        );
-        if (res.data.success) {
-          setBookings(res.data.quotations);
-        }
-      } catch (err) {
-        console.error("Error fetching bookings:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBookings();
-  }, []);
+    if (activeCategory === "travel") lastSub.current = activeSub;
+  }, [activeCategory, activeSub]);
 
-  const handleActionChange = (id, newStatus) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, localStatus: newStatus } : b))
-    );
-  };
-
-  const toggleCardExpansion = (cardId) => {
-    setExpandedCards((prev) => ({
-      ...prev,
-      [cardId]: !prev[cardId],
-    }));
-  };
-
-  const handleCancelRequest = async (requestId) => {
-    const result = await Swal.fire({
-      title: "Cancel Quotation?",
-      text: "Are you sure you want to cancel this quotation request? This action cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, cancel it",
-      cancelButtonText: "No, keep it",
-    });
-
-    if (!result.isConfirmed) return;
-
-    setCancelling((prev) => ({ ...prev, [requestId]: true }));
-
-    try {
-      const res = await axiosInstance.delete(
-        `https://happywedz.com/api/request-pricing/user/quotations/${requestId}`
-      );
-
-      if (res.data.success) {
-        setBookings((prev) =>
-          prev.map((b) =>
-            (b.requestId || b.id) === requestId
-              ? { ...b, status: "cancelled" }
-              : b
-          )
-        );
-        Swal.fire(
-          "Cancelled!",
-          "Your quotation request has been cancelled.",
-          "success"
-        );
-      } else {
-        throw new Error(res.data.message || "Failed to cancel quotation");
-      }
-    } catch (err) {
-      console.error("Error cancelling booking:", err);
-      Swal.fire(
-        "Error",
-        err.response?.data?.message ||
-        "Failed to cancel quotation. Please try again.",
-        "error"
-      );
-    } finally {
-      setCancelling((prev) => ({ ...prev, [requestId]: false }));
+  // /booking/travel with no sub-tab is a valid link — put the default in the URL
+  // so the address bar always describes what is on screen.
+  useEffect(() => {
+    if (activeCategory === "travel" && !TRAVEL_KEYS.includes(sub)) {
+      navigate(`/user-dashboard/booking/travel/${DEFAULT_SUB}`, { replace: true });
     }
+  }, [activeCategory, sub, navigate]);
+
+  const goToCategory = useCallback(
+    (key) => {
+      // Travel is the only category with sub-tabs, so it is the only one that
+      // needs a second path segment. The rest map straight to their own key.
+      navigate(
+        key === "travel"
+          ? `/user-dashboard/booking/travel/${lastSub.current}`
+          : `/user-dashboard/booking/${key}`
+      );
+    },
+    [navigate]
+  );
+
+  const goToSub = useCallback(
+    (key) => navigate(`/user-dashboard/booking/travel/${key}`),
+    [navigate]
+  );
+
+  // A count is shown once that list has resolved. A list that failed to load
+  // stays blank rather than claiming zero.
+  const countOf = (key) => {
+    const slice = state[key];
+    return slice.loading || slice.error ? null : slice.rows.length;
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "replied":
-        return <FaCheckCircle />;
-      case "pending":
-        return <FaClock />;
-      case "cancelled":
-        return <FaBan />;
-      case "booked":
-        return <FaCalendarCheck />;
+  const travelTotal = TRAVEL_KEYS.every((key) => countOf(key) != null)
+    ? TRAVEL_KEYS.reduce((sum, key) => sum + countOf(key), 0)
+    : null;
 
-      default:
-        return <FaTimesCircle />;
-    }
+  const categoryCount = (key) => {
+    if (key === "travel") return travelTotal;
+    if (key === "shop") return countOf("orders");
+    return countOf("services");
   };
 
-  const filteredBookings =
-    filterStatus === "all"
-      ? bookings
-      : bookings.filter((b) => b.status === filterStatus);
+  const activeTab = TRAVEL_TABS.find((tab) => tab.key === activeSub) || TRAVEL_TABS[0];
+  const ActivePanel = activeTab.Panel;
+  const activeSlice = state[activeTab.key];
+
   return (
     <div className="user-booking-container">
       {/* The HappyWedz Store basket. Rendered above the quotations rather than
@@ -158,238 +124,85 @@ const Booking = () => {
           </div>
 
           <div className="user-booking-filter-section">
-            <div className="user-booking-filter-tabs">
-              <button
-                className={`user-booking-filter-tab fs-16 ${filterStatus === "all" ? "active" : ""
-                  }`}
-                onClick={() => setFilterStatus("all")}
-              >
-                All ({bookings.length})
-              </button>
-              <button
-                className={`user-booking-filter-tab fs-16 ${filterStatus === "replied" ? "active" : ""
-                  }`}
-                onClick={() => setFilterStatus("replied")}
-              >
-                Replied ({bookings.filter((b) => b.status === "replied").length}
-                )
-              </button>
-              <button
-                className={`user-booking-filter-tab fs-16 ${filterStatus === "pending" ? "active" : ""
-                  }`}
-                onClick={() => setFilterStatus("pending")}
-              >
-                Pending ({bookings.filter((b) => b.status === "pending").length}
-                )
-              </button>
-              <button
-                className={`user-booking-filter-tab fs-16 ${filterStatus === "cancelled" ? "active" : ""
-                  }`}
-                onClick={() => setFilterStatus("cancelled")}
-              >
-                Cancelled (
-                {bookings.filter((b) => b.status === "cancelled").length})
-              </button>
+            <div className="hw-bk-cat-tabs" role="tablist" aria-label="Booking category">
+              {CATEGORIES.map((cat) => {
+                const count = categoryCount(cat.key);
+                return (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeCategory === cat.key}
+                    className={`hw-bk-cat-tab ${activeCategory === cat.key ? "active" : ""}`}
+                    onClick={() => goToCategory(cat.key)}
+                  >
+                    {cat.label}
+                    {count != null && <span className="hw-bk-cat-count">{count}</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
       </div>
 
-      {loading ? (
-        <div className="user-booking-loading">
-          <Loader />
-        </div>
-      ) : filteredBookings.length === 0 ? (
-        <div className="user-booking-empty">
-          <div className="user-booking-empty-icon">
-            <img
-              src="/images/no-booking.png"
-              alt=""
-              className="img-fluid"
-              width={200}
-              height={200}
-            />
+      {activeCategory !== "travel" ? (
+        // Travel is the only category that needs the left rail, so everything
+        // else shares the solo stage.
+        <div className="hw-bk-stage hw-bk-stage--solo">
+          <div>
+            {activeCategory === "shop" ? (
+              <ShopPanel
+                rows={state.orders.rows}
+                loading={state.orders.loading}
+                error={state.orders.error}
+                onRetry={() => reload("orders")}
+              />
+            ) : (
+              <WeddingServicesPanel
+                rows={state.services.rows}
+                loading={state.services.loading}
+                error={state.services.error}
+                onRetry={() => reload("services")}
+                onUpdate={(updater) => update("services", updater)}
+              />
+            )}
           </div>
-          <h3 className="user-booking-empty-title">No Bookings Found</h3>
-          <p className="user-booking-empty-text">
-            {filterStatus === "all"
-              ? "You haven't made any bookings yet. Start exploring services!"
-              : `No ${filterStatus} bookings at the moment.`}
-          </p>
         </div>
       ) : (
-        <div className="user-booking-grid-container">
-          <Row className="g-4">
-            {filteredBookings.map((item) => {
-              const isExpanded = expandedCards[item.id];
-              const isCancelled = item.status === "cancelled";
-
+        <div className="hw-bk-stage">
+          <nav className="hw-bk-rail" role="tablist" aria-label="Travel booking type">
+            <div className="hw-bk-rail-label">Travel</div>
+            {TRAVEL_TABS.map((tab) => {
+              const count = countOf(tab.key);
               return (
-                <Col md={6} xl={4} key={item.id}>
-                  <Card className="user-booking-card">
-                    <Card.Body className="user-booking-card-body rounded-5">
-                      <div className="user-booking-card-compact rounded-5">
-                        <div className="user-booking-card-profile-section">
-                          <div className="user-booking-card-profile-image-wrapper rounded-5">
-                            <img
-                              src={
-                                item.vendor?.profileImage ||
-                                "/images/imageNotFound.jpg"
-                              }
-                              alt={item.vendor?.businessName}
-                              className="user-booking-card-profile-image"
-                            />
-                            <Badge
-                              bg="none"
-                              className={`fs-10 user-booking-status-badge user-booking-status-${item.status}`}
-                            >
-                              {getStatusIcon(item.status)}
-                              <span className="ms-1">{item.status}</span>
-                            </Badge>
-                          </div>
-                          <div className="user-booking-card-vendor-info">
-                            <h3 className="user-booking-vendor-name fs-16">
-                              {item.vendor?.businessName || "Unknown Vendor"}
-                            </h3>
-                            <p className="user-booking-vendor-location fs-14">
-                              <FaMapMarkerAlt size={14} />
-                              <span className="fs-14">
-                                {item.vendor?.city || "Unknown"},{" "}
-                                {item.vendor?.state || ""}
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-
-                        {isExpanded && (
-                          <div className="user-booking-card-expanded">
-                            <div className="user-booking-info-section">
-                              <p className="user-booking-section-title fs-16">
-                                Booking Details
-                              </p>
-                              <div className="user-booking-info-grid">
-                                <div className="user-booking-info-item">
-                                  <FaUser className="user-booking-info-icon fs-14" />
-                                  <span className="user-booking-info-text fs-14">
-                                    {item.firstName} {item.lastName}
-                                  </span>
-                                </div>
-                                <div className="user-booking-info-item">
-                                  <FaEnvelope className="user-booking-info-icon fs-14" />
-                                  <span className="user-booking-info-text fs-14">
-                                    {item.email}
-                                  </span>
-                                </div>
-                                <div className="user-booking-info-item">
-                                  <FaPhone className="user-booking-info-icon fs-14" />
-                                  <span className="user-booking-info-text fs-14">
-                                    {item.phone}
-                                  </span>
-                                </div>
-                                <div className="user-booking-info-item">
-                                  <FaCalendarAlt className="user-booking-info-icon fs-14" />
-                                  <span className="user-booking-info-text fs-14">
-                                    <strong>{item.eventDate}</strong>
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="user-booking-quote-section">
-                              <p className="user-booking-section-title fs-16">
-                                Quotation Details
-                              </p>
-                              <div className="user-booking-quote-card">
-                                <div className="user-booking-quote-item">
-                                  <span className="user-booking-quote-label fs-14">
-                                    Quote Price
-                                  </span>
-                                  <span className="user-booking-quote-value user-booking-quote-price fs-14">
-                                    {item.quote?.price
-                                      ? `₹ ${item.quote.price}`
-                                      : "Not provided"}
-                                  </span>
-                                </div>
-                                <div className="user-booking-quote-item">
-                                  <span className="user-booking-quote-label fs-14">
-                                    Valid Till
-                                  </span>
-                                  <span className="user-booking-quote-value fs-14">
-                                    {item.quote?.validTill || "N/A"}
-                                  </span>
-                                </div>
-                                {item.quote?.message && (
-                                  <div className="user-booking-quote-message">
-                                    <span className="user-booking-quote-label fs-14">
-                                      Message
-                                    </span>
-                                    <p className="user-booking-quote-message-text fs-14">
-                                      {item.quote.message}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="user-booking-card-actions">
-                          <Button
-                            variant="link"
-                            className="user-booking-show-more-btn fs-14"
-                            onClick={() => toggleCardExpansion(item.id)}
-                          >
-                            {isExpanded ? (
-                              <>
-                                <FaChevronUp size={14} className="me-1" />
-                                <span className="fs-14"> Show Less</span>
-                              </>
-                            ) : (
-                              <>
-                                <FaChevronDown size={14} className="me-1" />
-                                <span className="fs-14"> Show More</span>
-                              </>
-                            )}
-                          </Button>
-                          {!isCancelled && (
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              className="user-booking-cancel-btn fs-14"
-                              onClick={() =>
-                                handleCancelRequest(item.requestId || item.id)
-                              }
-                              disabled={cancelling[item.requestId || item.id]}
-                            >
-                              {cancelling[item.requestId || item.id] ? (
-                                <>
-                                  <Spinner
-                                    animation="border"
-                                    size="sm"
-                                    className="me-1"
-                                  />
-                                  Cancelling...
-                                </>
-                              ) : (
-                                <>
-                                  <FaBan className="me-1" />
-                                  <span className="fs-14">Cancel</span>
-                                </>
-                              )}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeSub === tab.key}
+                  className={`hw-bk-rail-btn ${activeSub === tab.key ? "active" : ""}`}
+                  onClick={() => goToSub(tab.key)}
+                >
+                  <span className="hw-bk-rail-icon">{tab.icon}</span>
+                  <span>{tab.label}</span>
+                  {count != null && <span className="hw-bk-rail-count">{count}</span>}
+                </button>
               );
             })}
-          </Row>
+          </nav>
+
+          <div>
+            <ActivePanel
+              key={activeSub}
+              rows={activeSlice.rows}
+              loading={activeSlice.loading}
+              error={activeSlice.error}
+              onRetry={() => reload(activeTab.key)}
+            />
+          </div>
         </div>
       )}
     </div>
   );
-};
-
-export default Booking;
+}

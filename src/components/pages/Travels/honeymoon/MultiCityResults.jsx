@@ -4,12 +4,16 @@ import FlightFiltersSidebar from './FlightFiltersSidebar';
 import FlightSearchHeader from './components/FlightSearchHeader';
 import { formatDate as fmtDate } from '../../../../utils/dateFormat';
 import './tripjack-styles.css';
+import { farePrice, paxFromSearch } from '../../../../utils/flightFilters';
+import { airlineLogo } from '../../../../utils/airlineLogo';
 
 export default function MultiCityResults() {
   const location = useLocation();
   const navigate = useNavigate();
   
   const { searchParams, initialResults, searchQuery } = location.state || {};
+  // Fares are quoted per passenger; price the whole party.
+  const mcPax = paxFromSearch(searchParams);
   
   const [routeFlights, setRouteFlights] = useState({});
   const [filteredRouteFlights, setFilteredRouteFlights] = useState({});
@@ -124,7 +128,7 @@ export default function MultiCityResults() {
     allFlights.forEach(flight => {
       const stops = flight.sI.length - 1;
       const airline = flight.sI[0].fD.aI;
-      const price = flight.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0;
+      const price = farePrice(flight.totalPriceList?.[0], mcPax);
 
       if (!stopsMap.has(stops)) {
         stopsMap.set(stops, { value: stops, count: 0, min_price: Infinity });
@@ -137,7 +141,7 @@ export default function MultiCityResults() {
         airlinesMap.set(airline.code, {
           code: airline.code,
           name: airline.name,
-          logo: `https://airlines.airhex.com/airlines-logo/${airline.code.toLowerCase()}.png`,
+          logo: airlineLogo(airline.code),
           count: 0,
           min_price: Infinity,
         });
@@ -182,7 +186,7 @@ export default function MultiCityResults() {
     return flights.filter(flight => {
       const stops = flight.sI.length - 1;
       const airline = flight.sI[0].fD.aI.code;
-      const price = flight.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0;
+      const price = farePrice(flight.totalPriceList?.[0], mcPax);
       const depHour = parseInt(flight.sI[0].dt.split('T')[1].split(':')[0]);
 
       if (filters.stops.length > 0 && !filters.stops.includes(stops)) return false;
@@ -265,7 +269,7 @@ export default function MultiCityResults() {
     const seen = new Map();
     Object.values(selectedFlightsPerRoute).forEach((flight) => {
       const priceId = flight.totalPriceList?.[0]?.id;
-      const price = flight.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
+      const price = farePrice(flight.totalPriceList?.[0], mcPax);
       if (priceId && !seen.has(priceId)) seen.set(priceId, price);
     });
     return Array.from(seen.values()).reduce((sum, p) => sum + p, 0);
@@ -350,7 +354,7 @@ export default function MultiCityResults() {
     // Whole-journey duration & stops (a flight for one route may be connecting).
     const duration = flight.sI.reduce((s, sg) => s + (sg.duration || 0), 0);
     const stops = flight.sI.length - 1;
-    const price = flight.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
+    const price = farePrice(flight.totalPriceList?.[0], mcPax);
     const fareType = flight.totalPriceList?.[0]?.fareIdentifier || 'PUBLISHED';
     const cabinClass = flight.totalPriceList?.[0]?.fd?.ADULT?.cc || 'ECONOMY';
 
@@ -372,7 +376,7 @@ export default function MultiCityResults() {
           <div className="col-md-2">
             <div className="d-flex align-items-center">
               <img
-                src={`https://airhex.com/images/airline-logos/alt/${airline.code.toLowerCase()}.png`}
+                src={airlineLogo(airline.code)}
                 alt={airline.name}
                 style={{ width: '40px', height: '40px', marginRight: '10px', objectFit: 'contain' }}
                 onError={(e) => { 
@@ -497,7 +501,7 @@ export default function MultiCityResults() {
   const getCheapestPrice = (routeIdx) => {
     const flights = filteredRouteFlights[routeIdx] || [];
     if (flights.length === 0) return 0;
-    return Math.min(...flights.map(f => f.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || Infinity));
+    return Math.min(...flights.map(f => farePrice(f.totalPriceList?.[0], mcPax) || Infinity));
   };
 
   const getFastestDuration = (routeIdx) => {
@@ -721,7 +725,7 @@ export default function MultiCityResults() {
                     return (
                       <div key={routeIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <img
-                          src={`https://airhex.com/images/airline-logos/alt/${airline?.code.toLowerCase()}.png`}
+                          src={airlineLogo(airline?.code)}
                           alt={airline?.name}
                           style={{ width: '30px', height: '30px', objectFit: 'contain' }}
                           onError={(e) => {

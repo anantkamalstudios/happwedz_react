@@ -23,41 +23,39 @@ export default function BookingSteps({ currentStep }) {
     { 
       number: 4, 
       label: 'Payments', 
-      shortLabel: 'FOURTH STEP',
+      shortLabel: 'FINISH STEP',
       icon: FaCreditCard 
     },
   ];
 
+
+  // Four equal columns, mirroring TripJack's row of col-sm-3: every step owns
+  // exactly a quarter of the container, and the connector fills whatever the
+  // circle and label leave over inside that quarter.
   return (
-    <div className="tj-stepper-wrapper">
-      <div className="tj-stepper-container">
-        {steps.map((step, index) => {
-          const isCompleted = currentStep > step.number;
-          const isActive = currentStep === step.number;
-          const StepIcon = step.icon;
-          
-          return (
-            <div key={step.number} className="tj-step-wrapper">
-              <div className={`tj-step-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
-                <div className="tj-step-icon-circle">
-                  {isCompleted ? (
-                    <FaCheck size={16} />
-                  ) : (
-                    <StepIcon size={16} />
-                  )}
-                </div>
-                <div className="tj-step-text">
-                  <div className="tj-step-label">{step.shortLabel}</div>
-                  <div className="tj-step-title">{step.label}</div>
-                </div>
+    <div className="tj-stepper">
+      {steps.map((step, index) => {
+        const isCompleted = currentStep > step.number;
+        const isActive = currentStep === step.number;
+        const StepIcon = step.icon;
+
+        return (
+          <div key={step.number} className="tj-step-col">
+            <div className={`tj-step-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
+              <div className="tj-step-icon-circle">
+                {isCompleted ? <FaCheck size={16} /> : <StepIcon size={16} />}
               </div>
-              {index < steps.length - 1 && (
-                <div className={`tj-step-line ${isCompleted ? 'completed' : ''}`} />
-              )}
+              <div className="tj-step-text">
+                <div className="tj-step-label">{step.shortLabel}</div>
+                <div className="tj-step-title">{step.label}</div>
+              </div>
             </div>
-          );
-        })}
-      </div>
+            {index < steps.length - 1 && (
+              <span className={`tj-step-line ${isCompleted ? 'completed' : ''}`} />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -1,145 +1,79 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Car, Loader2 } from "lucide-react";
+import { Car, Loader2, MapPin, ArrowLeftRight, Search } from "lucide-react";
 import {
   buildCabLocationNode,
   fetchCabPlaceDetails,
-  searchCabLocations,
 } from "../../../../../services/api/cabApi";
+import CabLocationField from "./CabLocationField";
+import CabDateTimeField from "./CabDateTimeField";
+import CabPaxField from "./CabPaxField";
 import "./HotelSearchForm.css";
+import "./CabSearchForm.css";
 
 const JOURNEY_TYPES = [
-  { value: "airport_transfer", label: "Airport Transfer" },
+  { value: "airport_transfer", label: "Airport Transfers" },
   { value: "outstation", label: "Outstation" },
+  { value: "local", label: "Local" },
 ];
-
-const TRIP_TYPES = [
-  { value: "oneway", label: "One Way" },
-  { value: "roundtrip", label: "Round Trip" },
-];
-
-const todayIso = () => new Date().toISOString().slice(0, 10);
-
-/** Autocomplete input backed by /tripjack-cabs/search-locations. */
-function LocationField({ label, placeholder, value, selected, onChange, onSelect }) {
-  const [suggestions, setSuggestions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const wrapperRef = useRef(null);
-  const skipNextFetchRef = useRef(false);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if (skipNextFetchRef.current) {
-      skipNextFetchRef.current = false;
-      return undefined;
-    }
-    const query = value.trim();
-    if (query.length < 2) {
-      setSuggestions([]);
-      return undefined;
-    }
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      setLoading(true);
-      searchCabLocations(query, { signal: controller.signal })
-        .then((places) => {
-          setSuggestions(places);
-          setOpen(true);
-        })
-        .catch(() => setSuggestions([]))
-        .finally(() => setLoading(false));
-    }, 350);
-
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [value]);
-
-  return (
-    <div className="hotel-main-field hotel-main-field--destination" ref={wrapperRef}>
-      <div className="hotel-main-label">{label}</div>
-      <div className="field-wrapper">
-        <input
-          className="hotel-main-input"
-          type="text"
-          placeholder={placeholder}
-          autoComplete="off"
-          value={value}
-          onChange={(event) => {
-            onChange(event.target.value);
-            onSelect(null);
-          }}
-          onFocus={() => suggestions.length && setOpen(true)}
-        />
-        {open && (
-          <div className="airport-suggestions hotel-airport-suggestions">
-            {loading ? (
-              <div className="suggestion-item suggestion-loading">
-                <Loader2 size={16} className="spin" /> Searching...
-              </div>
-            ) : suggestions.length ? (
-              suggestions.map((place) => (
-                <button
-                  type="button"
-                  key={place.id}
-                  className="suggestion-item"
-                  onClick={() => {
-                    skipNextFetchRef.current = true;
-                    onChange(place.displayLabel || place.name);
-                    onSelect(place);
-                    setOpen(false);
-                  }}
-                >
-                  <div className="suggestion-main">
-                    <span className="suggestion-name">
-                      {place.displayLabel || place.name}
-                    </span>
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="suggestion-item suggestion-empty">No locations found</div>
-            )}
-          </div>
-        )}
-      </div>
-      {selected ? null : value.trim() ? (
-        <div style={{ fontSize: 11, color: "#9ca3af", paddingLeft: 4 }}>
-          Pick a suggestion
-        </div>
-      ) : null}
-    </div>
-  );
-}
 
 export default function CarRentalSearchForm() {
   const navigate = useNavigate();
 
   const [journeyType, setJourneyType] = useState("airport_transfer");
-  const [tripType, setTripType] = useState("oneway");
-  const isRoundTrip = tripType === "roundtrip";
+  // The portal has no one-way/round-trip switch: a return date makes it a
+  // roundtrip and clearing it makes it one way, so the two can never disagree.
+  const [returnDate, setReturnDate] = useState("");
+  const isRoundTrip = Boolean(returnDate);
+  const tripType = isRoundTrip ? "roundtrip" : "oneway";
   const [originText, setOriginText] = useState("");
   const [originPlace, setOriginPlace] = useState(null);
   const [destText, setDestText] = useState("");
   const [destPlace, setDestPlace] = useState(null);
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("09:00");
-  const [returnDate, setReturnDate] = useState("");
   const [returnTime, setReturnTime] = useState("18:00");
   const [passengers, setPassengers] = useState(1);
   const [luggage, setLuggage] = useState(1);
+
+  /**
+   * The two timing rules the cabs API enforces, per its documentation:
+   * a pickup must be at least 2 hours out, and on a roundtrip the return must
+   * be at least 30 minutes after it. Checked live inside each picker so the
+   * message appears where the time is being set, and again on submit in case a
+   * pickup change invalidates a return that was already applied.
+   */
+  const MIN_LEAD_MS = 2 * 60 * 60 * 1000;
+  const MIN_GAP_MS = 30 * 60 * 1000;
+  const at = (d, t) => new Date(`${d}T${t || '00:00'}:00`);
+
+  const validatePickup = (d, t) => {
+    const when = at(d, t);
+    if (Number.isNaN(when.getTime())) return null;
+    if (when.getTime() - Date.now() < MIN_LEAD_MS) {
+      return 'Pickup time must be at least 2 hours from now';
+    }
+    return null;
+  };
+
+  const validateReturn = (d, t) => {
+    if (!pickupDate) return 'Select a pickup date and time first';
+    const when = at(d, t);
+    const from = at(pickupDate, pickupTime);
+    if (Number.isNaN(when.getTime()) || Number.isNaN(from.getTime())) return null;
+    if (when.getTime() - from.getTime() < MIN_GAP_MS) {
+      return 'Return time must be atleast 30 minutes after pickup time';
+    }
+    return null;
+  };
+
+  /** Swap pick-up and drop-off, text and resolved place together. */
+  const swapEnds = () => {
+    setOriginText(destText);
+    setDestText(originText);
+    setOriginPlace(destPlace);
+    setDestPlace(originPlace);
+  };
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -156,16 +90,19 @@ export default function CarRentalSearchForm() {
       setError("Please select a pick-up date.");
       return;
     }
-    if (isRoundTrip && !returnDate) {
-      setError("Please select a return date.");
+    // Re-run the picker's own rules here: changing the pickup after a return
+    // was applied can leave a pair that was valid when set and is not now.
+    const pickupProblem = validatePickup(pickupDate, pickupTime);
+    if (pickupProblem) {
+      setError(pickupProblem);
       return;
     }
-    if (
-      isRoundTrip &&
-      `${returnDate}T${returnTime}` <= `${pickupDate}T${pickupTime}`
-    ) {
-      setError("Return must be after pick-up.");
-      return;
+    if (isRoundTrip) {
+      const returnProblem = validateReturn(returnDate, returnTime);
+      if (returnProblem) {
+        setError(returnProblem);
+        return;
+      }
     }
 
     setError("");
@@ -208,165 +145,94 @@ export default function CarRentalSearchForm() {
   };
 
   return (
-    <div className="search-card hotel-search-card">
-      <div className="hotel-search-stack">
-        <div
-          style={{ display: "flex", gap: 10, flexWrap: "wrap", padding: "0 4px 12px" }}
-        >
-          {JOURNEY_TYPES.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setJourneyType(option.value)}
-              style={{
-                borderRadius: 999,
-                padding: "8px 18px",
-                fontWeight: 700,
-                fontSize: 13,
-                cursor: "pointer",
-                border:
-                  journeyType === option.value ? "none" : "1px solid #e5e7eb",
-                background: journeyType === option.value ? "#ed1173" : "#fff",
-                color: journeyType === option.value ? "#fff" : "#374151",
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-          <span style={{ width: 1, background: "#e5e7eb", margin: "0 4px" }} />
-          {TRIP_TYPES.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setTripType(option.value)}
-              style={{
-                borderRadius: 999,
-                padding: "8px 18px",
-                fontWeight: 700,
-                fontSize: 13,
-                cursor: "pointer",
-                border: tripType === option.value ? "none" : "1px solid #e5e7eb",
-                background: tripType === option.value ? "#111827" : "#fff",
-                color: tripType === option.value ? "#fff" : "#374151",
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+    <div className="cab-search-card">
+      {/* Journey type is a radio group in the portal, not pills — the three
+          options are mutually exclusive and each reshapes the search. */}
+      <div className="cab-journey-row" role="radiogroup" aria-label="Journey type">
+        {JOURNEY_TYPES.map((option) => (
+          <label key={option.value} className="cab-journey">
+            <input
+              type="radio"
+              name="cab-journey"
+              checked={journeyType === option.value}
+              onChange={() => setJourneyType(option.value)}
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
+      </div>
 
-        <div className="hotel-search-main-row">
-          <LocationField
-            label={journeyType === "airport_transfer" ? "Pick-up (Airport / City)" : "Pick-up"}
-            placeholder="Airport, city or landmark"
+      <div className="cab-fields">
+        {/* Pick-up and drop-off share one bordered box with the swap between
+            them, so the pair reads as a single route control. */}
+        <div className="cab-route">
+          <CabLocationField
+            icon={<Car size={15} />}
+            placeholder="Where from?"
             value={originText}
             selected={originPlace}
             onChange={setOriginText}
             onSelect={setOriginPlace}
           />
-
-          <LocationField
-            label="Drop-off"
-            placeholder="Airport, city or landmark"
+          <button
+            type="button"
+            className="cab-swap"
+            onClick={swapEnds}
+            aria-label="Swap pick-up and drop-off"
+          >
+            <ArrowLeftRight size={15} />
+          </button>
+          <CabLocationField
+            icon={<MapPin size={15} />}
+            placeholder="Where to?"
             value={destText}
             selected={destPlace}
             onChange={setDestText}
             onSelect={setDestPlace}
           />
-
-          <div className="hotel-main-field">
-            <div className="hotel-main-label">Pick-up date</div>
-            <input
-              className="hotel-main-input"
-              type="date"
-              min={todayIso()}
-              value={pickupDate}
-              onChange={(event) => setPickupDate(event.target.value)}
-            />
-          </div>
-
-          <div className="hotel-main-field">
-            <div className="hotel-main-label">Pick-up time</div>
-            <input
-              className="hotel-main-input"
-              type="time"
-              value={pickupTime}
-              onChange={(event) => setPickupTime(event.target.value)}
-            />
-          </div>
-
-          {isRoundTrip && (
-            <>
-              <div className="hotel-main-field">
-                <div className="hotel-main-label">Return date</div>
-                <input
-                  className="hotel-main-input"
-                  type="date"
-                  min={pickupDate || todayIso()}
-                  value={returnDate}
-                  onChange={(event) => setReturnDate(event.target.value)}
-                />
-              </div>
-
-              <div className="hotel-main-field">
-                <div className="hotel-main-label">Return time</div>
-                <input
-                  className="hotel-main-input"
-                  type="time"
-                  value={returnTime}
-                  onChange={(event) => setReturnTime(event.target.value)}
-                />
-              </div>
-            </>
-          )}
-
-          <div className="hotel-main-field">
-            <div className="hotel-main-label">Passengers</div>
-            <input
-              className="hotel-main-input"
-              type="number"
-              min={1}
-              max={20}
-              value={passengers}
-              onChange={(event) => setPassengers(event.target.value)}
-            />
-          </div>
-
-          {journeyType === "outstation" && (
-            <div className="hotel-main-field">
-              <div className="hotel-main-label">Luggage</div>
-              <input
-                className="hotel-main-input"
-                type="number"
-                min={0}
-                max={20}
-                value={luggage}
-                onChange={(event) => setLuggage(event.target.value)}
-              />
-            </div>
-          )}
-
-          <button
-            type="button"
-            className="hotel-search-submit"
-            onClick={handleSearch}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <Loader2 size={16} className="spin" style={{ marginRight: 8 }} />
-            ) : (
-              <Car size={16} style={{ marginRight: 8 }} />
-            )}
-            {submitting ? "Searching..." : "Search"}
-          </button>
         </div>
 
-        {error ? (
-          <div style={{ color: "#ed1173", fontWeight: 600, padding: "8px 4px 0" }}>
-            {error}
-          </div>
-        ) : null}
+        <CabDateTimeField
+          placeholder="Pick-up date and time"
+          date={pickupDate}
+          time={pickupTime}
+          validate={validatePickup}
+          onApply={(d, t) => { setPickupDate(d); setPickupTime(t); }}
+        />
+
+        <CabDateTimeField
+          placeholder="Select return date and time"
+          date={returnDate}
+          time={returnTime}
+          minDate={pickupDate || undefined}
+          clearable
+          validate={validateReturn}
+          onApply={(d, t) => { setReturnDate(d); setReturnTime(t); }}
+          onClear={() => setReturnDate("")}
+        />
       </div>
+
+      <div className="cab-actions">
+        <CabPaxField
+          passengers={passengers}
+          bags={luggage}
+          onPassengersChange={setPassengers}
+          onBagsChange={setLuggage}
+        />
+
+        <button
+          type="button"
+          className="cab-search-btn"
+          onClick={handleSearch}
+          disabled={submitting}
+        >
+          {submitting ? <Loader2 size={15} className="spin" /> : <Search size={15} />}
+          {submitting ? "Searching…" : "Search Cabs"}
+        </button>
+      </div>
+
+      {error && <p className="cab-error">{error}</p>}
     </div>
   );
+
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   FaRing,
   FaClipboardList,
@@ -99,8 +99,14 @@ const tabs = [
 ];
 
 const UserDashboardNavbar = () => {
-  const { slug } = useParams();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
+
+  // Read the tab off the path rather than useParams(): the Booking tab's
+  // nested routes (/user-dashboard/booking/travel/hotels) name their params
+  // :category and :sub, so there is no :slug to destructure and the Booking
+  // icon would drop its highlight.
+  const slug = pathname.split("/")[2];
   const [activeTab, setActiveTab] = useState("wedding");
 
   useEffect(() => {
