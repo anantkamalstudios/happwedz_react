@@ -77,18 +77,52 @@ const VendorAvailability = ({
     if (onShowSuccess) onShowSuccess();
   };
 
+  const isActive = formData?.availabilityActive !== false;
+
+  const handleToggleActive = () => {
+    setFormData((prev) => ({
+      ...prev,
+      availabilityActive: !(prev?.availabilityActive !== false),
+    }));
+  };
+
   return (
     <div className="my-5">
       <div className="p-3 border rounded bg-white">
-        <h4 className="mb-3 fw-bold">Availability & Slots</h4>
-
-        {/* Calendar Section */}
-        <div className="mb-4">
-          <VendorAvailabilityCalendar
-            initialAvailableDates={availableDates}
-            onAvailabilityChange={setAvailableDates}
-          />
+        <div className="d-flex align-items-center justify-content-between mb-3">
+          <h4 className="mb-0 fw-bold">Availability & Slots</h4>
+          <div className="form-check form-switch mb-0">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="availabilityActiveSwitch"
+              checked={isActive}
+              onChange={handleToggleActive}
+            />
+            <label
+              className="form-check-label fs-14 fw-semibold"
+              htmlFor="availabilityActiveSwitch"
+            >
+              {isActive ? "Active" : "Inactive"}
+            </label>
+          </div>
         </div>
+
+        {isActive ? (
+          /* Calendar Section */
+          <div className="mb-4">
+            <VendorAvailabilityCalendar
+              initialAvailableDates={availableDates}
+              onAvailabilityChange={setAvailableDates}
+            />
+          </div>
+        ) : (
+          <div className="alert alert-warning fs-14" role="alert">
+            Availability & Slots is turned off, so couples won't see a
+            calendar on your listing. Switch it back on to manage dates.
+          </div>
+        )}
 
         <button
           className="btn btn-primary mt-2 fs-14"

@@ -25,8 +25,11 @@ export default function ReviewRequestForm() {
 
   const vendorId = vendor?.id || vendor?.vendorId;
   const [serviceId, setServiceId] = useState(null);
+  const [serviceSlug, setServiceSlug] = useState(null);
 
-  const reviewUrl = `${window.location.origin}/write-review/${serviceId}`;
+  const reviewUrl = serviceSlug
+    ? `${window.location.origin}/write-review/${serviceId}/${serviceSlug}`
+    : `${window.location.origin}/write-review/${serviceId}`;
 
   useEffect(() => {
     if (!token) return;
@@ -66,9 +69,11 @@ export default function ReviewRequestForm() {
           const preferred = list.find((s) => s?.vendor_subcategory_id === 2);
           const chosen = preferred || list[0];
           if (chosen?.id) setServiceId(chosen.id);
+          setServiceSlug(chosen?.slug || null);
         }
       } catch (e) {
         setServiceId(null);
+        setServiceSlug(null);
       }
     };
     fetchServiceId();
@@ -410,7 +415,8 @@ export default function ReviewRequestForm() {
             <button
               className={`btn ${
                 copied ? "btn-success" : "btn-outline-primary border-none"
-              } d-flex align-items-center justify-content-center gap-2 px-3 flex-shrink-0`}
+              } d-flex align-items-center justify-content-center`}
+              style={{ flex: "0 0 auto", width: 44, minWidth: 44, padding: 0 }}
               onClick={copyUrl}
             >
               {copied ? <Check size={16} /> : <Copy size={16} />}

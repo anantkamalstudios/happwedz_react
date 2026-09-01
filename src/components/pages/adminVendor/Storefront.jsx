@@ -319,6 +319,7 @@ const Storefront = ({ setCompletion }) => {
                 vendor_subcategory_id: actualData.vendor_subcategory_id || prev.vendor_subcategory_id || vendor.vendor_subcategory_id,
                 id: actualData.id ?? prev.id,
                 status: normalizeServiceStatus(actualData.status),
+                availabilityActive: attrs.availability_active !== false,
                 deals: attrs.deals || [],
                 contact: attrs.contact
                   ? {
@@ -1028,6 +1029,7 @@ const Storefront = ({ setCompletion }) => {
       start_venue: data.start_venue || "",
       space: data.space || "",
       dJ_policy: data.dJ_policy || "",
+      availability_active: data.availabilityActive !== false,
     };
 
     applyMasterProfilesToAttributes(attrs, data);

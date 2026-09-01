@@ -91,6 +91,9 @@ const BusinessClaimForm = lazy(
 const PublicWeddingView = lazy(
   () => import("./components/pages/WeddingPublicView"),
 );
+const ReviewWidgetPage = lazy(
+  () => import("./components/pages/ReviewWidgetPage"),
+);
 const MovementPlusHome = lazy(
   () => import("./components/pages/movments-plus/MovementPlusHome"),
 );
@@ -394,6 +397,11 @@ function App() {
               element={<PublicWeddingView />}
             />
 
+            <Route
+              path="/widget/reviews/:vendorId"
+              element={<ReviewWidgetPage />}
+            />
+
             <Route element={<MainLayout />}>
               <Route path="/wedding-venues/:city" element={<MainSection />} />
               <Route path="/wedding-venues/:city/:slug" element={<Detailed />} />
@@ -633,6 +641,10 @@ function App() {
                 element={<VendorLeadsPage />}
               />
               <Route path="/write-review/:vendorId" element={<ReviewsPage />} />
+              <Route
+                path="/write-review/:vendorId/:slug"
+                element={<ReviewsPage />}
+              />
               <Route path="/editor" element={<CardEditorPage />} />
               <Route path="/editor/:templateId" element={<CardEditorPage />} />
               <Route path="/video-templates" element={<VideoTemplates />} />

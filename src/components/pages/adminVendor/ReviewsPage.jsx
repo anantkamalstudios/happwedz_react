@@ -11,9 +11,11 @@ import {
   FiCalendar,
   FiUser,
   FiAward,
+  FiCode,
 } from "react-icons/fi";
 
 import ReviewsCollector from "./subVendors/ReviewsCollector";
+import ReviewWidget from "./subVendors/ReviewWidget";
 import axiosInstance from "../../../services/api/axiosInstance";
 import { formatDate } from "../../../utils/dateFormat";
 
@@ -237,10 +239,20 @@ const ReviewsPage = () => {
             <FiMail size={17} />
             <span>Review Collector</span>
           </button>
+          <button
+            type="button"
+            className={`reviews-tab-btn ${activeSection === "review-widget" ? "active" : ""}`}
+            onClick={() => setActiveSection("review-widget")}
+          >
+            <FiCode size={17} />
+            <span>Review Widget</span>
+          </button>
         </div>
 
         {activeSection === "review-collector" ? (
           <ReviewsCollector />
+        ) : activeSection === "review-widget" ? (
+          <ReviewWidget />
         ) : (
           <div>
             {/* Header */}
