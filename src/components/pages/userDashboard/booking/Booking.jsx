@@ -27,6 +27,7 @@ import {
 import { CiBookmarkCheck } from "react-icons/ci";
 import Swal from "sweetalert2";
 import Loader from "../../../ui/Loader";
+import StoreCartSection from "./StoreCartSection";
 
 const Booking = () => {
   const { user } = useSelector((state) => state.auth);
@@ -139,6 +140,14 @@ const Booking = () => {
       : bookings.filter((b) => b.status === filterStatus);
   return (
     <div className="user-booking-container">
+      {/* The HappyWedz Store basket. Rendered above the quotations rather than
+          merged into them: a basket item and a vendor quotation are different
+          records, and folding them together would make the All/Replied/Pending
+          counts below ambiguous. Renders nothing when the store bridge is
+          unreachable, so this section is safe to ship before the store deploys
+          cart-bridge.html. */}
+      <StoreCartSection />
+
       <div className="user-booking-header">
         <div className="user-booking-header-content">
           <div className="user-booking-title-section">
