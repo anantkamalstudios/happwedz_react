@@ -53,6 +53,7 @@ import { subVendorsData } from "../../data/subVendorsData";
 const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 import SectionTabs from "./SectionTabs";
+import ShimmerVendorDetail from "../ui/ShimmerVendorDetail";
 import { TbView360Number } from "react-icons/tb";
 import { hasView360 } from "../../utils/view360Helper";
 import GridView from "./Main/GridView";
@@ -2752,14 +2753,7 @@ const Detailed = () => {
   if (loading) {
     return (
       <div className="venue-detail-page">
-        <Container className="py-5">
-          <div className="text-center">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
-            <p className="mt-3">Loading vendor details...</p>
-          </div>
-        </Container>
+        <ShimmerVendorDetail />
       </div>
     );
   }
