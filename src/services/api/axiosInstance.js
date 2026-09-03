@@ -34,7 +34,10 @@ const aiAxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
+  // The AI service authenticates by header, not cookies, and its CORS setup
+  // does not send Access-Control-Allow-Credentials — a credentialed request
+  // there is rejected at preflight before it ever reaches the endpoint.
+  withCredentials: false,
 });
 
 const handle401Error = (error) => {
@@ -73,8 +76,14 @@ const handle401Error = (error) => {
 };
 
 const requestInterceptor = (config) => {
-  config.withCredentials = true;
-  config.withCredentials = true;
+  // Default to sending cookies, but never override a caller that explicitly
+  // opted out. The AI service (happywedzai) does not return
+  // Access-Control-Allow-Credentials, so a credentialed request there fails
+  // CORS preflight outright — those calls pass withCredentials: false and this
+  // must respect it.
+  if (config.withCredentials === undefined) {
+    config.withCredentials = true;
+  }
 
   const token = localStorage.getItem("token");
   const vendorToken = localStorage.getItem("vendorToken");

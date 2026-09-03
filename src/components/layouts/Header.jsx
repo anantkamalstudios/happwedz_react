@@ -916,7 +916,7 @@ const Header = () => {
                   }}
                 >
                   <a
-                    href="https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
+                    href="https://play.google.com/store/apps/details?id=com.happy.happy_wedz&pcampaignid=web_share"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -937,7 +937,7 @@ const Header = () => {
                   </a>
                   <div style={{ width: "1px", height: "18px", backgroundColor: "rgba(255,255,255,0.4)" }} />
                   <a
-                    href="https://apps.apple.com/app/happywedz/id123456789"
+                    href="https://apps.apple.com/in/app/happy-wedz/id6756042192"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -983,7 +983,7 @@ const Header = () => {
                     <div className="d-flex align-items-center gap-2">
                       {/* Google Play Badge */}
                       <a
-                        href="https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
+                        href="https://play.google.com/store/apps/details?id=com.happy.happy_wedz&pcampaignid=web_share"
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Google Play"
@@ -1017,7 +1017,7 @@ const Header = () => {
 
                       {/* App Store Badge */}
                       <a
-                        href="https://apps.apple.com/app/happywedz/id123456789"
+                        href="https://apps.apple.com/in/app/happy-wedz/id6756042192"
                         target="_blank"
                         rel="noopener noreferrer"
                         title="App Store"
@@ -1174,7 +1174,7 @@ const Header = () => {
                                           desc: "Plan your wedding on the go with the HappyWedz app.",
                                           image: "/images/header/playstore.png",
                                           route:
-                                            "https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors",
+                                            "https://play.google.com/store/apps/details?id=com.happy.happy_wedz&pcampaignid=web_share",
                                         },
                                         {
                                           title: "Happywedz Website",

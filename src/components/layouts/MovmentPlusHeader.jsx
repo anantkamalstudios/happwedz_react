@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { FaSignOutAlt } from "react-icons/fa";
-import { Link, Navigate, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { removeGuestToken } from "../../redux/guestToken";
 import { useDispatch } from "react-redux";
 // Header Component
 const MovmentPlusHeader = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  // useDispatch was imported but never called, so `dispatch` was undefined and
+  // Exit Gallery threw instead of logging out.
+  const dispatch = useDispatch();
   const [activeNav, setActiveNav] = useState("Home");
 
   const handleLogout = () => {
     dispatch(removeGuestToken());
-    Navigate("/movment-plus/guest-token");
+    // Navigate is a component, not a function — calling it did nothing. The
+    // hook is what actually performs the redirect.
+    navigate("/movment-plus/guest-token");
   };
   const navItems = [
     { name: "Home", path: "/movment-plus/home" },
