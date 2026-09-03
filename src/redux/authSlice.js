@@ -1,15 +1,62 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
+import {
+  writeSsoCookies,
+  clearSsoCookies,
+  readHwCookie,
+} from "../utils/ssoCookies";
 
 // Initialize state from localStorage if available
 const storedToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 const storedUser = typeof window !== "undefined" ? localStorage.getItem("user") : null;
 
-const initialState = {
-  user: storedUser ? JSON.parse(storedUser) : null,
-  token: storedToken || null,
-  isAuthenticated: !!(storedToken && storedUser),
+/**
+ * The session to start from.
+ *
+ * localStorage first, since that is where this app has always kept it. When it
+ * is empty the shared cookie is consulted, which is what makes the store -> here
+ * direction work: someone who signed in on store.happywedz.com arrives with no
+ * localStorage for this origin but a valid `hwUserInfo` cookie, and is adopted
+ * as logged in rather than being asked to sign in a second time.
+ *
+ * The adopted session is copied into localStorage so the rest of the app — which
+ * reads `localStorage.getItem("token")` directly in several places — behaves
+ * identically whichever door the user came through.
+ */
+const resolveInitialSession = () => {
+  if (typeof window === "undefined") {
+    return { user: null, token: null, isAuthenticated: false };
+  }
+
+  if (storedToken && storedUser) {
+    return {
+      user: JSON.parse(storedUser),
+      token: storedToken,
+      isAuthenticated: true,
+    };
+  }
+
+  const shared = readHwCookie();
+
+  if (shared?.token && shared?.id) {
+    const user = {
+      id: shared.id,
+      name: shared.name,
+      email: shared.email,
+      role: shared.role,
+    };
+
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", shared.token);
+    localStorage.setItem("tokenTimestamp", Date.now().toString());
+
+    return { user, token: shared.token, isAuthenticated: true };
+  }
+
+  return { user: null, token: null, isAuthenticated: false };
 };
+
+const initialState = resolveInitialSession();
 
 const authSlice = createSlice({
   name: "auth",
@@ -24,6 +71,15 @@ const authSlice = createSlice({
         localStorage.setItem("user", JSON.stringify(action.payload.user));
         localStorage.setItem("token", action.payload.token);
         localStorage.setItem("tokenTimestamp", Date.now().toString());
+
+        // ...and mirror both sessions into the shared cookies, so the store
+        // finds the user already signed in. `storeSession` comes straight from
+        // the login response and is simply absent if the store was unreachable.
+        writeSsoCookies(
+          action.payload.user,
+          action.payload.token,
+          action.payload.storeSession
+        );
       }
     },
 
@@ -45,6 +101,11 @@ const authSlice = createSlice({
         localStorage.removeItem("user");
         localStorage.removeItem("token");
         localStorage.removeItem("tokenTimestamp");
+
+        // Signing out has to take the store with it. Leaving the cookies behind
+        // would sign the user straight back in on the next page load, since
+        // resolveInitialSession() adopts them.
+        clearSsoCookies();
       }
     },
   },

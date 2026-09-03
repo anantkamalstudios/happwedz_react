@@ -255,7 +255,13 @@ const CustomerRegister = () => {
 
         if (data?.success && data.user && data.token) {
           persistUserSession(data.user, data.token);
-          dispatch(setCredentials({ user: data.user, token: data.token }));
+          dispatch(
+            setCredentials({
+              user: data.user,
+              token: data.token,
+              storeSession: data.storeSession,
+            })
+          );
 
           setFormData({
             name: "",
