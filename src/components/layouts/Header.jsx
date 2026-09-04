@@ -562,7 +562,7 @@ const Header = () => {
                   )}
                 </li>
 
-                {/* Photography */}
+                {/* Wedding Inspiration */}
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
@@ -573,7 +573,7 @@ const Header = () => {
                       role="button"
                       onClick={() => navigate("/photography")}
                     >
-                      Photography
+                      Wedding Inspiration
                     </span>
                     {mobileSubmenu === "photography" ? (
                       <FaChevronUp
@@ -619,6 +619,17 @@ const Header = () => {
                         ))}
                     </div>
                   )}
+                </li>
+
+                {/* Photography */}
+                <li className="mb-2">
+                  <Link
+                    to="/movment-plus/home"
+                    className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
+                    onClick={handleMobileLinkClick}
+                  >
+                    Photography
+                  </Link>
                 </li>
 
                 {/* E-Invites */}
@@ -1515,7 +1526,7 @@ const Header = () => {
                           </div>
                         </li>
 
-                        {/* Photography Dropdown */}
+                        {/* Wedding Inspiration Dropdown */}
                         <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
                           onMouseEnter={() => setOpenMenu("photography")}
@@ -1529,7 +1540,7 @@ const Header = () => {
                               role="button"
                               onClick={() => setOpenMenu(null)}
                             >
-                              Photography
+                              Wedding Inspiration
                             </Link>
                             <div
                               className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0"
@@ -1615,6 +1626,20 @@ const Header = () => {
                                 </div>
                               </div>
                             </div>
+                          </div>
+                        </li>
+
+                        {/* Photography */}
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <Link
+                              className="nav-link text-white fs-16"
+                              to="/movment-plus/home"
+                              id="photographyLink"
+                              role="button"
+                            >
+                              Photography
+                            </Link>
                           </div>
                         </li>
 

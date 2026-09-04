@@ -37,15 +37,15 @@
 }
 
 .avail-pill.available {
-  background-color: #fff1f6;
-  color: #ed1173;
-  border-color: #fce7f3;
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border-color: #bbf7d0;
 }
 
 .avail-pill.closed {
-  background-color: #ffffff;
-  color: #64748b;
-  border-color: #e2e8f0;
+  background-color: #fef2f2;
+  color: #ef4444;
+  border-color: #fecaca;
 }
 
 .avail-action-btn {
@@ -240,17 +240,17 @@
   color: #0f172a;
 }
 
-/* Available Date State (Clean HappyWedz Pink Pill) */
+/* Available Date State (Green) */
 .avail-day-tile.is-available {
-  background: #fff1f6 !important;
-  color: #ed1173 !important;
-  border-color: #fce7f3 !important;
+  background: #f0fdf4 !important;
+  color: #16a34a !important;
+  border-color: #bbf7d0 !important;
   font-weight: 700;
 }
 
 .avail-day-tile.is-available:hover {
-  background: #ffe4ee !important;
-  border-color: #f472b6 !important;
+  background: #dcfce7 !important;
+  border-color: #4ade80 !important;
   transform: scale(1.05);
 }
 
@@ -263,20 +263,20 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background-color: #ed1173;
+  background-color: #16a34a;
 }
 
-/* Unavailable Date State */
+/* Unavailable / Closed Date State (Light Red) */
 .avail-day-tile.is-unavailable {
-  background-color: #ffffff;
-  color: #64748b;
-  border-color: #f1f5f9;
+  background-color: #fef2f2;
+  color: #ef4444;
+  border-color: #fecaca;
 }
 
 .avail-day-tile.is-unavailable:hover {
-  background-color: #fff1f6;
-  color: #ed1173;
-  border-color: #fce7f3;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
 }
 
 /* Past Date */

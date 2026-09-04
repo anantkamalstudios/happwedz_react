@@ -13,6 +13,46 @@ import "swiper/css/autoplay";
 import PricingModal from "./PricingModal";
 import BusinessClaimForm from "../pages/BusinessClaimForm";
 import DOMPurify from "dompurify";
+import "../pages/adminVendor/subVendors/VendorAvailability.css";
+
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+const buildAvailabilityMonths = (dateStrings, maxMonths = 2) => {
+  const availableSet = new Set(dateStrings);
+  const today = new Date(new Date().toDateString());
+
+  const monthKeys = [];
+  dateStrings.forEach((d) => {
+    const key = d.slice(0, 7); // YYYY-MM
+    if (!monthKeys.includes(key)) monthKeys.push(key);
+  });
+  monthKeys.sort();
+
+  return monthKeys.slice(0, maxMonths).map((key) => {
+    const [year, month] = key.split("-").map(Number);
+    const firstOfMonth = new Date(year, month - 1, 1);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const firstDayOfWeek = firstOfMonth.getDay();
+    const monthName = firstOfMonth.toLocaleDateString("en-IN", {
+      month: "long",
+      year: "numeric",
+    });
+
+    const cells = [];
+    for (let i = 0; i < firstDayOfWeek; i++) cells.push(null);
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const cellDate = new Date(year, month - 1, day);
+      cells.push({
+        day,
+        isPast: cellDate < today,
+        isAvailable: availableSet.has(dateStr),
+      });
+    }
+
+    return { key, monthName, cells };
+  });
+};
 
 const extractMainCity = (rawCity) => {
   if (!rawCity || typeof rawCity !== "string") return null;
@@ -2885,20 +2925,30 @@ const Detailed = () => {
   const parseDbValue = _parseDbValue;
   const vendorFeatures = getVendorFeatures(venueData);
   
-  // For venues, we show all sections by default if they are filled. 
-  // For other vendors, we keep the slice limit.
   const isVenueType =
     String(venueData.attributes?.vendor_type || "").toLowerCase().includes("venue") ||
     String(venueData.vendor?.vendorType?.name || "").toLowerCase().includes("venue") ||
     String(venueData.subcategory?.name || "").toLowerCase().includes("venue") ||
     window.location.pathname.includes("/wedding-venues");
 
-  const displayLimit = isVenueType ? 1000 : 9; 
+  const displayLimit = 9;
   
   const hasManyFeatures = vendorFeatures.length > displayLimit;
   const featuresToRender = showAllFeatures
     ? vendorFeatures
     : vendorFeatures.slice(0, displayLimit);
+
+  const availabilityActive = venueData.availabilityActive !== false;
+  const upcomingAvailableDates = (
+    venueData.attributes?.available_slots ||
+    venueData.attributes?.availableSlots ||
+    []
+  )
+    .map((slot) => slot?.date)
+    .filter(Boolean)
+    .filter((date) => new Date(date) >= new Date(new Date().toDateString()))
+    .sort();
+  const availabilityMonths = buildAvailabilityMonths(upcomingAvailableDates);
 
   // Smooth scroll to section by id
   const scrollToSection = (sectionId) => {
@@ -3441,7 +3491,12 @@ const Detailed = () => {
 
                   {/* Rating Clean */}
                   <div className="d-flex justify-content-between align-items-center mt-2">
-                    <div className="rating-badge d-flex align-items-center gap-1">
+                    <div
+                      className="rating-badge d-flex align-items-center gap-1"
+                      role="button"
+                      onClick={() => scrollToSection("reviews")}
+                      style={{ cursor: "pointer" }}
+                    >
                       <FaStar size={12} color="#000" />
                       <span className="fw-semibold text-dark fs-16">
                         {venueData.attributes?.rating || 0}
@@ -3591,14 +3646,18 @@ const Detailed = () => {
                   )}
                 </div>
 
-                <div className="details-action-group">
-                  <button
-                    className="btn btn-outline-primary details-action-btn rounded-2"
-                    onClick={() => setShowClaimForm(true)}
-                  >
-                    Claim Your Business
-                  </button>
-                </div>
+                {!["approve", "approved"].includes(
+                  String(venueData.vendor?.status || "").toLowerCase(),
+                ) && (
+                  <div className="details-action-group">
+                    <button
+                      className="btn btn-outline-primary details-action-btn rounded-2"
+                      onClick={() => setShowClaimForm(true)}
+                    >
+                      Claim Your Business
+                    </button>
+                  </div>
+                )}
 
                 <hr />
 
@@ -3610,6 +3669,55 @@ const Detailed = () => {
                     Request Pricing & Availability
                   </button>
                 </div>
+
+                {availabilityActive && upcomingAvailableDates.length > 0 && (
+                  <div className="mb-2">
+                    <hr />
+                    <div className="fw-semibold text-dark fs-14 mb-2">
+                      Available Dates
+                    </div>
+                    {availabilityMonths.map((m) => (
+                      <div key={m.key} className="avail-month-card mb-3">
+                        <div className="avail-month-header">
+                          <h6 className="avail-month-name">
+                            <span>{m.monthName}</span>
+                          </h6>
+                        </div>
+                        <div className="avail-weekdays-strip">
+                          {WEEKDAY_LABELS.map((d) => (
+                            <span key={d} className="avail-weekday-title">
+                              {d}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="avail-days-matrix">
+                          {m.cells.map((cell, i) =>
+                            !cell ? (
+                              <div
+                                key={`empty-${i}`}
+                                className="avail-empty-cell"
+                              ></div>
+                            ) : (
+                              <div
+                                key={`day-${cell.day}`}
+                                className={`avail-day-tile ${
+                                  cell.isPast
+                                    ? "is-past"
+                                    : cell.isAvailable
+                                      ? "is-available"
+                                      : "is-unavailable"
+                                }`}
+                                style={{ cursor: "default" }}
+                              >
+                                <span>{cell.day}</span>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </Col>

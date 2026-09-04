@@ -231,7 +231,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
               {(selectedSlug ? vendorItems : []).map((item, idx) => (
                 <SwiperSlide key={item.id || idx}>
                   <Link
-                    to={`/details/info/${item.id}`}
+                    to={`/details/info/${item.slug || item.id}`}
                     className="text-decoration-none d-block"
                     style={{ color: "inherit", height: "100%" }}
                   >
@@ -438,6 +438,7 @@ const VenueSwiper = () => {
           result.data
             ?.map((item) => ({
               id: item.id,
+              slug: item.attributes?.slug || item.slug || "",
               name:
                 item.attributes?.vendor_name ||
                 item.vendor?.businessName ||
@@ -488,7 +489,7 @@ const VenueSwiper = () => {
       {venues.map((venue) => (
         <SwiperSlide key={venue.id} style={{ height: "auto" }}>
           <Link
-            to={`/details/info/${venue.id}`}
+            to={`/details/info/${venue.slug || venue.id}`}
             className="text-decoration-none d-block"
             style={{ color: "inherit", height: "100%" }}
           >

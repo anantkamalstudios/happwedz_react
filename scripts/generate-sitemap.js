@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const BASE_URL = "https://happywedz.com";
-const API_BASE = process.env.VITE_API_URL || "http://localhost:4000/api";
+const API_BASE = process.env.VITE_API_URL || "https://happywedz.com/api";
 const PROD_API_BASE = "https://happywedz.com/api";
 const OUTPUT_PATH = path.resolve(__dirname, "../public/sitemap.xml");
 const TODAY = new Date().toISOString().split("T")[0];
@@ -38,20 +38,52 @@ const staticUrls = [
   { loc: "/vendors/bridal-wear/all", changefreq: "weekly", priority: "0.8" },
   { loc: "/vendors/groom-wear/all", changefreq: "weekly", priority: "0.8" },
   { loc: "/vendors/decorators/all", changefreq: "weekly", priority: "0.8" },
-  { loc: "/vendors/wedding-planners/all", changefreq: "weekly", priority: "0.8" },
-  { loc: "/vendors/catering-services/all", changefreq: "weekly", priority: "0.8" },
-  { loc: "/vendors/mehendi-artists/all", changefreq: "weekly", priority: "0.8" },
+  {
+    loc: "/vendors/wedding-planners/all",
+    changefreq: "weekly",
+    priority: "0.8",
+  },
+  {
+    loc: "/vendors/catering-services/all",
+    changefreq: "weekly",
+    priority: "0.8",
+  },
+  {
+    loc: "/vendors/mehendi-artists/all",
+    changefreq: "weekly",
+    priority: "0.8",
+  },
   { loc: "/vendors/invitations/all", changefreq: "weekly", priority: "0.8" },
-  { loc: "/vendors/jewellery-accessories/all", changefreq: "weekly", priority: "0.8" },
+  {
+    loc: "/vendors/jewellery-accessories/all",
+    changefreq: "weekly",
+    priority: "0.8",
+  },
   { loc: "/top-rated", changefreq: "weekly", priority: "0.8" },
 
   // Destination Weddings
   { loc: "/destination-wedding", changefreq: "weekly", priority: "0.85" },
-  { loc: "/destination-wedding/udaipur", changefreq: "weekly", priority: "0.75" },
+  {
+    loc: "/destination-wedding/udaipur",
+    changefreq: "weekly",
+    priority: "0.75",
+  },
   { loc: "/destination-wedding/goa", changefreq: "weekly", priority: "0.75" },
-  { loc: "/destination-wedding/jaipur", changefreq: "weekly", priority: "0.75" },
-  { loc: "/destination-wedding/kerala", changefreq: "weekly", priority: "0.75" },
-  { loc: "/destination-wedding/mussoorie", changefreq: "weekly", priority: "0.75" },
+  {
+    loc: "/destination-wedding/jaipur",
+    changefreq: "weekly",
+    priority: "0.75",
+  },
+  {
+    loc: "/destination-wedding/kerala",
+    changefreq: "weekly",
+    priority: "0.75",
+  },
+  {
+    loc: "/destination-wedding/mussoorie",
+    changefreq: "weekly",
+    priority: "0.75",
+  },
 
   // Honeymoon & Travel
   { loc: "/honeymoon", changefreq: "weekly", priority: "0.8" },
@@ -109,10 +141,7 @@ function toSlug(str) {
 }
 
 async function fetchWithFallback(endpoint) {
-  const urls = [
-    `${API_BASE}${endpoint}`,
-    `${PROD_API_BASE}${endpoint}`
-  ];
+  const urls = [`${API_BASE}${endpoint}`, `${PROD_API_BASE}${endpoint}`];
 
   for (const url of urls) {
     try {
@@ -146,7 +175,7 @@ async function fetchDynamicUrls() {
     console.log("Fetching vendor-services (venues and vendors)...");
     const res = await fetchWithFallback("/vendor-services?limit=10000");
     const items = res?.data || res?.items || (Array.isArray(res) ? res : []);
-    
+
     for (const item of items) {
       const slug = item.slug || item.attributes?.slug || item.id;
       if (!slug) continue;
@@ -156,7 +185,8 @@ async function fetchDynamicUrls() {
         item.attributes?.vendor_type === "venue" ||
         item.subcategory?.type === "venue";
 
-      const rawCity = item.city || item.attributes?.city || item.vendor?.city || "all";
+      const rawCity =
+        item.city || item.attributes?.city || item.vendor?.city || "all";
       const citySlug = toSlug(rawCity);
 
       if (isVenue) {
@@ -164,7 +194,8 @@ async function fetchDynamicUrls() {
           loc: `/wedding-venues/${citySlug}/${slug}`,
           changefreq: "weekly",
           priority: "0.75",
-          lastmod: (item.updatedAt || item.updated_at || "").split("T")[0] || TODAY,
+          lastmod:
+            (item.updatedAt || item.updated_at || "").split("T")[0] || TODAY,
         });
       } else {
         const rawSubcat =
@@ -178,7 +209,8 @@ async function fetchDynamicUrls() {
           loc: `/vendors/${subcatSlug}/${citySlug}/${slug}`,
           changefreq: "weekly",
           priority: "0.7",
-          lastmod: (item.updatedAt || item.updated_at || "").split("T")[0] || TODAY,
+          lastmod:
+            (item.updatedAt || item.updated_at || "").split("T")[0] || TODAY,
         });
       }
     }
@@ -192,8 +224,11 @@ async function fetchDynamicUrls() {
   try {
     console.log("Fetching blogs...");
     const blogRes = await fetchWithFallback("/blogs/all");
-    const blogs = blogRes?.data || blogRes?.blogs || (Array.isArray(blogRes) ? blogRes : []);
-    
+    const blogs =
+      blogRes?.data ||
+      blogRes?.blogs ||
+      (Array.isArray(blogRes) ? blogRes : []);
+
     for (const b of blogs) {
       const id = b.slug || b._id || b.id;
       if (!id) continue;
@@ -242,5 +277,7 @@ ${entries.join("\n\n")}
   fs.writeFileSync(OUTPUT_PATH, xml, "utf8");
 
   console.log(`\n✅ Generated sitemap at: ${OUTPUT_PATH}`);
-  console.log(`📊 Total URLs: ${allUrls.length} (${statics.length} static + ${dynamic.length} dynamic)\n`);
+  console.log(
+    `📊 Total URLs: ${allUrls.length} (${statics.length} static + ${dynamic.length} dynamic)\n`,
+  );
 })();

@@ -2,7 +2,7 @@ import axios from "axios";
 import axiosInstance from "./axiosInstance";
 
 const API_BASE = (
-  import.meta.env.VITE_API_URL || "http://localhost:4000"
+  import.meta.env.VITE_API_URL || "https://happywedz.com"
 ).replace(/\/$/, "");
 
 const TRIPSAFE_BASE = `${API_BASE}/tripsafe`;
