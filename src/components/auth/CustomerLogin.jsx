@@ -127,7 +127,11 @@ const CustomerLoginForm = () => {
       ) {
         persistUserSession(authResponse.user, authResponse.token);
         dispatch(
-          loginUser({ user: authResponse.user, token: authResponse.token }),
+          loginUser({
+            user: authResponse.user,
+            token: authResponse.token,
+            storeSession: authResponse.storeSession,
+          }),
         );
         toast.success("Login successful!");
         goToReturnTarget();
@@ -165,7 +169,13 @@ const CustomerLoginForm = () => {
 
       if (response.success) {
         persistUserSession(response.user, response.token);
-        dispatch(loginUser({ user: response.user, token: response.token }));
+        dispatch(
+          loginUser({
+            user: response.user,
+            token: response.token,
+            storeSession: response.storeSession,
+          }),
+        );
         toast.success("Login successful!");
         goToReturnTarget();
       } else {
