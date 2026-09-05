@@ -1605,7 +1605,7 @@ const Header = () => {
                                       <div className="h-100 d-flex flex-column justify-content-center align-items-center text-center p-1 rounded">
                                         <img
                                           src="https://img.freepik.com/free-photo/bride-groom-having-their-wedding-beach_23-2149043965.jpg?semt=ais_hybrid&w=740&q=80"
-                                          alt="Movments Plus"
+                                          alt="Moments Plus"
                                           className="mb-3 rounded"
                                           style={{
                                             width: "100%",
@@ -1614,11 +1614,11 @@ const Header = () => {
                                           }}
                                         />
                                         <div className="fw-bold primary-text text-uppercase fs-16">
-                                          Movments Plus
+                                          Moments Plus
                                         </div>
                                         <div className="small mt-2 fs-14 text-black">
                                           All-new gallery experience for
-                                          photographers with Movments+.
+                                          photographers with Moments+.
                                         </div>
                                       </div>
                                     </Link>

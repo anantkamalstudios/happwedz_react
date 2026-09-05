@@ -102,7 +102,7 @@ import SEO from "../common/SEO";
 import VenueFAQ from "./VenueFAQ";
 import Breadcrumbs from "../common/Breadcrumbs";
 import StructuredData from "../common/StructuredData";
-import { formatDate } from "../../utils/dateFormat";
+import { formatDate, toDate } from "../../utils/dateFormat";
 
 
 
@@ -2950,6 +2950,13 @@ const Detailed = () => {
     .sort();
   const availabilityMonths = buildAvailabilityMonths(upcomingAvailableDates);
 
+  const today = new Date(new Date().toDateString());
+  const activeDeal = (venueData.attributes?.deals || []).find((deal) => {
+    if (!deal || deal.active === false) return false;
+    const end = toDate(deal.endDate);
+    return !end || end >= today;
+  });
+
   // Smooth scroll to section by id
   const scrollToSection = (sectionId) => {
     const el = document.getElementById(sectionId);
@@ -3406,6 +3413,83 @@ const Detailed = () => {
             <div id="reviews" className="py-2">
               <ReviewSection vendor={venueData || activeVendor} />
             </div>
+
+            {activeDeal && (
+              <section className="promo-banner mb-4" aria-labelledby="promotions-heading">
+                <h2
+                  id="promotions-heading"
+                  className="fw-semibold text-dark mb-4"
+                  style={{ fontSize: "18px" }}
+                >
+                  Promotions
+                </h2>
+                <div
+                  className="promo-banner-card"
+                  style={{
+                    background: "linear-gradient(118deg, #fff1f2 0%, #f9f5f7 48%, #edf9fb 100%)",
+                    border: "1px solid rgba(255, 255, 255, 0.75)",
+                    borderRadius: "10px",
+                    boxShadow: "0 12px 30px rgba(32, 42, 55, 0.08)",
+                    minHeight: "333px",
+                    width: "100%",
+                    maxWidth: "488px",
+                    padding: "21px 18px 20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <span
+                    className="text-uppercase fw-semibold"
+                    style={{
+                      background: "#fff",
+                      border: "1px solid rgba(224, 224, 224, 0.65)",
+                      borderRadius: "5px",
+                      color: "#111",
+                      fontSize: "10px",
+                      letterSpacing: "1px",
+                      lineHeight: "26px",
+                      padding: "0 10px",
+                      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.03)",
+                    }}
+                  >
+                    Exclusive
+                  </span>
+                  <h3
+                    className="fw-bold text-dark mb-0"
+                    style={{ fontSize: "40px", lineHeight: "1.15", marginTop: "25px", letterSpacing: "0" }}
+                  >
+                    {activeDeal.title || "Exclusive wedding offer"}
+                  </h3>
+                  <div
+                    className="fw-semibold text-dark"
+                    style={{ fontSize: "17px", marginTop: "17px" }}
+                  >
+                    {activeDeal.type === "percentage"
+                      ? `${activeDeal.value}% discount`
+                      : `₹${Number(activeDeal.value).toLocaleString("en-IN")} discount`}
+                  </div>
+                  <p
+                    className="text-dark mb-0"
+                    style={{ fontSize: "16px", lineHeight: "1.4", marginTop: "21px" }}
+                  >
+                    {activeDeal.description || activeDeal.subtitle || "Permanent promotion"}
+                  </p>
+                  <div
+                    className="d-flex flex-wrap align-items-center gap-2 text-dark"
+                    style={{ fontSize: "16px", lineHeight: "1.4", marginTop: "14px" }}
+                  >
+                    {(activeDeal.startDate || activeDeal.endDate) && (
+                      <span>
+                        {activeDeal.startDate && `From ${formatDate(activeDeal.startDate)}`}
+                        {activeDeal.startDate && activeDeal.endDate && " | "}
+                        {activeDeal.endDate && `Till ${formatDate(activeDeal.endDate)}`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
 
             <div id="map" className="mt-4 pt-3 border-top">
               <div

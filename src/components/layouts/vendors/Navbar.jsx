@@ -221,7 +221,7 @@ const Navbar = () => {
       baseTabs.push({
         id: "movments-plus",
         slug: "movments-plus",
-        label: "Movments+",
+        label: "Moments+",
         icon: "/images/vendorsDashboard/live.png",
       });
     }
