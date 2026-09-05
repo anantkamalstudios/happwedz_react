@@ -8,7 +8,7 @@ import { logout } from "../../redux/authSlice";
 import { vendorLogout } from "../../redux/vendorAuthSlice";
 import { setLocation } from "../../redux/locationSlice";
 import { FiMail, FiPhone, FiMapPin, FiSearch, FiEdit3, FiSmartphone, FiUser, FiLogOut, FiGrid } from "react-icons/fi";
-import { FaArrowRightLong, FaChevronDown, FaChevronUp } from "react-icons/fa6";
+import { FaArrowRightLong, FaChevronDown, FaChevronUp, FaCaretDown } from "react-icons/fa6";
 import usePhotography from "../../hooks/usePhotography";
 import { useFilter } from "../../context/realWedding.context";
 import axiosInstance from "../../services/api/axiosInstance";
@@ -2253,7 +2253,7 @@ const Header = () => {
                         style={{ height: "100%", zIndex: 1050 }}
                       >
                         {isLoggedIn ? (
-                          /* Logged-in Profile Avatar Button */
+                          /* Logged-in Profile Avatar Button with Dropdown Triangle */
                           <button
                             type="button"
                             onClick={() => {
@@ -2266,28 +2266,48 @@ const Header = () => {
                             aria-label="User profile and menu"
                             aria-expanded={profileMenuOpen}
                             style={{
-                              width: "36px",
-                              height: "36px",
-                              borderRadius: "50%",
-                              backgroundColor: "#ffffff",
-                              border: "2px solid rgba(255, 255, 255, 0.9)",
-                              display: "flex",
+                              backgroundColor: "transparent",
+                              border: "none",
+                              display: "inline-flex",
                               alignItems: "center",
-                              justifyContent: "center",
+                              gap: "5px",
                               cursor: "pointer",
-                              padding: 0,
-                              boxShadow: profileMenuOpen
-                                ? "0 0 0 3px rgba(255, 255, 255, 0.45)"
-                                : "0 2px 6px rgba(0, 0, 0, 0.16)",
+                              padding: "2px 0",
                               transition: "all 0.2s ease",
-                              transform: profileMenuOpen ? "scale(1.05)" : "scale(1)",
                             }}
                             title={profileName || "Profile Menu"}
                           >
-                            <FiUser
+                            <div
                               style={{
-                                color: isVendorLoggedIn ? "#7c3aed" : "#ed1173",
-                                fontSize: "19px",
+                                width: "36px",
+                                height: "36px",
+                                borderRadius: "50%",
+                                backgroundColor: "#ffffff",
+                                border: "2px solid rgba(255, 255, 255, 0.9)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                boxShadow: profileMenuOpen
+                                  ? "0 0 0 3px rgba(255, 255, 255, 0.45)"
+                                  : "0 2px 6px rgba(0, 0, 0, 0.16)",
+                                transition: "all 0.2s ease",
+                                transform: profileMenuOpen ? "scale(1.05)" : "scale(1)",
+                              }}
+                            >
+                              <FiUser
+                                style={{
+                                  color: isVendorLoggedIn ? "#7c3aed" : "#ed1173",
+                                  fontSize: "19px",
+                                }}
+                              />
+                            </div>
+                            <FaCaretDown
+                              style={{
+                                color: "#ffffff",
+                                fontSize: "13px",
+                                transition: "transform 0.2s ease",
+                                transform: profileMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                                filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25))",
                               }}
                             />
                           </button>
