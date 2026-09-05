@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://happywedz.com/api";
 
 // Helper to get auth headers
 const getAuthHeaders = () => {
@@ -42,7 +43,7 @@ export const einviteApi = {
         throw new Error(
           typeof body === "string"
             ? body
-            : body?.message || "Failed to create instance"
+            : body?.message || "Failed to create instance",
         );
       }
       return await response.json();
@@ -60,7 +61,7 @@ export const einviteApi = {
           method: "PUT",
           headers: getAuthHeaders(),
           body: JSON.stringify(payload),
-        }
+        },
       );
       if (!response.ok) {
         let body;
@@ -72,7 +73,7 @@ export const einviteApi = {
         throw new Error(
           typeof body === "string"
             ? body
-            : body?.message || "Failed to update instance"
+            : body?.message || "Failed to update instance",
         );
       }
       return await response.json();
@@ -169,7 +170,7 @@ export const einviteApi = {
         throw new Error(
           typeof errorBody === "string"
             ? errorBody
-            : errorBody?.message || "Failed to update e-invite"
+            : errorBody?.message || "Failed to update e-invite",
         );
       }
       return await response.json();
@@ -195,7 +196,7 @@ export const einviteApi = {
   getUserEinvites: async (userId) => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/einvites/${userId}/einvites`
+        `${API_BASE_URL}/einvites/${userId}/einvites`,
       );
       if (!response.ok) throw new Error("Failed to fetch user e-invites");
       return await response.json();
@@ -208,7 +209,7 @@ export const einviteApi = {
   searchEinvites: async (query) => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/einvites/search?q=${encodeURIComponent(query)}`
+        `${API_BASE_URL}/einvites/search?q=${encodeURIComponent(query)}`,
       );
       if (!response.ok) throw new Error("Failed to search e-invites");
       return await response.json();
@@ -254,7 +255,7 @@ export const einviteApi = {
     } catch (error) {
       console.error(
         "Error fetching e-invites by category and template status:",
-        error
+        error,
       );
       throw error;
     }
@@ -276,7 +277,7 @@ export const einviteApi = {
 
       // Filter by cardType and only return templates
       return allCards.filter(
-        (card) => card.cardType === cardType && card.isTemplate === true
+        (card) => card.cardType === cardType && card.isTemplate === true,
       );
     } catch (error) {
       console.error("Error fetching e-invites by cardType:", error);
@@ -289,7 +290,7 @@ export const einviteApi = {
     try {
       // Try fetching as instance first
       let response = await fetch(
-        `${API_BASE_URL}/einvites/cards/instances/${id}`
+        `${API_BASE_URL}/einvites/cards/instances/${id}`,
       );
 
       if (!response.ok) {
@@ -305,7 +306,7 @@ export const einviteApi = {
           body: errorText,
         });
         throw new Error(
-          `Failed to fetch e-invite: ${response.status} ${response.statusText}`
+          `Failed to fetch e-invite: ${response.status} ${response.statusText}`,
         );
       }
 

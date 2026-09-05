@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { IMAGE_BASE_URL } from "../../config/constants";
 import { Container, Row, Col, Button, Modal } from "react-bootstrap";
 import { FaLocationDot } from "react-icons/fa6";
@@ -13,6 +13,52 @@ import "swiper/css/autoplay";
 import PricingModal from "./PricingModal";
 import BusinessClaimForm from "../pages/BusinessClaimForm";
 import DOMPurify from "dompurify";
+import "../pages/adminVendor/subVendors/VendorAvailability.css";
+
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+const buildAvailabilityMonths = (dateStrings, maxMonths = 12) => {
+  const availableSet = new Set(dateStrings);
+  const today = new Date(new Date().toDateString());
+
+  const monthKeys = [];
+  dateStrings.forEach((d) => {
+    const key = d.slice(0, 7); // YYYY-MM
+    if (!monthKeys.includes(key)) monthKeys.push(key);
+  });
+  monthKeys.sort();
+
+  if (monthKeys.length === 0) {
+    const currentKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+    monthKeys.push(currentKey);
+  }
+
+  return monthKeys.slice(0, maxMonths).map((key) => {
+    const [year, month] = key.split("-").map(Number);
+    const firstOfMonth = new Date(year, month - 1, 1);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const firstDayOfWeek = firstOfMonth.getDay();
+    const monthName = firstOfMonth.toLocaleDateString("en-IN", {
+      month: "long",
+      year: "numeric",
+    });
+
+    const cells = [];
+    for (let i = 0; i < firstDayOfWeek; i++) cells.push(null);
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const cellDate = new Date(year, month - 1, day);
+      cells.push({
+        day,
+        dateStr,
+        isPast: cellDate < today,
+        isAvailable: availableSet.has(dateStr),
+      });
+    }
+
+    return { key, monthName, cells };
+  });
+};
 
 const extractMainCity = (rawCity) => {
   if (!rawCity || typeof rawCity !== "string") return null;
@@ -44,6 +90,12 @@ import {
   FaCalendarAlt,
   FaChevronDown,
   FaChevronUp,
+  FaChevronLeft,
+  FaChevronRight,
+  FaFilePdf,
+  FaImage,
+  FaTag,
+  FaEye,
 } from "react-icons/fa";
 import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
@@ -62,7 +114,7 @@ import SEO from "../common/SEO";
 import VenueFAQ from "./VenueFAQ";
 import Breadcrumbs from "../common/Breadcrumbs";
 import StructuredData from "../common/StructuredData";
-import { formatDate } from "../../utils/dateFormat";
+import { formatDate, toDate } from "../../utils/dateFormat";
 
 
 
@@ -126,6 +178,8 @@ const Detailed = () => {
   const [showAllFaqs, setShowAllFaqs] = useState(false);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [showStartingPrice, setShowStartingPrice] = useState(false);
+  const [showBrochureModal, setShowBrochureModal] = useState(false);
+  const [availMonthIndex, setAvailMonthIndex] = useState(0);
   const navigate = useNavigate();
   const handleShowPricingModal = (vendorId) => {
     setSelectedVendorId(vendorId);
@@ -1997,13 +2051,51 @@ const Detailed = () => {
         const cleanApiBase = API_BASE_URL.replace(/\/api$/, "");
         let data = null;
 
-        // 1. Direct slug request
+        // Helper to verify if fetched vendor data actually matches the requested slug
+        const isSlugMatch = (resData, targetSlug) => {
+          if (!resData) return false;
+          const itemSlug = String(resData.attributes?.slug || resData.slug || "").toLowerCase().trim();
+          const itemName = String(resData.attributes?.name || resData.name || "").toLowerCase().trim();
+          const cleanTarget = String(targetSlug || "").toLowerCase().trim();
+
+          if (itemSlug && cleanTarget) {
+            if (itemSlug === cleanTarget) return true;
+            const targetBase = cleanTarget.replace(/-\d+$/, "");
+            const itemBase = itemSlug.replace(/-\d+$/, "");
+            if (targetBase && itemBase && targetBase === itemBase) return true;
+          }
+
+          if (itemName && cleanTarget) {
+            const nameSlug = itemName.replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
+            const targetBase = cleanTarget.replace(/-\d+$/, "");
+            if (nameSlug && targetBase && (nameSlug.includes(targetBase) || targetBase.includes(nameSlug))) {
+              return true;
+            }
+          }
+
+          return false;
+        };
+
+        // 1. Direct request (by numeric ID or slug)
         try {
-          const response = await axios.get(
-            `${cleanApiBase}/api/vendor-services/slug/${slug}`,
-          );
-          if (response.data && (response.data.id || response.data.vendor_id || response.data.attributes)) {
-            data = response.data;
+          if (/^\d+$/.test(slug)) {
+            const idResponse = await axios.get(`${cleanApiBase}/api/vendor-services/${slug}`);
+            if (idResponse.data && (idResponse.data.id || idResponse.data.attributes)) {
+              data = idResponse.data;
+            }
+          } else {
+            const response = await axios.get(
+              `${cleanApiBase}/api/vendor-services/slug/${slug}`,
+            );
+            if (
+              response.data &&
+              (response.data.id || response.data.vendor_id || response.data.attributes) &&
+              isSlugMatch(response.data, slug)
+            ) {
+              data = response.data;
+            } else {
+              console.debug("Direct slug returned mismatched vendor, falling back to name search...", response.data?.attributes?.name);
+            }
           }
         } catch (directErr) {
           console.debug("Direct slug lookup not found, trying keyword search fallback...", directErr?.message);
@@ -2012,26 +2104,33 @@ const Detailed = () => {
         // 2. Keyword/City search fallback
         if (!data) {
           try {
-            const cleanSearch = slug.replace(/[-_]+/g, " ").trim();
+            // Strip trailing numeric suffixes (e.g. elegance-pixs-6388 -> elegance pixs)
+            const cleanSearch = slug.replace(/-\d+$/, "").replace(/[-_]+/g, " ").trim();
             const searchRes = await axios.get(`${cleanApiBase}/api/vendor-services`, {
               params: {
                 search: cleanSearch,
-                limit: 5,
+                limit: 10,
                 ...(city && city !== "all" ? { city } : {}),
               },
             });
             const items = searchRes.data?.data || (Array.isArray(searchRes.data) ? searchRes.data : []);
             if (items.length > 0) {
-              const matched = items[0];
-              if (matched.slug || matched.id) {
+              const targetBase = slug.replace(/-\d+$/, "").toLowerCase();
+              const matched = items.find((it) => {
+                const itSlug = String(it.attributes?.slug || it.slug || "").toLowerCase();
+                const itName = String(it.attributes?.name || it.name || "").toLowerCase().replace(/\s+/g, "-");
+                return itSlug === slug.toLowerCase() || itSlug.includes(targetBase) || itName.includes(targetBase) || targetBase.includes(itName);
+              }) || items[0];
+
+              if (matched && (matched.id || matched.vendor_id)) {
                 try {
                   const matchedDetailRes = await axios.get(
-                    `${cleanApiBase}/api/vendor-services/slug/${matched.slug || matched.id}`,
+                    `${cleanApiBase}/api/vendor-services/${matched.id || matched.vendor_id}`,
                   );
-                  if (matchedDetailRes.data) {
+                  if (matchedDetailRes.data && (matchedDetailRes.data.id || matchedDetailRes.data.attributes)) {
                     data = matchedDetailRes.data;
                   }
-                } catch { }
+                } catch {}
               }
               if (!data) {
                 data = matched;
@@ -2065,8 +2164,26 @@ const Detailed = () => {
                 vendor_name: staticMatch.name,
                 city: staticMatch.location || city || "Lucknow",
                 address: staticMatch.location || "",
-                veg_price: staticMatch.vegPrice || staticMatch.price || 1200,
+                veg_price: staticMatch.vegPrice || 1200,
                 non_veg_price: staticMatch.nonVegPrice || 1500,
+                veg_description: "A rich vegetarian spread featuring Indian starters, rich paneer curries, seasonal vegetables, dal, rice, breads, salad, and desserts.",
+                non_veg_description: "A flavorful non-vegetarian menu featuring succulent kebabs, chicken specialties, aromatic biryani, breads, and desserts.",
+                menus: [
+                  {
+                    title: "Veg Menu",
+                    type: "veg",
+                    price: staticMatch.vegPrice || 1200,
+                    description: "A rich vegetarian spread featuring Indian starters, rich paneer curries, seasonal vegetables, dal, rice, breads, salad, and desserts.",
+                    items: ["Paneer Butter Masala", "Dal Makhani", "Mix Veg Kolhapuri", "Veg Biryani", "Butter Naan", "Green Salad", "Gulab Jamun"],
+                  },
+                  {
+                    title: "Non-Veg Menu",
+                    type: "non-veg",
+                    price: staticMatch.nonVegPrice || 1500,
+                    description: "A flavorful non-vegetarian menu featuring succulent kebabs, chicken specialties, aromatic biryani, breads, and desserts.",
+                    items: ["Chicken Tikka", "Butter Chicken", "Chicken Dum Biryani", "Dal Tadka", "Butter Naan", "Green Salad", "Gulab Jamun"],
+                  },
+                ],
                 about_us: staticMatch.description || "",
                 rating: staticMatch.rating || 4.8,
                 review_count: staticMatch.reviews || 10,
@@ -2831,11 +2948,128 @@ const Detailed = () => {
     return [value].filter((v) => v);
   }
 
+  // Extract and normalize Veg and Non-Veg catering menus
+  const menusData = (() => {
+    const rawMenus = venueData?.attributes?.menus || venueData?.menus;
+    let parsedMenus = [];
+    if (Array.isArray(rawMenus)) {
+      parsedMenus = rawMenus;
+    } else if (typeof rawMenus === "string" && rawMenus.trim()) {
+      try {
+        const parsed = JSON.parse(rawMenus);
+        if (Array.isArray(parsed)) parsedMenus = parsed;
+      } catch {}
+    }
+
+    const rawVegMenu = parsedMenus.find((m) => m?.type === "veg") || parsedMenus[0] || {};
+    const rawNonVegMenu =
+      parsedMenus.find((m) => m?.type === "non-veg") ||
+      (parsedMenus.length > 1 ? parsedMenus[1] : {}) ||
+      {};
+
+    const vegPrice =
+      venueData?.attributes?.veg_price ??
+      venueData?.veg_price ??
+      rawVegMenu?.price ??
+      null;
+
+    const nonVegPrice =
+      venueData?.attributes?.non_veg_price ??
+      venueData?.non_veg_price ??
+      rawNonVegMenu?.price ??
+      null;
+
+    const vegDesc =
+      venueData?.attributes?.veg_description ||
+      venueData?.veg_description ||
+      rawVegMenu?.description ||
+      venueData?.attributes?.menu_description ||
+      venueData?.menu_description ||
+      "";
+
+    const nonVegDesc =
+      venueData?.attributes?.non_veg_description ||
+      venueData?.non_veg_description ||
+      rawNonVegMenu?.description ||
+      "";
+
+    const parseItems = (items) => {
+      if (!items) return [];
+      const list = Array.isArray(items) ? items : [items];
+      return list
+        .flatMap((it) => (typeof it === "string" ? it.split(",") : [String(it)]))
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+    };
+
+    const vegItems = parseItems(rawVegMenu?.items);
+    const nonVegItems = parseItems(rawNonVegMenu?.items);
+
+    const hasVeg = !!(vegPrice || vegDesc || vegItems.length > 0);
+    const hasNonVeg = !!(nonVegPrice || nonVegDesc || nonVegItems.length > 0);
+
+    return {
+      hasAny: hasVeg || hasNonVeg,
+      veg: {
+        hasData: hasVeg,
+        price: vegPrice,
+        description: vegDesc,
+        items: vegItems,
+      },
+      nonVeg: {
+        hasData: hasNonVeg,
+        price: nonVegPrice,
+        description: nonVegDesc,
+        items: nonVegItems,
+      },
+    };
+  })();
+
+  // Extract Pricing & Packages Details (Description, Brochure Image, Brochure PDF Name)
+  const pricingDetails = (() => {
+    const desc = venueData?.attributes?.pricing_description || venueData?.pricing_description || "";
+    const brochureBase64 = venueData?.attributes?.pricing_brochure_base64 || venueData?.pricing_brochure_base64 || null;
+    const brochureName = venueData?.attributes?.pricing_brochure_name || venueData?.pricing_brochure_name || null;
+    const brochureUrl = venueData?.attributes?.pricing_brochure_url || venueData?.pricing_brochure_url || null;
+    const startingPrice = venueData?.attributes?.starting_price ?? venueData?.starting_price ?? null;
+
+    const isImage = !!(
+      (brochureBase64 && brochureBase64.startsWith("data:image")) ||
+      (brochureUrl && /\.(jpg|jpeg|png|webp|gif)$/i.test(brochureUrl)) ||
+      (brochureName && /\.(jpg|jpeg|png|webp|gif)$/i.test(brochureName))
+    );
+
+    const isPdf = !!(
+      brochureName && brochureName.toLowerCase().endsWith(".pdf")
+    );
+
+    const imageSrc = brochureBase64?.startsWith("data:image")
+      ? brochureBase64
+      : brochureUrl || null;
+
+    const hasAny = !!(desc || imageSrc || brochureName || startingPrice);
+
+    return {
+      hasAny,
+      description: desc,
+      brochureBase64,
+      brochureName,
+      brochureUrl,
+      imageSrc,
+      isImage,
+      isPdf,
+      startingPrice,
+    };
+  })();
+
   const isVenue = !!(
     venueData.attributes?.veg_price ||
+    venueData.attributes?.non_veg_price ||
     venueData.attributes?.catering_policy ||
     venueData.attributes?.rooms ||
-    venueData.attributes?.vendor_type?.toLowerCase().includes("venue")
+    venueData.attributes?.vendor_type?.toLowerCase().includes("venue") ||
+    venueData.attributes?.vendor_type?.toLowerCase().includes("cater") ||
+    menusData.hasAny
   );
 
   const displayLocation = isVenue
@@ -2885,20 +3119,37 @@ const Detailed = () => {
   const parseDbValue = _parseDbValue;
   const vendorFeatures = getVendorFeatures(venueData);
   
-  // For venues, we show all sections by default if they are filled. 
-  // For other vendors, we keep the slice limit.
   const isVenueType =
     String(venueData.attributes?.vendor_type || "").toLowerCase().includes("venue") ||
     String(venueData.vendor?.vendorType?.name || "").toLowerCase().includes("venue") ||
     String(venueData.subcategory?.name || "").toLowerCase().includes("venue") ||
     window.location.pathname.includes("/wedding-venues");
 
-  const displayLimit = isVenueType ? 1000 : 9; 
+  const displayLimit = 9;
   
   const hasManyFeatures = vendorFeatures.length > displayLimit;
   const featuresToRender = showAllFeatures
     ? vendorFeatures
     : vendorFeatures.slice(0, displayLimit);
+
+  const availabilityActive = venueData.availabilityActive !== false;
+  const upcomingAvailableDates = (
+    venueData.attributes?.available_slots ||
+    venueData.attributes?.availableSlots ||
+    []
+  )
+    .map((slot) => slot?.date)
+    .filter(Boolean)
+    .filter((date) => new Date(date) >= new Date(new Date().toDateString()))
+    .sort();
+  const availabilityMonths = buildAvailabilityMonths(upcomingAvailableDates);
+
+  const today = new Date(new Date().toDateString());
+  const activeDeal = (venueData.attributes?.deals || []).find((deal) => {
+    if (!deal || deal.active === false) return false;
+    const end = toDate(deal.endDate);
+    return !end || end >= today;
+  });
 
   // Smooth scroll to section by id
   const scrollToSection = (sectionId) => {
@@ -3261,7 +3512,11 @@ const Detailed = () => {
               )}
 
             {/* In-page navigation */}
-            <SectionTabs scrollToSection={scrollToSection} />
+            <SectionTabs
+              scrollToSection={scrollToSection}
+              hasMenus={menusData.hasAny}
+              hasPricing={pricingDetails.hasAny}
+            />
 
             <div id="about" className="venue-description mb-5 p-2">
               <h2 className="details-section-title fw-bold fs-22">
@@ -3288,6 +3543,570 @@ const Detailed = () => {
                 </p>
               )} */}
             </div>
+
+            {/* FOOD & CATERING MENUS */}
+            {menusData.hasAny && (
+              <div id="menus" className="venue-menus mb-5 p-2">
+                <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                  <h2 className="details-section-title fw-bold fs-22 mb-0">
+                    Food & Catering Menus
+                  </h2>
+                  <span className="badge bg-light text-muted border px-3 py-2 fs-13 fw-normal">
+                    Prices per plate / guest
+                  </span>
+                </div>
+
+                <Row className="g-4">
+                  {/* Veg Menu Card */}
+                  {menusData.veg.hasData && (
+                    <Col lg={menusData.nonVeg.hasData ? 6 : 12} xs={12}>
+                      <div
+                        className="card h-100 border-0 shadow-sm"
+                        style={{
+                          borderRadius: "16px",
+                          borderTop: "4px solid #198754",
+                          backgroundColor: "#fff",
+                          overflow: "hidden",
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+                          border: "1px solid #eef2f6",
+                        }}
+                      >
+                        <div className="card-body p-4 d-flex flex-column">
+                          {/* Header with badge & price */}
+                          <div className="d-flex align-items-start justify-content-between pb-3 border-bottom mb-3 flex-wrap gap-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: "22px",
+                                  height: "22px",
+                                  border: "2px solid #198754",
+                                  borderRadius: "4px",
+                                  backgroundColor: "#fff",
+                                  padding: "2px",
+                                  flexShrink: 0,
+                                }}
+                                title="Vegetarian"
+                              >
+                                <span
+                                  style={{
+                                    width: "10px",
+                                    height: "10px",
+                                    borderRadius: "50%",
+                                    backgroundColor: "#198754",
+                                  }}
+                                />
+                              </span>
+                              <div>
+                                <h3 className="fs-18 fw-bold text-success mb-0">
+                                  Vegetarian Menu
+                                </h3>
+                                <small className="text-muted">Pure Veg Options</small>
+                              </div>
+                            </div>
+
+                            {menusData.veg.price && (
+                              <div className="text-end">
+                                <span className="d-block text-muted fs-12 fw-medium">
+                                  Starting From
+                                </span>
+                                <span className="fs-20 fw-bold text-dark">
+                                  {(() => {
+                                    const num = String(menusData.veg.price).replace(/[^0-9]/g, "");
+                                    if (num) {
+                                      return (
+                                        <>
+                                          ₹ {parseInt(num, 10).toLocaleString("en-IN")}
+                                          <span className="fs-13 text-muted fw-normal"> / plate</span>
+                                        </>
+                                      );
+                                    }
+                                    return menusData.veg.price;
+                                  })()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Description */}
+                          {menusData.veg.description && (
+                            <p
+                              className="text-secondary fs-14 mb-3"
+                              style={{ lineHeight: "1.6" }}
+                            >
+                              {menusData.veg.description}
+                            </p>
+                          )}
+
+                          {/* Dish Items */}
+                          {menusData.veg.items.length > 0 && (
+                            <div className="mt-auto pt-2">
+                              <span className="d-block fw-semibold text-dark fs-13 mb-2 text-uppercase tracking-wider">
+                                Menu Inclusions ({menusData.veg.items.length} items)
+                              </span>
+                              <div className="d-flex flex-wrap gap-2">
+                                {menusData.veg.items.map((item, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="badge"
+                                    style={{
+                                      backgroundColor: "#e8f5e9",
+                                      color: "#1b5e20",
+                                      fontWeight: 500,
+                                      fontSize: "13px",
+                                      padding: "6px 12px",
+                                      borderRadius: "8px",
+                                      border: "1px solid #c8e6c9",
+                                    }}
+                                  >
+                                    ✓ {item}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Col>
+                  )}
+
+                  {/* Non-Veg Menu Card */}
+                  {menusData.nonVeg.hasData && (
+                    <Col lg={menusData.veg.hasData ? 6 : 12} xs={12}>
+                      <div
+                        className="card h-100 border-0 shadow-sm"
+                        style={{
+                          borderRadius: "16px",
+                          borderTop: "4px solid #dc3545",
+                          backgroundColor: "#fff",
+                          overflow: "hidden",
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+                          border: "1px solid #eef2f6",
+                        }}
+                      >
+                        <div className="card-body p-4 d-flex flex-column">
+                          {/* Header with badge & price */}
+                          <div className="d-flex align-items-start justify-content-between pb-3 border-bottom mb-3 flex-wrap gap-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: "22px",
+                                  height: "22px",
+                                  border: "2px solid #dc3545",
+                                  borderRadius: "4px",
+                                  backgroundColor: "#fff",
+                                  padding: "2px",
+                                  flexShrink: 0,
+                                }}
+                                title="Non-Vegetarian"
+                              >
+                                <span
+                                  style={{
+                                    width: "10px",
+                                    height: "10px",
+                                    borderRadius: "50%",
+                                    backgroundColor: "#dc3545",
+                                  }}
+                                />
+                              </span>
+                              <div>
+                                <h3 className="fs-18 fw-bold text-danger mb-0">
+                                  Non-Vegetarian Menu
+                                </h3>
+                                <small className="text-muted">Includes Non-Veg Specialties</small>
+                              </div>
+                            </div>
+
+                            {menusData.nonVeg.price && (
+                              <div className="text-end">
+                                <span className="d-block text-muted fs-12 fw-medium">
+                                  Starting From
+                                </span>
+                                <span className="fs-20 fw-bold text-dark">
+                                  {(() => {
+                                    const num = String(menusData.nonVeg.price).replace(/[^0-9]/g, "");
+                                    if (num) {
+                                      return (
+                                        <>
+                                          ₹ {parseInt(num, 10).toLocaleString("en-IN")}
+                                          <span className="fs-13 text-muted fw-normal"> / plate</span>
+                                        </>
+                                      );
+                                    }
+                                    return menusData.nonVeg.price;
+                                  })()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Description */}
+                          {menusData.nonVeg.description && (
+                            <p
+                              className="text-secondary fs-14 mb-3"
+                              style={{ lineHeight: "1.6" }}
+                            >
+                              {menusData.nonVeg.description}
+                            </p>
+                          )}
+
+                          {/* Dish Items */}
+                          {menusData.nonVeg.items.length > 0 && (
+                            <div className="mt-auto pt-2">
+                              <span className="d-block fw-semibold text-dark fs-13 mb-2 text-uppercase tracking-wider">
+                                Menu Inclusions ({menusData.nonVeg.items.length} items)
+                              </span>
+                              <div className="d-flex flex-wrap gap-2">
+                                {menusData.nonVeg.items.map((item, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="badge"
+                                    style={{
+                                      backgroundColor: "#fde8e8",
+                                      color: "#9b1c1c",
+                                      fontWeight: 500,
+                                      fontSize: "13px",
+                                      padding: "6px 12px",
+                                      borderRadius: "8px",
+                                      border: "1px solid #f8b4b4",
+                                    }}
+                                  >
+                                    ✓ {item}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Col>
+                  )}
+                </Row>
+              </div>
+            )}
+
+            {/* PRICING & PACKAGES DETAILS */}
+            {pricingDetails.hasAny && (
+              <div id="pricing-packages" className="venue-pricing-packages mb-5 p-2">
+                <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                  <div className="d-flex align-items-center gap-2">
+                    <div
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "10px",
+                        backgroundColor: "#fce4ec",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#ed1173",
+                      }}
+                    >
+                      <FaTag size={16} />
+                    </div>
+                    <div>
+                      <h2 className="details-section-title fw-bold fs-22 mb-0">
+                        Pricing & Packages
+                      </h2>
+                      <small className="text-muted">Pricing plans & brochures</small>
+                    </div>
+                  </div>
+
+                  {pricingDetails.startingPrice && (
+                    <span className="badge bg-light text-dark border px-3 py-2 fs-13 fw-semibold">
+                      Starting from ₹{" "}
+                      {parseInt(
+                        String(pricingDetails.startingPrice).replace(/[^0-9]/g, "") || 0,
+                        10
+                      ).toLocaleString("en-IN")}
+                    </span>
+                  )}
+                </div>
+
+                <div
+                  className="card border-0 shadow-sm"
+                  style={{
+                    borderRadius: "16px",
+                    borderTop: "4px solid #ed1173",
+                    backgroundColor: "#fff",
+                    overflow: "hidden",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+                    border: "1px solid #eef2f6",
+                  }}
+                >
+                  <div className="card-body p-4">
+                    <Row className="g-4 align-items-start">
+                      {/* Description & Details Column */}
+                      <Col lg={pricingDetails.imageSrc || pricingDetails.brochureName ? 7 : 12} xs={12}>
+                        {pricingDetails.description ? (
+                          <div>
+                            <h5 className="fw-semibold text-dark mb-2 fs-16">
+                              Package Overview & Pricing Details
+                            </h5>
+                            <p
+                              className="text-secondary fs-14 mb-3"
+                              style={{
+                                lineHeight: "1.7",
+                                whiteSpace: "pre-line",
+                              }}
+                            >
+                              {pricingDetails.description}
+                            </p>
+                          </div>
+                        ) : (
+                          <div>
+                            <h5 className="fw-semibold text-dark mb-2 fs-16">
+                              Pricing Information
+                            </h5>
+                            <p className="text-secondary fs-14 mb-3" style={{ lineHeight: "1.7" }}>
+                              Contact this vendor for customized pricing plans, package inclusions, and date availability.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Starting price highlight box if available */}
+                        {pricingDetails.startingPrice && (
+                          <div
+                            className="p-3 rounded-3 d-inline-flex align-items-center gap-3 mt-2 flex-wrap"
+                            style={{
+                              backgroundColor: "#fff0f6",
+                              border: "1px solid #ffdeeb",
+                              borderRadius: "12px",
+                            }}
+                          >
+                            <div>
+                              <span className="d-block text-muted fs-12 fw-medium">
+                                Base Package Starting At
+                              </span>
+                              <span
+                                className="fs-20 fw-bold"
+                                style={{ color: "#ed1173" }}
+                              >
+                                ₹{" "}
+                                {parseInt(
+                                  String(pricingDetails.startingPrice).replace(/[^0-9]/g, "") || 0,
+                                  10
+                                ).toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              className="rounded-pill px-3 py-2 ms-auto"
+                              style={{
+                                background: "linear-gradient(135deg, #ed1173 0%, #c40a5a 100%)",
+                                border: "none",
+                                fontSize: "13px",
+                                fontWeight: 600,
+                                boxShadow: "0 2px 8px rgba(237, 17, 115, 0.25)",
+                              }}
+                              onClick={() => handleShowPricingModal(venueData.vendor_id)}
+                            >
+                              Request Quote
+                            </Button>
+                          </div>
+                        )}
+                      </Col>
+
+                      {/* Brochure Preview Column */}
+                      {(pricingDetails.imageSrc || pricingDetails.brochureName) && (
+                        <Col lg={5} xs={12}>
+                          <div
+                            className="p-3 p-md-4 rounded-4"
+                            style={{
+                              backgroundColor: "#fdf8fa",
+                              border: "1px solid #fce7f3",
+                              boxShadow: "0 2px 12px rgba(237, 17, 115, 0.04)",
+                            }}
+                          >
+                            <div
+                              className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom"
+                              style={{ borderColor: "#fce7f3" }}
+                            >
+                              <div className="d-flex align-items-center gap-2">
+                                <span
+                                  style={{
+                                    width: "28px",
+                                    height: "28px",
+                                    borderRadius: "8px",
+                                    backgroundColor: "#fff",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#ed1173",
+                                    border: "1px solid #fbcfe8",
+                                    boxShadow: "0 2px 6px rgba(237,17,115,0.08)",
+                                  }}
+                                >
+                                  <FaTag size={12} />
+                                </span>
+                                <span className="fw-bold text-dark fs-14">Rate Card & Brochure</span>
+                              </div>
+                              <span
+                                className="badge px-2 py-1"
+                                style={{
+                                  backgroundColor:
+                                    pricingDetails.isPdf ||
+                                    pricingDetails.brochureName?.toLowerCase().endsWith(".pdf")
+                                      ? "#fee2e2"
+                                      : "#fce4ec",
+                                  color:
+                                    pricingDetails.isPdf ||
+                                    pricingDetails.brochureName?.toLowerCase().endsWith(".pdf")
+                                      ? "#b91c1c"
+                                      : "#c2185b",
+                                  fontSize: "10.5px",
+                                  fontWeight: 600,
+                                  borderRadius: "6px",
+                                }}
+                              >
+                                {pricingDetails.isPdf ||
+                                pricingDetails.brochureName?.toLowerCase().endsWith(".pdf")
+                                  ? "PDF BROCHURE"
+                                  : "IMAGE BROCHURE"}
+                              </span>
+                            </div>
+
+                            {pricingDetails.imageSrc ? (
+                              <div>
+                                <div
+                                  className="position-relative rounded-3 overflow-hidden shadow-sm"
+                                  style={{
+                                    height: "170px",
+                                    cursor: "pointer",
+                                    border: "1px solid #e5e7eb",
+                                    backgroundColor: "#fff",
+                                  }}
+                                  onClick={() => setShowBrochureModal(true)}
+                                >
+                                  <img
+                                    src={pricingDetails.imageSrc}
+                                    alt={pricingDetails.brochureName || "Pricing Brochure"}
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                      display: "block",
+                                      transition: "transform 0.3s ease",
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                                  />
+                                  <div
+                                    className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white"
+                                    style={{
+                                      backgroundColor: "rgba(0,0,0,0.35)",
+                                      opacity: 0,
+                                      transition: "opacity 0.2s ease",
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+                                  >
+                                    <div className="d-flex align-items-center gap-2 bg-dark px-3 py-1.5 rounded-pill bg-opacity-75">
+                                      <FaEye size={13} />
+                                      <span className="fs-12 fw-medium">View Full Size</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="d-flex align-items-center justify-content-between mt-2 pt-1">
+                                  <small
+                                    className="text-muted"
+                                    title={pricingDetails.brochureName || "Price List Image"}
+                                    style={{
+                                      maxWidth: "60%",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    <FaImage className="me-1" style={{ color: "#ed1173" }} />
+                                    {pricingDetails.brochureName || "Price List Image"}
+                                  </small>
+                                  <button
+                                    type="button"
+                                    className="btn btn-link btn-sm text-decoration-none p-0 fw-semibold"
+                                    style={{ color: "#ed1173", fontSize: "12px" }}
+                                    onClick={() => setShowBrochureModal(true)}
+                                  >
+                                    Click to preview 🔍
+                                  </button>
+                                </div>
+                              </div>
+                            ) : pricingDetails.isPdf || pricingDetails.brochureName ? (
+                              <div
+                                className="p-3 bg-white rounded-3 d-flex align-items-center gap-3"
+                                style={{
+                                  border: "1px solid #f3d2dc",
+                                  boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+                                  minWidth: 0,
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: "48px",
+                                    height: "48px",
+                                    borderRadius: "10px",
+                                    background: "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                                    color: "#dc2626",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    flexShrink: 0,
+                                    border: "1px solid #fca5a5",
+                                  }}
+                                >
+                                  <FaFilePdf size={24} />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+                                  <div
+                                    className="fw-semibold text-dark fs-14"
+                                    title={pricingDetails.brochureName}
+                                    style={{
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      display: "block",
+                                      lineHeight: 1.3,
+                                    }}
+                                  >
+                                    {pricingDetails.brochureName}
+                                  </div>
+                                  <div className="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                                    <small className="text-muted fs-12">Official Price Brochure</small>
+                                    <span className="text-muted" style={{ fontSize: "10px" }}>•</span>
+                                    <button
+                                      type="button"
+                                      className="btn btn-link btn-sm p-0 text-decoration-none fw-semibold"
+                                      style={{ color: "#ed1173", fontSize: "12px" }}
+                                      onClick={() => {
+                                        if (pricingDetails.brochureUrl) {
+                                          window.open(pricingDetails.brochureUrl, "_blank");
+                                        } else {
+                                          handleShowPricingModal(venueData.vendor_id);
+                                        }
+                                      }}
+                                    >
+                                      {pricingDetails.brochureUrl ? "Download PDF →" : "Request PDF Copy →"}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : null}
+                          </div>
+                        </Col>
+                      )}
+                    </Row>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* FACILITIES & FEATURES */}
             {vendorFeatures.length > 0 && (
@@ -3356,6 +4175,83 @@ const Detailed = () => {
             <div id="reviews" className="py-2">
               <ReviewSection vendor={venueData || activeVendor} />
             </div>
+
+            {activeDeal && (
+              <section className="promo-banner mb-4" aria-labelledby="promotions-heading">
+                <h2
+                  id="promotions-heading"
+                  className="fw-semibold text-dark mb-4"
+                  style={{ fontSize: "18px" }}
+                >
+                  Promotions
+                </h2>
+                <div
+                  className="promo-banner-card"
+                  style={{
+                    background: "linear-gradient(118deg, #fff1f2 0%, #f9f5f7 48%, #edf9fb 100%)",
+                    border: "1px solid rgba(255, 255, 255, 0.75)",
+                    borderRadius: "10px",
+                    boxShadow: "0 12px 30px rgba(32, 42, 55, 0.08)",
+                    minHeight: "333px",
+                    width: "100%",
+                    maxWidth: "488px",
+                    padding: "21px 18px 20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <span
+                    className="text-uppercase fw-semibold"
+                    style={{
+                      background: "#fff",
+                      border: "1px solid rgba(224, 224, 224, 0.65)",
+                      borderRadius: "5px",
+                      color: "#111",
+                      fontSize: "10px",
+                      letterSpacing: "1px",
+                      lineHeight: "26px",
+                      padding: "0 10px",
+                      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.03)",
+                    }}
+                  >
+                    Exclusive
+                  </span>
+                  <h3
+                    className="fw-bold text-dark mb-0"
+                    style={{ fontSize: "40px", lineHeight: "1.15", marginTop: "25px", letterSpacing: "0" }}
+                  >
+                    {activeDeal.title || "Exclusive wedding offer"}
+                  </h3>
+                  <div
+                    className="fw-semibold text-dark"
+                    style={{ fontSize: "17px", marginTop: "17px" }}
+                  >
+                    {activeDeal.type === "percentage"
+                      ? `${activeDeal.value}% discount`
+                      : `₹${Number(activeDeal.value).toLocaleString("en-IN")} discount`}
+                  </div>
+                  <p
+                    className="text-dark mb-0"
+                    style={{ fontSize: "16px", lineHeight: "1.4", marginTop: "21px" }}
+                  >
+                    {activeDeal.description || activeDeal.subtitle || "Permanent promotion"}
+                  </p>
+                  <div
+                    className="d-flex flex-wrap align-items-center gap-2 text-dark"
+                    style={{ fontSize: "16px", lineHeight: "1.4", marginTop: "14px" }}
+                  >
+                    {(activeDeal.startDate || activeDeal.endDate) && (
+                      <span>
+                        {activeDeal.startDate && `From ${formatDate(activeDeal.startDate)}`}
+                        {activeDeal.startDate && activeDeal.endDate && " | "}
+                        {activeDeal.endDate && `Till ${formatDate(activeDeal.endDate)}`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
 
             <div id="map" className="mt-4 pt-3 border-top">
               <div
@@ -3441,7 +4337,12 @@ const Detailed = () => {
 
                   {/* Rating Clean */}
                   <div className="d-flex justify-content-between align-items-center mt-2">
-                    <div className="rating-badge d-flex align-items-center gap-1">
+                    <div
+                      className="rating-badge d-flex align-items-center gap-1"
+                      role="button"
+                      onClick={() => scrollToSection("reviews")}
+                      style={{ cursor: "pointer" }}
+                    >
                       <FaStar size={12} color="#000" />
                       <span className="fw-semibold text-dark fs-16">
                         {venueData.attributes?.rating || 0}
@@ -3589,16 +4490,48 @@ const Detailed = () => {
                       )}
                     </>
                   )}
+
+                  {pricingDetails.hasAny && (
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary btn-sm w-100 mt-2 d-flex align-items-center justify-content-center gap-2 fw-semibold"
+                      style={{
+                        borderRadius: "8px",
+                        padding: "8px 12px",
+                        borderColor: "#f8bbd0",
+                        color: "#c2185b",
+                        backgroundColor: "#fdf2f7",
+                      }}
+                      onClick={() => scrollToSection("pricing-packages")}
+                    >
+                      <FaTag size={12} /> View Pricing & Packages
+                    </button>
+                  )}
+
+                  {menusData.hasAny && (
+                    <button
+                      type="button"
+                      className="btn btn-outline-danger btn-sm w-100 mt-2 d-flex align-items-center justify-content-center gap-2 fw-semibold"
+                      style={{ borderRadius: "8px", padding: "8px 12px" }}
+                      onClick={() => scrollToSection("menus")}
+                    >
+                      <FaUtensils size={13} /> View Catering Menus
+                    </button>
+                  )}
                 </div>
 
-                <div className="details-action-group">
-                  <button
-                    className="btn btn-outline-primary details-action-btn rounded-2"
-                    onClick={() => setShowClaimForm(true)}
-                  >
-                    Claim Your Business
-                  </button>
-                </div>
+                {!["approve", "approved"].includes(
+                  String(venueData.vendor?.status || "").toLowerCase(),
+                ) && (
+                  <div className="details-action-group">
+                    <button
+                      className="btn btn-outline-primary details-action-btn rounded-2"
+                      onClick={() => setShowClaimForm(true)}
+                    >
+                      Claim Your Business
+                    </button>
+                  </div>
+                )}
 
                 <hr />
 
@@ -3610,6 +4543,123 @@ const Detailed = () => {
                     Request Pricing & Availability
                   </button>
                 </div>
+
+                {availabilityActive && upcomingAvailableDates.length > 0 && (
+                  <div className="mb-2">
+                    <hr />
+                    <div className="d-flex align-items-center justify-content-between mb-2">
+                      <div className="fw-semibold text-dark fs-14">
+                        Available Dates
+                      </div>
+                      <span className="badge bg-light text-muted border px-2 py-1" style={{ fontSize: "11px", fontWeight: 500 }}>
+                        {availabilityMonths.length} {availabilityMonths.length === 1 ? "Month" : "Months"}
+                      </span>
+                    </div>
+
+                    {(() => {
+                      const m = availabilityMonths[availMonthIndex] || availabilityMonths[0];
+                      if (!m) return null;
+                      const hasPrev = availMonthIndex > 0;
+                      const hasNext = availMonthIndex < availabilityMonths.length - 1;
+
+                      return (
+                        <div
+                          key={m.key}
+                          className="avail-month-card mb-3 shadow-sm"
+                          style={{ border: "1px solid #e2e8f0", borderRadius: "12px", overflow: "hidden" }}
+                        >
+                          <div
+                            className="avail-month-header px-3 py-2 d-flex align-items-center justify-content-between"
+                            style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}
+                          >
+                            <button
+                              type="button"
+                              className="btn btn-sm p-0 d-flex align-items-center justify-content-center"
+                              style={{
+                                width: "28px",
+                                height: "28px",
+                                borderRadius: "6px",
+                                border: hasPrev ? "1px solid #cbd5e1" : "1px solid #e2e8f0",
+                                backgroundColor: hasPrev ? "#ffffff" : "#f1f5f9",
+                                color: hasPrev ? "#0f172a" : "#94a3b8",
+                                cursor: hasPrev ? "pointer" : "not-allowed",
+                                transition: "all 0.15s ease",
+                              }}
+                              disabled={!hasPrev}
+                              onClick={() => setAvailMonthIndex((prev) => Math.max(0, prev - 1))}
+                              title="Previous Month"
+                              aria-label="Previous Month"
+                            >
+                              <FaChevronLeft size={11} />
+                            </button>
+
+                            <h6 className="avail-month-name mb-0 fw-bold fs-14 text-dark text-center">
+                              <span>{m.monthName}</span>
+                            </h6>
+
+                            <button
+                              type="button"
+                              className="btn btn-sm p-0 d-flex align-items-center justify-content-center"
+                              style={{
+                                width: "28px",
+                                height: "28px",
+                                borderRadius: "6px",
+                                border: hasNext ? "1px solid #cbd5e1" : "1px solid #e2e8f0",
+                                backgroundColor: hasNext ? "#ffffff" : "#f1f5f9",
+                                color: hasNext ? "#0f172a" : "#94a3b8",
+                                cursor: hasNext ? "pointer" : "not-allowed",
+                                transition: "all 0.15s ease",
+                              }}
+                              disabled={!hasNext}
+                              onClick={() =>
+                                setAvailMonthIndex((prev) =>
+                                  Math.min(availabilityMonths.length - 1, prev + 1)
+                                )
+                              }
+                              title="Next Month"
+                              aria-label="Next Month"
+                            >
+                              <FaChevronRight size={11} />
+                            </button>
+                          </div>
+
+                          <div className="avail-weekdays-strip">
+                            {WEEKDAY_LABELS.map((d) => (
+                              <span key={d} className="avail-weekday-title">
+                                {d}
+                              </span>
+                            ))}
+                          </div>
+
+                          <div className="avail-days-matrix">
+                            {m.cells.map((cell, i) =>
+                              !cell ? (
+                                <div
+                                  key={`empty-${i}`}
+                                  className="avail-empty-cell"
+                                ></div>
+                              ) : (
+                                <div
+                                  key={`day-${cell.day}`}
+                                  className={`avail-day-tile ${
+                                    cell.isPast
+                                      ? "is-past"
+                                      : cell.isAvailable
+                                        ? "is-available"
+                                        : "is-unavailable"
+                                  }`}
+                                  style={{ cursor: "default" }}
+                                >
+                                  <span>{cell.day}</span>
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             </div>
           </Col>
@@ -3650,6 +4700,37 @@ const Detailed = () => {
           />
         </Modal.Body>
       </Modal>
+
+      {/* Brochure Image Lightbox / Fullscreen Modal */}
+      {pricingDetails?.imageSrc && (
+        <Modal
+          show={showBrochureModal}
+          onHide={() => setShowBrochureModal(false)}
+          size="lg"
+          centered
+          backdrop={true}
+        >
+          <Modal.Header closeButton style={{ borderBottom: "1px solid #f0f0f0" }}>
+            <Modal.Title className="fs-16 fw-bold text-dark d-flex align-items-center gap-2">
+              <FaImage style={{ color: "#ed1173" }} />
+              {pricingDetails.brochureName || "Pricing Brochure & Rate Card"}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="p-2 text-center bg-light">
+            <img
+              src={pricingDetails.imageSrc}
+              alt={pricingDetails.brochureName || "Pricing Brochure Full"}
+              className="img-fluid rounded"
+              style={{
+                maxHeight: "80vh",
+                objectFit: "contain",
+                margin: "0 auto",
+                display: "block",
+              }}
+            />
+          </Modal.Body>
+        </Modal>
+      )}
     </div>
   );
 };

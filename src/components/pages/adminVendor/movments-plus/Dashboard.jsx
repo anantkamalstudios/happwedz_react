@@ -253,7 +253,7 @@ const VendorDashboard = ({ onNavigate }) => {
             </div>
             <div className="stat-body">
               <h3 className="stat-value text-black">{tokens.total}</h3>
-              <p className="stat-label">Access Tokens</p>
+              <p className="stat-label">Access Code</p>
               <div className="stat-breakdown d-flex justify-content-center my-2 pt-2">
                 <span>{tokens.active} Active</span>
                 <span>•</span>

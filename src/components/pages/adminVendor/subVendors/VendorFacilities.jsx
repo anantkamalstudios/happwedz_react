@@ -240,10 +240,6 @@ const VendorFacilities = ({
                 Facilities
               </span>
             </div>
-            <h4 className="mb-1 fw-bold">Facilities &amp; Features</h4>
-            <p className="text-muted fs-14 mb-4">
-              Select everything that applies — these help couples filter and find your listing.
-            </p>
             {isVenue && (
               <VenueMasterProfile
                 formData={formData}

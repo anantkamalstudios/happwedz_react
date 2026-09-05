@@ -372,6 +372,20 @@ const Storefront = ({ setCompletion }) => {
                   max: "",
                 },
                 PriceRange: attrs.PriceRange || "",
+                pricingDescription: attrs.pricing_description || "",
+                pricingBrochureUrl: attrs.pricing_brochure_url || null,
+                // base64 brochure (images only — PDFs skip base64 due to DB size limits)
+                pricingBrochureBase64: attrs.pricing_brochure_base64 || null,
+                // Restore filename independently — works for both images and PDFs
+                pricingFileName: attrs.pricing_brochure_name || null,
+                pricingFileType: attrs.pricing_brochure_base64
+                  ? (attrs.pricing_brochure_base64.startsWith("data:image") ? "image" : "pdf")
+                  : (attrs.pricing_brochure_name
+                    ? (attrs.pricing_brochure_name.toLowerCase().endsWith(".pdf") ? "pdf" : "image")
+                    : null),
+                pricingFilePreview: attrs.pricing_brochure_base64?.startsWith("data:image")
+                  ? attrs.pricing_brochure_base64
+                  : null,
 
                 capacity: attrs.capacity || {
                   min: "",
@@ -407,6 +421,9 @@ const Storefront = ({ setCompletion }) => {
 
                 veg_price: attrs.veg_price || "",
                 non_veg_price: attrs.non_veg_price || "",
+                veg_description: attrs.veg_description || "",
+                non_veg_description: attrs.non_veg_description || "",
+                menu_description: attrs.menu_description || "",
                 photo_package_price: attrs.photo_package_price || "",
                 photo_video_package_price: attrs.photo_video_package_price || "",
                 happywedz_since: attrs.happywedz_since || attrs.HappyWedz || "",
@@ -980,6 +997,9 @@ const Storefront = ({ setCompletion }) => {
       starting_price: data.startingPrice
         ? Number(data.startingPrice)
         : undefined,
+      pricing_description: data.pricingDescription || undefined,
+      pricing_brochure_base64: data.pricingBrochureBase64 || undefined,
+      pricing_brochure_name: data.pricingFileName || undefined,
       available_slots: Array.isArray(data.availableSlots)
         ? data.availableSlots.map((s) => ({
           date: s.date,
@@ -1002,6 +1022,18 @@ const Storefront = ({ setCompletion }) => {
       vendor_type: data.vendorTypeName || vendorTypeName || "",
       veg_price: data.veg_price || "",
       non_veg_price: data.non_veg_price || "",
+      veg_description:
+        data.veg_description ||
+        data.attributes?.veg_description ||
+        "",
+      non_veg_description:
+        data.non_veg_description ||
+        data.attributes?.non_veg_description ||
+        "",
+      menu_description:
+        data.menu_description ||
+        data.attributes?.menu_description ||
+        "",
       photo_package_price: data.photo_package_price || "",
       photo_video_package_price: data.photo_video_package_price || "",
       happywedz_since: data.happywedz_since || "",
@@ -1408,7 +1440,15 @@ const Storefront = ({ setCompletion }) => {
     ];
 
     if (showMenusTab) {
-      sections.push({ id: "vendor-menus", fields: ["attributes.menus"] });
+      sections.push({
+        id: "vendor-menus",
+        fields: [
+          "attributes.menus",
+          "veg_price",
+          "non_veg_price",
+          "menu_description",
+        ],
+      });
     }
 
     const venueMasterHasData = (vm) => {
@@ -1900,8 +1940,11 @@ const Storefront = ({ setCompletion }) => {
   return (
     <div className="container py-3 store-front-navbar">
       <div className="row g-4">
-        <div className="col-lg-3 col-md-4">
-          <div className="storefront-sidebar-card">
+        <div
+          className="col-lg-3 col-md-4"
+          style={{ alignSelf: "flex-start", position: "sticky", top: "70px", zIndex: 10 }}
+        >
+          <div className="storefront-sidebar-card" style={{ position: "relative", top: "unset", maxHeight: "calc(100vh - 90px)" }}>
             <Nav className="flex-column custom-sidebar">
               {menuItems.map((item) => {
                 // Locked tabs still open — the vendor can look around, they just

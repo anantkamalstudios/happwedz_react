@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { loginVendor, setVendorCredentials } from "../../redux/vendorAuthSlice";
+import { loginVendor } from "../../redux/vendorAuthSlice";
 import vendorsAuthApi from "../../services/api/vendorAuthApi";
 import { VENDOR_STOREFRONT_ROUTE, pinStorefrontTab } from "../../utils/vendorLanding";
 import { toast, ToastContainer } from "react-toastify";
@@ -15,12 +15,15 @@ const API_BASE =
   import.meta.env.VITE_API_URL ||
   "https://happywedz.com/api";
 
+import { safeSetItem, sanitizeForStorage } from "../../utils/safeStorage";
+
 const VendorRegister = () => {
   const persistVendorSession = (vendorData, tokenValue) => {
     const expiry = Date.now() + 60 * 60 * 1000;
-    localStorage.setItem("vendor", JSON.stringify(vendorData));
-    localStorage.setItem("vendorToken", tokenValue);
-    localStorage.setItem("vendorTokenExpiry", expiry.toString());
+    const cleanVendor = sanitizeForStorage(vendorData);
+    safeSetItem("vendor", JSON.stringify(cleanVendor));
+    safeSetItem("vendorToken", tokenValue);
+    safeSetItem("vendorTokenExpiry", expiry.toString());
   };
 
   const [passwordVisible, setPasswordVisible] = useState(false);

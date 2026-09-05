@@ -1,5 +1,8 @@
 // API Configuration
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  "https://happywedz.com/api";
 // Host that serves relative upload paths (/uploads/...) written by the backend.
 export const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com/";
 

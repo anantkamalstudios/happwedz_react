@@ -63,6 +63,7 @@ const Wishlist = () => {
                     vendor_services_id: item.vendor_services_id,
                     vendor_id:
                       serviceData?.vendor_id || serviceData?.vendor?.id || null,
+                    slug: serviceData?.slug || null,
                     businessName:
                       serviceData?.vendor?.businessName ||
                       serviceData?.attributes?.name ||
@@ -203,7 +204,16 @@ const Wishlist = () => {
       <div className="row g-4">
         {filteredWishlist.map((vendor) => (
           <div key={vendor.vendor_services_id} className="col-sm-6 col-lg-4">
-            <div className="card h-100 border-0 p-2">
+            <div
+              className="card h-100 border-0 p-2"
+              role="button"
+              onClick={() =>
+                navigate(
+                  `/details/info/${vendor.slug || vendor.vendor_services_id}`,
+                )
+              }
+              style={{ cursor: "pointer" }}
+            >
               <div className="position-relative">
                 <div className="ratio ratio-16x9 rounded-4 overflow-hidden">
                   <img
@@ -217,7 +227,10 @@ const Wishlist = () => {
                 </div>
                 <button
                   className="btn btn-light btn-sm position-absolute top-0 end-0 m-2 rounded-circle shadow"
-                  onClick={() => toggleWishlistItem(vendor.vendor_services_id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleWishlistItem(vendor.vendor_services_id);
+                  }}
                   aria-label="Remove from wishlist"
                   title="Remove"
                 >
@@ -235,15 +248,21 @@ const Wishlist = () => {
                 <div className="mt-auto d-flex gap-2">
                   <button
                     className="btn btn-outline-primary w-50 rounded-3 fs-14"
-                    onClick={() =>
-                      navigate(`/details/info/${vendor.vendor_services_id}`)
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(
+                        `/details/info/${vendor.slug || vendor.vendor_services_id}`,
+                      );
+                    }}
                   >
                     View Details
                   </button>
                   <button
                     className="btn btn-primary w-50 rounded-3 fs-14"
-                    onClick={() => handleShowModal(vendor.vendor_services_id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleShowModal(vendor.vendor_services_id);
+                    }}
                   >
                     <PiChatCircleDotsLight className="me-2" size={18} />
                     Contact
