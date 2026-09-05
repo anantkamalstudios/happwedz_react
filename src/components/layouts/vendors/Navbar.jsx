@@ -9,11 +9,13 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { IoStorefrontOutline } from "react-icons/io5";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import vendorServicesApi from "../../../services/api/vendorServicesApi";
+import { useVendorAccess } from "../../../context/VendorAccessContext";
 
 const Navbar = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
+  const vendorAccess = useVendorAccess();
   const [activeTab, setActiveTab] = useState("home");
   const [storedCompletion, setStoredCompletion] = useState(0);
   const [isMobile, setIsMobile] = useState(
@@ -439,10 +441,21 @@ const Navbar = () => {
                       marginBottom: 2,
                     }}
                   >
-                    Grow Your Business
+                    {vendorAccess.subscription
+                      ? vendorAccess.subscription.planName + " plan"
+                      : "Grow Your Business"}
                   </span>
-                  <Link className="btn upgrade-btn border-0 p-0">
-                    Upgrade Now
+                  {/* Was a dead <Link> with no destination. It now goes to the plans
+                      page, and says what it will actually do for this vendor. */}
+                  <Link
+                    to="/vendor-dashboard/upgrade/vendor-plan"
+                    className="btn upgrade-btn border-0 p-0"
+                  >
+                    {vendorAccess.stage === "expired"
+                      ? "Renew Plan"
+                      : vendorAccess.subscription
+                        ? "Change Plan"
+                        : "Upgrade Now"}
                   </Link>
                 </div>
               </div>

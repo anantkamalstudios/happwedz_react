@@ -4,6 +4,7 @@ import { Form, Button } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { loginVendor, setVendorCredentials } from "../../redux/vendorAuthSlice";
 import vendorsAuthApi from "../../services/api/vendorAuthApi";
+import { vendorLandingRoute } from "../../utils/vendorLanding";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -63,7 +64,9 @@ const VendorLogin = () => {
       persistVendorSession(vendor, token);
       dispatch(loginVendor({ token, vendor }));
 
-      navigate("/vendor-dashboard/vendor-home", { replace: true });
+      // A vendor who still has to complete their business details is sent there rather
+      // than to a dashboard they cannot act on yet.
+      navigate(vendorLandingRoute(vendor), { replace: true });
     } catch (err) {
       const serverMsg =
         err.response?.data?.message ||

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { FaqQuestions } from "./FaqData.js";
+import axiosInstance from "../../../../services/api/axiosInstance";
 
 function Faq({ formData, setFormData, onSave }) {
   const { vendor } = useSelector((state) => state.vendorAuth);
@@ -17,11 +18,7 @@ function Faq({ formData, setFormData, onSave }) {
 
     async function fetchAnswers() {
       try {
-        const res = await fetch(
-          `https://happywedz.com/api/faq-answers/${vendor.id}`
-        );
-        if (!res.ok) return;
-        const data = await res.json();
+        const { data } = await axiosInstance.get(`/faq-answers/${vendor.id}`);
         const answerMap = {};
         (Array.isArray(data) ? data : []).forEach((a) => {
           const qid = a.faqQuestionId ?? a.faq_question_id ?? a.faq_questionid;
@@ -336,7 +333,7 @@ function Faq({ formData, setFormData, onSave }) {
 
     const mergedAnswers = flattenOtherRadioAnswers(answers);
     const payload = {
-      vendorId: vendor.id,
+      // vendorId intentionally omitted: the server reads it from the auth token.
       vendorTypeId: vendor.vendor_type_id,
       answers: Object.entries(mergedAnswers).map(([faqQuestionId, answer]) => ({
         faqQuestionId,
@@ -344,21 +341,21 @@ function Faq({ formData, setFormData, onSave }) {
       })),
     };
     try {
-      const res = await fetch("https://happywedz.com/api/faq-answers/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        setSaveSuccess(true);
-        if (onSave) onSave();
-        setTimeout(() => setSaveSuccess(false), 5000);
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        setSaveError(errData.details || errData.error || "Failed to save FAQ answers. Please try again.");
-      }
+      // Was a bare fetch to a hardcoded production URL with no auth token, which is why
+      // the endpoint could not be authenticated. axiosInstance attaches the vendor token
+      // and honours the configured API base, so this works in every environment.
+      await axiosInstance.post("/faq-answers/save", payload);
+      setSaveSuccess(true);
+      if (onSave) onSave();
+      setTimeout(() => setSaveSuccess(false), 5000);
     } catch (err) {
-      setSaveError("Network error: Could not connect to server to save FAQ answers.");
+      const data = err.response?.data;
+      setSaveError(
+        data?.message ||
+          data?.details ||
+          data?.error ||
+          "Failed to save FAQ answers. Please try again."
+      );
     } finally {
       setIsSaving(false);
     }

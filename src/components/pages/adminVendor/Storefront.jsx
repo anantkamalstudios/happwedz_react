@@ -53,6 +53,9 @@ import SocialDetails from "./subVendors/SocialDetails";
 import axiosInstance from "../../../services/api/axiosInstance";
 import { TbView360Number } from "react-icons/tb";
 import View360 from "./subVendors/View360";
+import { FiLock } from "react-icons/fi";
+import { useVendorAccess } from "../../../context/VendorAccessContext";
+import LockedTabOverlay from "./LockedTabOverlay";
 // Reusable New Tag component
 const NewTag = () => (
   <span
@@ -103,6 +106,17 @@ const Storefront = ({ setCompletion }) => {
   const [active, setActive] = useState("business");
   const [showModal, setShowModal] = useState(false);
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
+  const access = useVendorAccess();
+
+  /** Can the vendor edit this tab right now? Used for the sidebar lock glyphs. */
+  const isTabEditable = useCallback(
+    (tabId) => {
+      if (access.loading || !access.stage) return true;
+      if (tabId === "business") return access.canEditBusinessDetails;
+      return access.editableTabs.includes(tabId);
+    },
+    [access.loading, access.stage, access.canEditBusinessDetails, access.editableTabs]
+  );
   const [formData, setFormData] = useState({ attributes: vendor || {} });
   const formDataRef = useRef(formData);
   useEffect(() => {
@@ -720,6 +734,35 @@ const Storefront = ({ setCompletion }) => {
   };
 
   const handleSave = async (saveData) => {
+    // Stop here rather than firing a request the server will refuse with a 403. The
+    // vendor gets the reason and the way out instead of a generic failure toast.
+    if (!isTabEditable(active)) {
+      const result = await Swal.fire({
+        icon: "info",
+        title: access.stage === "active" ? "Not in your plan" : "Editing is locked",
+        text:
+          access.stage === "active"
+            ? `${access.tabLabels?.[active] || "This section"} needs a higher plan.`
+            : access.message || "Complete your setup to edit your storefront.",
+        showCancelButton: true,
+        confirmButtonText:
+          access.stage === "kyc_required" || access.stage === "kyc_rejected"
+            ? "Complete business details"
+            : "View plans",
+        cancelButtonText: "Close",
+        confirmButtonColor: "#c2185b",
+      });
+
+      if (result.isConfirmed) {
+        if (access.stage === "kyc_required" || access.stage === "kyc_rejected") {
+          handleSetActive("business");
+        } else {
+          window.location.assign("/vendor-dashboard/upgrade/vendor-plan");
+        }
+      }
+      return;
+    }
+
     const isPayload = isFormSavePayload(saveData);
     const raw = isPayload
       ? { ...(formDataRef.current || formData), ...saveData }
@@ -1860,24 +1903,44 @@ const Storefront = ({ setCompletion }) => {
         <div className="col-lg-3 col-md-4">
           <div className="storefront-sidebar-card">
             <Nav className="flex-column custom-sidebar">
-              {menuItems.map((item) => (
-                <Nav.Link
-                  key={item.id}
-                  onClick={() => handleSetActive(item.id)}
-                  className={`sidebar-nav-item ${
-                    active === item.id ? "active" : ""
-                  }`}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Nav.Link>
-              ))}
+              {menuItems.map((item) => {
+                // Locked tabs still open — the vendor can look around, they just
+                // cannot edit. The glyph sets that expectation before they click.
+                const locked = !isTabEditable(item.id);
+                return (
+                  <Nav.Link
+                    key={item.id}
+                    onClick={() => handleSetActive(item.id)}
+                    className={`sidebar-nav-item ${
+                      active === item.id ? "active" : ""
+                    }`}
+                    title={locked ? "View only" : undefined}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                    {locked && (
+                      <FiLock
+                        size={13}
+                        className="ms-auto flex-shrink-0"
+                        style={{ opacity: 0.55 }}
+                        aria-label="View only"
+                      />
+                    )}
+                  </Nav.Link>
+                );
+              })}
             </Nav>
           </div>
         </div>
 
         <div className="col-lg-9 col-md-8 storefront-content-area" ref={contentRef}>
-          {renderContent()}
+          <LockedTabOverlay
+            access={access}
+            tabId={active}
+            showBanner={active !== "business"}
+          >
+            {renderContent()}
+          </LockedTabOverlay>
         </div>
       </div>
 
