@@ -2037,13 +2037,51 @@ const Detailed = () => {
         const cleanApiBase = API_BASE_URL.replace(/\/api$/, "");
         let data = null;
 
-        // 1. Direct slug request
+        // Helper to verify if fetched vendor data actually matches the requested slug
+        const isSlugMatch = (resData, targetSlug) => {
+          if (!resData) return false;
+          const itemSlug = String(resData.attributes?.slug || resData.slug || "").toLowerCase().trim();
+          const itemName = String(resData.attributes?.name || resData.name || "").toLowerCase().trim();
+          const cleanTarget = String(targetSlug || "").toLowerCase().trim();
+
+          if (itemSlug && cleanTarget) {
+            if (itemSlug === cleanTarget) return true;
+            const targetBase = cleanTarget.replace(/-\d+$/, "");
+            const itemBase = itemSlug.replace(/-\d+$/, "");
+            if (targetBase && itemBase && targetBase === itemBase) return true;
+          }
+
+          if (itemName && cleanTarget) {
+            const nameSlug = itemName.replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
+            const targetBase = cleanTarget.replace(/-\d+$/, "");
+            if (nameSlug && targetBase && (nameSlug.includes(targetBase) || targetBase.includes(nameSlug))) {
+              return true;
+            }
+          }
+
+          return false;
+        };
+
+        // 1. Direct request (by numeric ID or slug)
         try {
-          const response = await axios.get(
-            `${cleanApiBase}/api/vendor-services/slug/${slug}`,
-          );
-          if (response.data && (response.data.id || response.data.vendor_id || response.data.attributes)) {
-            data = response.data;
+          if (/^\d+$/.test(slug)) {
+            const idResponse = await axios.get(`${cleanApiBase}/api/vendor-services/${slug}`);
+            if (idResponse.data && (idResponse.data.id || idResponse.data.attributes)) {
+              data = idResponse.data;
+            }
+          } else {
+            const response = await axios.get(
+              `${cleanApiBase}/api/vendor-services/slug/${slug}`,
+            );
+            if (
+              response.data &&
+              (response.data.id || response.data.vendor_id || response.data.attributes) &&
+              isSlugMatch(response.data, slug)
+            ) {
+              data = response.data;
+            } else {
+              console.debug("Direct slug returned mismatched vendor, falling back to name search...", response.data?.attributes?.name);
+            }
           }
         } catch (directErr) {
           console.debug("Direct slug lookup not found, trying keyword search fallback...", directErr?.message);
@@ -2052,26 +2090,33 @@ const Detailed = () => {
         // 2. Keyword/City search fallback
         if (!data) {
           try {
-            const cleanSearch = slug.replace(/[-_]+/g, " ").trim();
+            // Strip trailing numeric suffixes (e.g. elegance-pixs-6388 -> elegance pixs)
+            const cleanSearch = slug.replace(/-\d+$/, "").replace(/[-_]+/g, " ").trim();
             const searchRes = await axios.get(`${cleanApiBase}/api/vendor-services`, {
               params: {
                 search: cleanSearch,
-                limit: 5,
+                limit: 10,
                 ...(city && city !== "all" ? { city } : {}),
               },
             });
             const items = searchRes.data?.data || (Array.isArray(searchRes.data) ? searchRes.data : []);
             if (items.length > 0) {
-              const matched = items[0];
-              if (matched.slug || matched.id) {
+              const targetBase = slug.replace(/-\d+$/, "").toLowerCase();
+              const matched = items.find((it) => {
+                const itSlug = String(it.attributes?.slug || it.slug || "").toLowerCase();
+                const itName = String(it.attributes?.name || it.name || "").toLowerCase().replace(/\s+/g, "-");
+                return itSlug === slug.toLowerCase() || itSlug.includes(targetBase) || itName.includes(targetBase) || targetBase.includes(itName);
+              }) || items[0];
+
+              if (matched && (matched.id || matched.vendor_id)) {
                 try {
                   const matchedDetailRes = await axios.get(
-                    `${cleanApiBase}/api/vendor-services/slug/${matched.slug || matched.id}`,
+                    `${cleanApiBase}/api/vendor-services/${matched.id || matched.vendor_id}`,
                   );
-                  if (matchedDetailRes.data) {
+                  if (matchedDetailRes.data && (matchedDetailRes.data.id || matchedDetailRes.data.attributes)) {
                     data = matchedDetailRes.data;
                   }
-                } catch { }
+                } catch {}
               }
               if (!data) {
                 data = matched;

@@ -2,20 +2,22 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { loginVendor, setVendorCredentials } from "../../redux/vendorAuthSlice";
+import { loginVendor } from "../../redux/vendorAuthSlice";
 import vendorsAuthApi from "../../services/api/vendorAuthApi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { SiMinutemailer } from "react-icons/si";
 import { TbPassword } from "react-icons/tb";
+import { safeSetItem, sanitizeForStorage } from "../../utils/safeStorage";
 
 const VendorLogin = () => {
   const persistVendorSession = (vendorData, tokenValue) => {
     const expiry = Date.now() + 60 * 60 * 1000;
-    localStorage.setItem("vendor", JSON.stringify(vendorData));
-    localStorage.setItem("vendorToken", tokenValue);
-    localStorage.setItem("vendorTokenExpiry", expiry.toString());
+    const cleanVendor = sanitizeForStorage(vendorData);
+    safeSetItem("vendor", JSON.stringify(cleanVendor));
+    safeSetItem("vendorToken", tokenValue);
+    safeSetItem("vendorTokenExpiry", expiry.toString());
   };
 
   const [email, setEmail] = useState("");
