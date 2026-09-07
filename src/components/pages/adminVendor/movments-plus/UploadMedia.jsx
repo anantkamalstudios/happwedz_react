@@ -71,6 +71,14 @@ const FilePreview = ({ file, index, onReplace, onRemove, disabled }) => {
   );
 };
 
+/**
+ * Megabytes as gigabytes, for the plan-sized numbers (remaining, limit).
+ *
+ * Rounded down rather than nearest: 2045.91 MB is not 2 GB, and telling a vendor they
+ * have more room than they do sends them into a failed upload.
+ */
+const toGb = (mb) => (Math.floor((Number(mb) || 0) / 10.24) / 100).toFixed(2);
+
 const UploadMedia = ({ initialParams }) => {
   const { vendor } = useSelector((state) => state.vendorAuth);
   const [tokens, setTokens] = useState([]);
@@ -426,8 +434,8 @@ const UploadMedia = ({ initialParams }) => {
                     : "text-success inter"
                 }`}
               >
-                {analytics.package.remainingMB.toFixed(2)}{" "}
-                <span className="fs-6 text-success inter">MB</span>
+                {toGb(analytics.package.remainingMB)}{" "}
+                <span className="fs-6 text-success inter">GB</span>
               </h3>
             </div>
           </div>
@@ -438,8 +446,8 @@ const UploadMedia = ({ initialParams }) => {
             <div>
               <p className="stat-box-label text-start inter">Limit</p>
               <h3 className="stat-box-value inter">
-                {analytics.package.limitMB}{" "}
-                <span className="fs-6 text-muted inter">MB</span>
+                {toGb(analytics.package.limitMB)}{" "}
+                <span className="fs-6 text-muted inter">GB</span>
               </h3>
             </div>
           </div>

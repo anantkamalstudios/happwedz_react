@@ -219,7 +219,9 @@ const VendorRegister = () => {
           email: formData.email,
           phone: formData.phone,
           city: formData.city,
-          vendor_type_id: formData.vendorType,
+          // Number, not the raw <select> string — the dashboard compares this id
+          // strictly and a string silently hides the Moments+ tab.
+          vendor_type_id: Number(formData.vendorType),
         };
 
       if (token && vendor) {

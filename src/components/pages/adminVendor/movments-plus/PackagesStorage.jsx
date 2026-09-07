@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import Loader from "../../../ui/Loader";
+import MomentsQuotaBanner from "./MomentsQuotaBanner";
 import "./packages.css";
 import { CiStar } from "react-icons/ci";
 import { IoCheckmark } from "react-icons/io5";
@@ -9,6 +10,7 @@ import Swal from "sweetalert2";
 const PackagesStorage = () => {
   const [availablePackages, setAvailablePackages] = useState([]);
   const [currentPackage, setCurrentPackage] = useState(null);
+  const [quota, setQuota] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -24,6 +26,13 @@ const PackagesStorage = () => {
         if (dashboardRes.data.success) {
           setCurrentPackage(dashboardRes.data.package);
         }
+
+        // Allowed to fail on its own: the plan cards are the point of this page and
+        // must still render if the quota lookup does not answer.
+        const quotaRes = await axiosInstance
+          .get("/vendor/me/moments-quota")
+          .catch(() => null);
+        if (quotaRes?.data?.success) setQuota(quotaRes.data);
 
         const packagesRes = await axiosInstance.get("/admin/package");
         const list = Array.isArray(packagesRes.data?.packages)
@@ -118,6 +127,8 @@ const PackagesStorage = () => {
         </p>
       </div>
 
+      <MomentsQuotaBanner quota={quota} />
+
       {error && (
         <div className="custom-alert custom-alert-danger inter mb-4">
           {error}
@@ -159,7 +170,7 @@ const PackagesStorage = () => {
               <div className="package-card-header">
                 <h3 className="package-name inter">{pkg.name}</h3>
                 <p className="package-storage-info inter">
-                  {pkg.storage_limit_gb} GB Storage
+                  {Number(pkg.price) === 0 ? "Starter plan" : "Paid plan"}
                 </p>
               </div>
 
@@ -169,20 +180,40 @@ const PackagesStorage = () => {
                   {Number(pkg.price).toLocaleString("en-IN")}
                 </div>
                 <p className="package-billing inter">
-                  Per month, {pkg.duration_days} days validity
+                  {Number(pkg.price) === 0
+                    ? "Free forever"
+                    : pkg.duration_days
+                      ? `Every ${pkg.duration_days} days`
+                      : "No expiry"}
                 </p>
               </div>
 
-              <ul className="package-features-list inter">
-                {features.map((feature, idx) => (
-                  <li key={idx} className="feature-item">
-                    <span className="fs-16">
-                      <IoCheckmark />
-                    </span>
-                    <span className="fs-16">{feature}</span>
+              <ul className="package-allowances inter">
+                {[
+                  ["Storage", `${pkg.storage_limit_gb} GB`],
+                  ["Events", pkg.max_events ?? "Unlimited"],
+                  ["Access codes", pkg.max_access_codes ?? "Unlimited"],
+                  ["Media files", pkg.max_media_files ?? "Unlimited"],
+                ].map(([label, value]) => (
+                  <li key={label} className="allowance-row">
+                    <span className="allowance-label">{label}</span>
+                    <span className="allowance-value">{value}</span>
                   </li>
                 ))}
               </ul>
+
+              {features.length > 0 && (
+                <ul className="package-features-list inter">
+                  {features.map((feature, idx) => (
+                    <li key={idx} className="feature-item">
+                      <span className="feature-tick">
+                        <IoCheckmark />
+                      </span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               <button
                 type="button"

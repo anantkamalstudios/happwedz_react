@@ -178,11 +178,17 @@ const Navbar = () => {
     };
   }, []);
 
-  // Check if vendor is a photographer (vendor type id = 1 or 12)
+  // Moments+ is photographer-only (vendor type 1 or 12).
+  //
+  // Coerced with Number() because the id is not reliably a number: registration stores
+  // whatever the <select> produced, which is the string "1", while the API returns 1.
+  // A strict === against the string silently hid the Moments+ tab for every vendor who
+  // had just signed up. The dependency list also watched vendor.vendorType.id while the
+  // value read vendor.vendor_type_id, so it never recomputed when the vendor refreshed.
   const isPhotographer = useMemo(() => {
-    const vendorTypeId = vendor?.vendor_type_id;
+    const vendorTypeId = Number(vendor?.vendor_type_id ?? vendor?.vendorType?.id);
     return vendorTypeId === 1 || vendorTypeId === 12;
-  }, [vendor?.vendorType?.id]);
+  }, [vendor?.vendor_type_id, vendor?.vendorType?.id]);
 
   const tabs = useMemo(() => {
     const baseTabs = [

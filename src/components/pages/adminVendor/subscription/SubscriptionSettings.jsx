@@ -250,10 +250,10 @@ const SubscriptionSettings = () => {
                   <tr>
                     <th>Date</th>
                     <th>Plan</th>
-                    <th>Invoice</th>
+                    <th>Invoice No.</th>
                     <th style={{ textAlign: "right" }}>Amount</th>
                     <th>Status</th>
-                    <th style={{ textAlign: "right" }}>Invoice</th>
+                    <th style={{ textAlign: "right" }}>Receipt</th>
                   </tr>
                 </thead>
                 <tbody>

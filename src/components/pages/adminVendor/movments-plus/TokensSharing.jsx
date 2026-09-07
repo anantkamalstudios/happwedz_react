@@ -15,13 +15,13 @@ import {
   FiUsers,
   FiActivity,
   FiRefreshCw,
+  FiInfo,
 } from "react-icons/fi";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import "./tokens-sharing.css";
 import { CiVideoOff } from "react-icons/ci";
 import ShareModal from "./ShareModal";
 import { SiJsonwebtokens } from "react-icons/si";
-import { ClockLoader } from "react-spinners";
 import { useSelector } from "react-redux";
 import {
   formatDate as fmtDate,
@@ -600,8 +600,8 @@ const TokensSharing = () => {
                 </div>
               </div>
 
-              <div className="info-box inter">
-                <ClockLoader size={20} color="#1e40af" className="me-2 inter" />{" "}
+              <div className="token-info-box inter">
+                <FiInfo size={18} className="token-info-box-icon" />
                 <span className="inter">
                   This token will be automatically linked to your active event
                 </span>
