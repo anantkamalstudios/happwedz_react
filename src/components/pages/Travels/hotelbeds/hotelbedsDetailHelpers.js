@@ -743,11 +743,37 @@ const normalizeHotelDetails = ({
     ...options.flatMap((option) => option.amenities),
   ]);
   
-  const images = staticImages.length > 0
-    ? dedupeImages([...staticImages, ...listImages, ...hotelImages, ...options.flatMap((option) => option.images)])
-    : listImages.length > 0
-      ? dedupeImages([...listImages, ...hotelImages])
-      : dedupeImages([...hotelImages, ...options.flatMap((option) => option.images)]);
+  // TripJack flags the cover photo with is_hero_image and rarely lists it first, so the
+  // gallery used to open on whatever happened to be at index 0 — a bathroom for Taj
+  // Santacruz, where TripJack's own page leads with the exterior.
+  const heroImageUrl = (() => {
+    const raw = Array.isArray(staticHotel?.images) ? staticHotel.images : [];
+    const hero = raw.find((image) => image?.is_hero_image || image?.isHero);
+    if (!hero) return "";
+    return (
+      hero?.links?.original?.href ||
+      hero?.links?.Original?.href ||
+      hero?.links?.Standard?.href ||
+      hero?.links?.XXL?.href ||
+      hero?.url ||
+      ""
+    );
+  })();
+
+  const orderedImages =
+    staticImages.length > 0
+      ? dedupeImages([...staticImages, ...listImages, ...hotelImages, ...options.flatMap((option) => option.images)])
+      : listImages.length > 0
+        ? dedupeImages([...listImages, ...hotelImages])
+        : dedupeImages([...hotelImages, ...options.flatMap((option) => option.images)]);
+
+  // Lift the cover photo to the front without disturbing the rest of the order.
+  const images = heroImageUrl
+    ? [
+        ...orderedImages.filter((image) => image?.url === heroImageUrl),
+        ...orderedImages.filter((image) => image?.url !== heroImageUrl),
+      ]
+    : orderedImages;
   const staticAddress = staticHotel?.locale?.address || {};
   const address =
     staticHotel?.ad ||
@@ -862,6 +888,20 @@ const normalizeHotelDetails = ({
     panRequired: Boolean(hotelInfo?.panRequired),
     listHotel: selectedHotel,
     nights,
+    // TripJack returns these under policies.checkInCheckOut
+    // ({ checkin_from: "2:00 PM", checkout_from: "12:00 PM" }). They were never read,
+    // so the detail page could not tell a guest when they could arrive or had to leave.
+    stayTimes: {
+      checkInFrom:
+        staticHotel?.policies?.checkInCheckOut?.checkin_from ||
+        staticHotel?.checkInTime ||
+        "",
+      checkOutUntil:
+        staticHotel?.policies?.checkInCheckOut?.checkout_from ||
+        staticHotel?.checkOutTime ||
+        "",
+      minCheckInAge: staticHotel?.policies?.checkInCheckOut?.checkin_min_age || "",
+    },
     importantInformation: {
       // TripJack v3 nests these under `policies` as stringified JSON objects.
       // (Older/legacy top-level keys kept as a fallback.)
