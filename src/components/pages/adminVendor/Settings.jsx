@@ -21,7 +21,9 @@ import {
   FiEye,
   FiSave,
   FiEdit3,
+  FiLink,
 } from "react-icons/fi";
+import InstagramConnect from "./subVendors/InstagramConnect";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("notifications");
@@ -108,6 +110,15 @@ const Settings = () => {
                     >
                       <FiBell className="me-2" />
                       Notifications
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link
+                      active={activeTab === "integrations"}
+                      onClick={() => setActiveTab("integrations")}
+                    >
+                      <FiLink className="me-2" />
+                      Integrations
                     </Nav.Link>
                   </Nav.Item>
                   {/* <Nav.Item>
@@ -370,6 +381,30 @@ const Settings = () => {
                       Save Preferences
                     </Button> */}
                   </div>
+                </Card.Body>
+              </Card>
+            )}
+
+            {/* Integrations */}
+            {activeTab === "integrations" && (
+              <Card className="settings-card">
+                <Card.Header>
+                  <div className="d-flex align-items-center">
+                    <div className="setting-icon-wrapper">
+                      <FiLink size={20} />
+                    </div>
+                    <h5 className="card-title mb-0 text-black">
+                      Integrations
+                    </h5>
+                  </div>
+                </Card.Header>
+                <Card.Body className="p-4">
+                  <h6 className="mb-3">Instagram</h6>
+                  <p className="text-muted small mb-3">
+                    Connect your Instagram Business account to enable direct
+                    messages, comments, and publishing from your dashboard.
+                  </p>
+                  <InstagramConnect />
                 </Card.Body>
               </Card>
             )}
