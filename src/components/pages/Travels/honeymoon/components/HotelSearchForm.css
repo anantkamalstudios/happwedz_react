@@ -1339,3 +1339,33 @@
   font-size: 13px;
   color: #8b93a5;
 }
+
+/* On the results page the destination field was taking so much of the row that the
+   dates were clipped mid-year ("09-09-202"). Narrow it and give the date cells the
+   room they need to show a full dd-mm-yyyy. */
+.hotel-search-card--compact .hotel-search-main-row {
+  grid-template-columns: minmax(0, 1.1fr) minmax(430px, 1.9fr) minmax(180px, 0.85fr) auto;
+}
+
+.hotel-search-card--compact .hotel-date-cell {
+  padding: 0 12px;
+}
+
+/* Enough for "09-09-2026" plus the caption above it, so neither can truncate. */
+.hotel-search-card--compact .hotel-date-cell:not(.hotel-date-cell--nights) {
+  min-width: 132px;
+}
+
+.hotel-search-card--compact .hotel-date-cell--nights {
+  flex: 0 0 104px;
+}
+
+.hotel-search-card--compact .hotel-datepicker-input {
+  font-size: 13.5px;
+}
+
+@media (max-width: 1199px) {
+  .hotel-search-card--compact .hotel-search-main-row {
+    grid-template-columns: minmax(0, 1fr) minmax(400px, 1.8fr) minmax(160px, 0.8fr) auto;
+  }
+}

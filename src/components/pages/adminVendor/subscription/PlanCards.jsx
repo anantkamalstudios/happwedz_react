@@ -23,6 +23,32 @@ const formatPrice = (value) => {
 
 const cycleNoun = (cycle) => (cycle === "monthly" ? "month" : "year");
 
+/**
+ * The line under "Choose your plan".
+ *
+ * Claiming every plan unlocks the whole storefront stops being true the moment an admin
+ * unticks a section, and the cards below would then contradict the heading. Shared by
+ * the Upgrade page and the picker modal so the two can never disagree.
+ */
+const planSubtitle = (plans = [], storefrontTabs = []) => {
+  const sellable = storefrontTabs.filter((t) => t.id !== "business");
+
+  // No tab list (an older API, or a failed load) — say nothing we cannot stand behind.
+  if (!sellable.length || !plans.length) {
+    return "Your listing stays live either way.";
+  }
+
+  const allUnlockEverything = plans.every(
+    (p) =>
+      (p.allowed_tabs || []).filter((id) => id !== "business").length >=
+      sellable.length
+  );
+
+  return allUnlockEverything
+    ? "Every plan unlocks your full storefront. Your listing stays live either way."
+    : "Each plan unlocks a different set of storefront sections. Your listing stays live either way.";
+};
+
 /** Per-month equivalent, so a yearly price can be compared honestly against monthly. */
 const monthlyEquivalent = (plan) => {
   if (plan.billing_cycle !== "yearly") return null;
@@ -75,6 +101,16 @@ const styles = `
   flex:0 0 18px; width:18px; height:18px; border-radius:50%; background:${PINK_SOFT}; color:var(--hw-pink);
   display:inline-flex; align-items:center; justify-content:center; margin-top:1px;
 }
+.hw-sections {
+  background:#fbf7f9; border:1px solid var(--hw-line); border-radius:9px; padding:10px 12px;
+}
+.hw-sections__head {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em;
+  color:#7a6470; margin-bottom:5px;
+}
+.hw-sections__count { color:var(--hw-pink); letter-spacing:0; text-transform:none; font-size:.78rem; }
+.hw-sections__list { font-size:.82rem; line-height:1.55; color:#3b2c34; }
 .hw-btn {
   margin-top:auto; width:100%; border-radius:9px; padding:12px 18px; font-weight:600; font-size:.95rem;
   border:1px solid var(--hw-pink); cursor:pointer; transition:background .18s ease, color .18s ease, opacity .18s ease;
@@ -100,7 +136,22 @@ const PlanCards = ({
   currentPlanId = null,
   canPurchase = true,
   disabledReason = "",
+  storefrontTabs = [],
 }) => {
+  // Labels for the ids a plan lists. Without them a vendor is asked to pay for
+  // "vendor-pricing" rather than "Pricing & Packages".
+  const tabLabels = storefrontTabs.reduce((acc, t) => {
+    acc[t.id] = t.label;
+    return acc;
+  }, {});
+
+  // Business details is granted to everyone, so it is not something a plan sells.
+  const sellableTabCount = storefrontTabs.filter((t) => t.id !== "business").length;
+
+  const unlockedSections = (plan) =>
+    (plan.allowed_tabs || [])
+      .filter((id) => id !== "business" && tabLabels[id])
+      .map((id) => tabLabels[id]);
   // A price card reads as a card at roughly 320px. Left to fill a wide container, two
   // of them stretch to ~600px each and stop looking like prices at all — so the grid
   // is capped to what the number of plans actually needs, and centred.
@@ -176,6 +227,35 @@ const PlanCards = ({
                   ))}
                 </div>
 
+                {/* What the money actually buys. Only worth listing when plans differ:
+                    if every plan opens the whole storefront, this is noise on all of
+                    them and the price is the only thing being compared. */}
+                {sellableTabCount > 0 &&
+                  unlockedSections(plan).length > 0 &&
+                  unlockedSections(plan).length < sellableTabCount && (
+                    <div className="hw-sections mb-3">
+                      <div className="hw-sections__head">
+                        Storefront sections you can edit
+                        <span className="hw-sections__count">
+                          {unlockedSections(plan).length} of {sellableTabCount}
+                        </span>
+                      </div>
+                      <div className="hw-sections__list">
+                        {unlockedSections(plan).join(" \u00b7 ")}
+                      </div>
+                    </div>
+                  )}
+
+                {sellableTabCount > 0 &&
+                  unlockedSections(plan).length === sellableTabCount && (
+                    <div className="hw-feat mb-3">
+                      <span className="hw-tick" aria-hidden="true">
+                        <FiCheck size={11} strokeWidth={3} />
+                      </span>
+                      <span>Every storefront section</span>
+                    </div>
+                  )}
+
                 {isCurrent ? (
                   <button className="hw-btn hw-btn--done" disabled>
                     Your current plan
@@ -202,4 +282,4 @@ const PlanCards = ({
 };
 
 export default PlanCards;
-export { formatPrice, cycleNoun };
+export { formatPrice, cycleNoun, planSubtitle };

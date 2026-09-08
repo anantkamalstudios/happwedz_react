@@ -2054,20 +2054,41 @@ const Detailed = () => {
         // Helper to verify if fetched vendor data actually matches the requested slug
         const isSlugMatch = (resData, targetSlug) => {
           if (!resData) return false;
-          const itemSlug = String(resData.attributes?.slug || resData.slug || "").toLowerCase().trim();
+
+          // Must mirror the backend's slugifyText, which collapses repeated
+          // hyphens. Without the collapse, a name like "Click & Shoot" becomes
+          // "click--shoot" here but "click-shoot" server-side and never matches.
+          const toSlug = (value) =>
+            String(value || "")
+              .toLowerCase()
+              .trim()
+              .replace(/\s+/g, "-")
+              .replace(/[^a-z0-9-]/g, "")
+              .replace(/-+/g, "-")
+              .replace(/^-|-$/g, "");
+
+          const stripId = (value) => String(value || "").replace(/-\d+$/, "");
+
+          // The row's own `slug` column is what links point at; `attributes.slug`
+          // is a legacy value from the import and can be stale, so it comes second.
+          const candidateSlugs = [resData.slug, resData.attributes?.slug]
+            .map((s) => String(s || "").toLowerCase().trim())
+            .filter(Boolean);
+
           const itemName = String(resData.attributes?.name || resData.name || "").toLowerCase().trim();
           const cleanTarget = String(targetSlug || "").toLowerCase().trim();
+          if (!cleanTarget) return false;
 
-          if (itemSlug && cleanTarget) {
+          const targetBase = stripId(cleanTarget);
+
+          for (const itemSlug of candidateSlugs) {
             if (itemSlug === cleanTarget) return true;
-            const targetBase = cleanTarget.replace(/-\d+$/, "");
-            const itemBase = itemSlug.replace(/-\d+$/, "");
+            const itemBase = stripId(itemSlug);
             if (targetBase && itemBase && targetBase === itemBase) return true;
           }
 
-          if (itemName && cleanTarget) {
-            const nameSlug = itemName.replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
-            const targetBase = cleanTarget.replace(/-\d+$/, "");
+          if (itemName) {
+            const nameSlug = toSlug(itemName);
             if (nameSlug && targetBase && (nameSlug.includes(targetBase) || targetBase.includes(nameSlug))) {
               return true;
             }
@@ -4540,7 +4561,7 @@ const Detailed = () => {
                     className="btn btn-outline-primary details-action-btn rounded-2"
                     onClick={() => handleShowPricingModal(venueData.vendor_id)}
                   >
-                    Request Pricing & Availability
+                    Request Customize Pricing & Live Availability
                   </button>
                 </div>
 

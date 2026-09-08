@@ -86,6 +86,27 @@ const normalizeServiceStatus = (value) => {
   return "";
 };
 
+/**
+ * Subcategory ids for the multi-select, primary first.
+ * Reads the `subcategories` join the API now returns, falling back to whatever
+ * we already had locally, then to the single primary id.
+ */
+const buildSubcategoryIds = (apiData, prev) => {
+  const primary = apiData?.vendor_subcategory_id;
+  let ids = [];
+
+  if (Array.isArray(apiData?.subcategories) && apiData.subcategories.length) {
+    ids = apiData.subcategories.map((s) => s.id);
+  } else if (Array.isArray(prev?.vendor_subcategory_ids)) {
+    ids = [...prev.vendor_subcategory_ids];
+  }
+
+  if (primary && !ids.some((id) => id == primary)) ids.unshift(primary);
+
+  // Keep the primary at index 0 — VendorBasicInfo treats the first as primary
+  return primary ? [primary, ...ids.filter((id) => id != primary)] : ids;
+};
+
 /** Ignore React click events mistakenly passed as onClick={onSave} */
 const isFormSavePayload = (payload) =>
   payload &&
@@ -331,6 +352,8 @@ const Storefront = ({ setCompletion }) => {
                 ...actualData,
                 // Prioritize API response, as it reflects successful updates, then local state, then Redux
                 vendor_subcategory_id: actualData.vendor_subcategory_id || prev.vendor_subcategory_id || vendor.vendor_subcategory_id,
+                // Full subcategory set from the join table; falls back to the primary
+                vendor_subcategory_ids: buildSubcategoryIds(actualData, prev),
                 id: actualData.id ?? prev.id,
                 status: normalizeServiceStatus(actualData.status),
                 availabilityActive: attrs.availability_active !== false,
@@ -676,6 +699,13 @@ const Storefront = ({ setCompletion }) => {
         ...base,
         vendor_subcategory_id:
           base?.vendor_subcategory_id || vendor?.vendor_subcategory_id || "",
+        vendor_subcategory_ids:
+          Array.isArray(base?.vendor_subcategory_ids) &&
+            base.vendor_subcategory_ids.length
+            ? base.vendor_subcategory_ids
+            : [
+              base?.vendor_subcategory_id || vendor?.vendor_subcategory_id,
+            ].filter(Boolean),
         vendor_type_id: base?.vendor_type_id || vendor?.vendor_type_id,
         status: normalizeServiceStatus(base?.status) || "hide",
         contact: {
@@ -807,7 +837,9 @@ const Storefront = ({ setCompletion }) => {
       if (!serviceId) {
         // First save: create vendor-services listing (POST), same as Pricing → Submit All Details
         const created = await vendorServicesApi.createOrUpdateService(fd, token);
-        serviceId = created?.id || null;
+        // The create endpoint wraps the new record, so check the wrappers too.
+        serviceId =
+          created?.id || created?.service?.id || created?.data?.[0]?.id || null;
         if (!serviceId) {
           Swal.fire({
             icon: "warning",
@@ -1166,10 +1198,17 @@ const Storefront = ({ setCompletion }) => {
     const fd = new FormData();
     const vendorId = vendor?.id || data.vendor_id;
     if (vendorId) fd.append("vendor_id", `${vendorId}`);
-    const subcategoryId =
-      data.vendor_subcategory_id || vendor?.vendor_subcategory_id;
-    if (subcategoryId) {
-      fd.append("vendor_subcategory_id", `${subcategoryId}`);
+    // Multi-select: send the whole set as a comma list. The backend takes the
+    // first as the primary and mirrors all of them into the join table.
+    const subcategoryIds = (
+      Array.isArray(data.vendor_subcategory_ids) &&
+        data.vendor_subcategory_ids.length
+        ? data.vendor_subcategory_ids
+        : [data.vendor_subcategory_id || vendor?.vendor_subcategory_id]
+    ).filter(Boolean);
+
+    if (subcategoryIds.length) {
+      fd.append("vendor_subcategory_id", subcategoryIds.join(","));
     }
     const normalizedStatus =
       normalizeServiceStatus(data.status) || "hide";
@@ -1301,8 +1340,11 @@ const Storefront = ({ setCompletion }) => {
       } else {
         created = await vendorServicesApi.createOrUpdateService(fd, token);
         // If POST succeeded and response has id, update formData with new id for future PUTs
-        if (created?.id) {
-          setFormData((prev) => ({ ...prev, id: created.id }));
+        // The create endpoint wraps the record, so check the wrappers too.
+        const createdId =
+          created?.id || created?.service?.id || created?.data?.[0]?.id;
+        if (createdId) {
+          setFormData((prev) => ({ ...prev, id: createdId }));
         }
       }
       // On success, persist and show modal

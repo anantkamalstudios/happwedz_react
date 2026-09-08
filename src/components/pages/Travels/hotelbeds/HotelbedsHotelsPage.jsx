@@ -463,14 +463,56 @@ const extractSearchId = (payload) =>
   payload?.hotelSearchResult?.searchId ||
   "";
 
-const extractHotelCount = (payload, fallbackCount = 0) =>
-  Number(
-    payload?.hotelCount ??
-      payload?.data?.hotelCount ??
-      payload?.searchResult?.hotelCount ??
-      payload?.hotelSearchResult?.hotelCount ??
-      fallbackCount,
-  ) || fallbackCount;
+/**
+ * Whether the server has more properties left to sweep.
+ *
+ * Only the server knows: a page can return zero bookable hotels and still have
+ * hundreds of candidates left, so this can never be inferred from the results.
+ */
+/**
+ * Orders results for the Sort By dropdown.
+ *
+ * TripJack's listing API accepts no sort parameter, so this is the only place sorting
+ * can happen. Hotels without a price sink to the bottom of either price sort rather
+ * than counting as zero and hijacking "lowest first".
+ */
+const sortHotels = (hotels, sortOrder) => {
+  const priceOf = (hotel) => {
+    const value = Number(hotel?.priceInfo?.totalPrice);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  };
+
+  const byPrice = (direction) => (a, b) => {
+    const pa = priceOf(a);
+    const pb = priceOf(b);
+    if (pa === null && pb === null) return 0;
+    if (pa === null) return 1;
+    if (pb === null) return -1;
+    return direction === "asc" ? pa - pb : pb - pa;
+  };
+
+  const sorted = [...hotels];
+
+  switch (sortOrder) {
+    case "priceLowToHigh":
+      return sorted.sort(byPrice("asc"));
+    case "priceHighToLow":
+      return sorted.sort(byPrice("desc"));
+    case "starRatingHighToLow":
+      return sorted.sort(
+        (a, b) =>
+          (Number(b?.starRating) || 0) - (Number(a?.starRating) || 0) ||
+          byPrice("asc")(a, b),
+      );
+    // "Most Popular" has no ranking signal from the supplier, so it keeps the order
+    // the results came back in.
+    default:
+      return sorted;
+  }
+};
+
+const extractHasMore = (payload) =>
+  Boolean(payload?.hasMore ?? payload?.data?.hasMore ?? payload?.pagination?.hasMore);
 
 const extractLastHotelId = (payload, hotels = []) =>
   payload?.lastHotelId ||
@@ -1527,10 +1569,14 @@ function HotelCard({ hotel, onClick, isFavourite, onToggleFavourite }) {
         )}
       </div>
 
-      {/* Details and price sit beside the image, the way TripJack lays the card out. */}
+      {/* Vertical card: image on top, details below, price last — TripJack's grid view. */}
       <div className="hotel-content">
         <div className="hotel-title-section">
-          <h4 className="hotel-name">{hotel.name}</h4>
+          {/* Stars sit beside the name, as they do on TripJack's grid card. */}
+          <div className="hotel-title-row">
+            <h4 className="hotel-name">{hotel.name}</h4>
+            <div className="hotel-rating">{renderStars(hotel.starRating)}</div>
+          </div>
           {hotel.location ? <div className="hotel-location">{hotel.location}</div> : null}
 
           {hotel.priceInfo.mealBasis ? (
@@ -1555,8 +1601,6 @@ function HotelCard({ hotel, onClick, isFavourite, onToggleFavourite }) {
         </div>
 
         <div className="hotel-aside">
-          <div className="hotel-rating">{renderStars(hotel.starRating)}</div>
-
           {hotel.available === false ? (
             <div className="hotel-unavailable">
               Not Available
@@ -1586,155 +1630,6 @@ function HotelCard({ hotel, onClick, isFavourite, onToggleFavourite }) {
   );
 }
 
-function HotelListCard({ hotel, onClick }) {
-  const images = hotel.images?.length ? hotel.images : hotel.image ? [hotel.image] : [];
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-
-  useEffect(() => {
-    setActiveImageIndex(0);
-  }, [hotel.id]);
-
-  const activeImage = images[activeImageIndex] || "";
-
-  const handlePrevImage = (event) => {
-    event.stopPropagation();
-    setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  const handleNextImage = (event) => {
-    event.stopPropagation();
-    setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
-
-  return (
-    <div
-      className={`hotel-card${hotel.available === false ? " hotel-card--unavailable" : ""}`}
-      onClick={onClick}
-    >
-      <div className="hotel-list-card">
-        <div className="hotel-list-image-wrap">
-          {activeImage ? (
-            <img
-              className="hotel-card-image"
-              src={activeImage}
-              alt={`${hotel.name} image ${activeImageIndex + 1}`}
-            />
-          ) : null}
-          <span className="hotel-image-pill">{`${activeImageIndex + 1}/${images.length || 1}`}</span>
-          {images.length > 1 ? (
-            <>
-              <button
-                type="button"
-                className="hotel-image-nav left"
-                aria-label={`Show previous image for ${hotel.name}`}
-                onClick={handlePrevImage}
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button
-                type="button"
-                className="hotel-image-nav right"
-                aria-label={`Show next image for ${hotel.name}`}
-                onClick={handleNextImage}
-              >
-                <ChevronRight size={18} />
-              </button>
-            </>
-          ) : null} 
-        </div>
-
-        <div className="hotel-list-main">
-          <div className="hotel-title-block">
-            <h4 className="hotel-name">{hotel.name}</h4>
-            <div className="hotel-location">
-              <MapPin size={14} />
-              <span>{hotel.location || "Location unavailable"}</span>
-            </div>
-            <div className="hotel-stars">{renderStars(hotel.starRating)}</div>
-          </div>
-
-          <div className="hotel-meal-line">{hotel.priceInfo.mealBasis}</div>
-
-          <div className="hotel-amenities">
-            {hotel.amenities.length > 0
-              ? hotel.amenities.map((amenity, index) => {
-                  const amenityText = typeof amenity === 'object' && amenity !== null 
-                    ? (amenity.name || amenity.nm || JSON.stringify(amenity))
-                    : String(amenity || '');
-                  return (
-                    <span key={`${amenityText}-${index}`} className="hotel-amenity-chip">
-                      {amenityText}
-                    </span>
-                  );
-                })
-              : <span className="hotel-amenity-chip">Amenities unavailable</span>}
-          </div>
-        </div>
-
-        <div className="hotel-list-side">
-          <div className="hotel-rating-box">
-            {hotel.userRating ? (
-              <>
-                <div className="hotel-rating-badge">
-                  <Star size={12} fill="currentColor" />
-                  <span>{hotel.userRating}</span>
-                </div>
-                <div className="hotel-rating-meta">
-                  <div>{hotel.userRatingLabel}</div>
-                  <div>{hotel.ratingCount ? `(${hotel.ratingCount} Ratings)` : ""}</div>
-                </div>
-              </>
-            ) : hotel.starRating ? (
-              <div className="hotel-rating-meta">
-                <div>{hotel.starRating} Star Hotel</div>
-              </div>
-            ) : (
-              <div className="hotel-rating-meta">No rating</div>
-            )}
-          </div>
-
-          <div className="hotel-price-meta" style={{ textAlign: "right" }}>
-            {/* An unavailable property has no rate to quote, so the price block gives
-                way to the same badge the grid card shows. */}
-            {hotel.available === false ? (
-              <div className="hotel-unavailable">
-                Not Available
-                <span>On Your selected Dates</span>
-              </div>
-            ) : (
-              <>
-                <div className="hotel-nightly">
-                  {hotel.priceInfo.nightlyPrice
-                    ? `${formatMoney(hotel.priceInfo.nightlyPrice, hotel.priceInfo.currency)} /night`
-                    : "Nightly price unavailable"}
-                </div>
-                <div className="hotel-total-inline" style={{ justifyContent: "flex-end" }}>
-                  <div className="hotel-total-price">
-                    {hotel.priceInfo.totalPrice
-                      ? formatMoney(hotel.priceInfo.totalPrice, hotel.priceInfo.currency, true)
-                      : "—"}
-                  </div>
-                  <div className="hotel-total-caption">Total</div>
-                </div>
-                <div className="hotel-tax-copy">Incl. of all taxes</div>
-              </>
-            )}
-          </div>
-
-          <button type="button" className="hotel-card-cta">
-            {hotel.available === false ? "View Property" : "View Details"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Two different dead ends were sharing one message. With nothing filtered, telling
- * someone to "clear a few filters" points them at an empty panel — the real problem is
- * that the dates have no availability.
- */
 function EmptyState({ onClearAll, hasActiveFilters }) {
   if (!hasActiveFilters) {
     return (
@@ -1810,7 +1705,8 @@ export default function HotelbedsHotelsPage() {
   const [detailResponse, setDetailResponse] = useState(null);
   const [activeOption, setActiveOption] = useState(null);
   const [roomModalOpen, setRoomModalOpen] = useState(false);
-  const [sortOrder, setSortOrder] = useState("popularity");
+  // Nothing pre-selected: the list arrives in supplier order until a sort is chosen.
+  const [sortOrder, setSortOrder] = useState("");
   const [viewMode, setViewMode] = useState("grid");
   const [favoritesOnly, setFavoritesOnly] = useState(
     Boolean(searchPayload?.appliedFilters?.onlyFavorites),
@@ -1907,11 +1803,10 @@ export default function HotelbedsHotelsPage() {
         if (!active) return;
         const nextHotels = extractHotels(response, activePayload);
         const nextLastHotelId = extractLastHotelId(response, nextHotels);
-        const nextHotelCount = extractHotelCount(response, nextHotels.length);
         setSearchResponse(response);
         setLoadedHotels(nextHotels);
         setLastHotelId(nextLastHotelId);
-        setHasMoreResults(Boolean(nextLastHotelId) && nextHotels.length < nextHotelCount);
+        setHasMoreResults(Boolean(nextLastHotelId) && extractHasMore(response));
       })
       .catch((error) => {
         console.error(getErrorMessage(error, "Unable to refresh hotel results"));
@@ -1952,13 +1847,10 @@ export default function HotelbedsHotelsPage() {
             setLoadedHotels((prev) => {
               const mergedHotels = mergeHotels(prev, incomingHotels);
               const nextLastHotelId = extractLastHotelId(response, incomingHotels);
-              const totalCount = extractHotelCount(response, mergedHotels.length);
               setLastHotelId(nextLastHotelId);
-              setHasMoreResults(
-                Boolean(nextLastHotelId) &&
-                  incomingHotels.length > 0 &&
-                  mergedHotels.length < totalCount,
-              );
+              // A window with no availability is not the end of the city, so keep
+              // going while the server still has candidates left.
+              setHasMoreResults(Boolean(nextLastHotelId) && extractHasMore(response));
               return mergedHotels;
             });
           })
@@ -1970,7 +1862,13 @@ export default function HotelbedsHotelsPage() {
             appendRequestRef.current = false;
           });
       },
-      { rootMargin: "300px 0px" },
+      {
+        // The results column scrolls inside itself on desktop, so the sentinel never
+        // meets the viewport. Watch the scrolling pane instead, falling back to the
+        // viewport on mobile where the column is not its own scroll region.
+        root: node.closest(".hotel-results") || null,
+        rootMargin: "300px 0px",
+      },
     );
 
     observer.observe(node);
@@ -2130,8 +2028,8 @@ export default function HotelbedsHotelsPage() {
       });
     }
 
-    return nextHotels;
-  }, [favoritesOnly, favouriteIds, hotelNameQuery, hotels, appliedFilters]);
+    return sortHotels(nextHotels, sortOrder);
+  }, [favoritesOnly, favouriteIds, hotelNameQuery, hotels, appliedFilters, sortOrder]);
 
   const hasActiveFilters = useMemo(() => {
     if (favoritesOnly || hotelNameQuery.trim()) return true;
@@ -2161,10 +2059,24 @@ export default function HotelbedsHotelsPage() {
 
   // `|| hotels.length` would discard a genuine zero — which is exactly the count the
   // backend sends when the only cards are unavailable properties.
+  const totalProperties = Number(
+    searchResponse?.totalProperties ?? searchResponse?.data?.totalProperties ?? 0,
+  );
+
   const reportedCount = searchResponse?.hotelCount ?? searchResponse?.data?.hotelCount;
   const hotelCount = Number.isFinite(Number(reportedCount))
     ? Number(reportedCount)
     : hotels.length;
+
+  /**
+   * With no filters this is TripJack's own count for the destination, so it stays put
+   * while more pages load. Once a filter is on it becomes the number of matches, the
+   * way TripJack drops from "1897 hotels" to "88 hotels" for a five-star filter.
+   */
+  const displayedCount = hasActiveFilters
+    ? visibleHotels.length
+    : totalProperties || hotelCount;
+
 
   const handleSortChange = (valueOrEvent) => {
     const nextSortOrder =
@@ -2212,15 +2124,17 @@ export default function HotelbedsHotelsPage() {
             setLoadedHotels(nextHotels);
             const nextLastHotelId = extractLastHotelId(response, nextHotels);
             setLastHotelId(nextLastHotelId);
-            const nextHotelCount = extractHotelCount(response, nextHotels.length);
-            setHasMoreResults(Boolean(nextLastHotelId) && nextHotels.length < nextHotelCount);
+            setHasMoreResults(Boolean(nextLastHotelId) && extractHasMore(response));
           }}
         />
       </div>
 
       <div className="page-container">
         <div className="breadcrumb-row">
-          <span className="breadcrumb-text">Home Hotels {destinationName}</span>
+          <span className="breadcrumb-text">
+            Home Hotels <span className="breadcrumb-sep">&rsaquo;</span>{" "}
+            {toTitleCase(destinationName)}
+          </span>
 
           <div className="top-controls">
           <div className="left-controls">
@@ -2231,6 +2145,7 @@ export default function HotelbedsHotelsPage() {
                 value={sortOrder} 
                 onChange={handleSortChange}
               >
+                <option value="">Select</option>
                 <option value="popularity">Most Popular</option>
                 <option value="priceLowToHigh">Price (Lowest first)</option>
                 <option value="priceHighToLow">Price (Highest first)</option>
@@ -2246,7 +2161,7 @@ export default function HotelbedsHotelsPage() {
                 </>
               ) : (
                 <>
-                  Showing {hotelCount} hotels for{" "}
+                  Showing {displayedCount} hotels for{" "}
                   <strong>{toTitleCase(destinationName)}</strong>
                 </>
               )}
@@ -2377,9 +2292,11 @@ export default function HotelbedsHotelsPage() {
               ) : (
                 <div className="hotel-list">
                   {visibleHotels.map((hotel) => (
-                    <HotelListCard
+                    <HotelCard
                       key={hotel.id}
                       hotel={hotel}
+                      isFavourite={favouriteIds.has(String(hotel.id))}
+                      onToggleFavourite={toggleFavourite}
                       onClick={() =>
                         navigate(`/hotels/${hotel.id}`, {
                           state: {

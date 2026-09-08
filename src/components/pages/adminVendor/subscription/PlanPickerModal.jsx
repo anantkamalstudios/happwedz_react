@@ -1,6 +1,6 @@
 import React from "react";
 import Swal from "sweetalert2";
-import PlanCards from "./PlanCards";
+import PlanCards, { planSubtitle } from "./PlanCards";
 import CenteredModal from "../../../ui/CenteredModal";
 import useSubscriptionPlans from "../../../../hooks/useSubscriptionPlans";
 import useRazorpayCheckout from "../../../../hooks/useRazorpayCheckout";
@@ -27,6 +27,7 @@ const PlanPickerModal = ({ show, onClose, onPurchased }) => {
     loading,
     error,
     reload,
+    storefrontTabs,
   } = useSubscriptionPlans(show);
 
   const { startCheckout, processing, status, activePlanId } = useRazorpayCheckout({
@@ -69,7 +70,7 @@ const PlanPickerModal = ({ show, onClose, onPurchased }) => {
             Choose your plan
           </h5>
           <div style={{ fontSize: ".88rem", color: MUTED, marginTop: 3 }}>
-            Every plan unlocks your full storefront. Your listing stays live either way.
+            {planSubtitle(visiblePlans, storefrontTabs)}
           </div>
         </div>
         <button
@@ -122,6 +123,7 @@ const PlanPickerModal = ({ show, onClose, onPurchased }) => {
         {!loading && !error && visiblePlans.length > 0 && (
           <PlanCards
             plans={visiblePlans}
+            storefrontTabs={storefrontTabs}
             cycle={cycle}
             onCycleChange={setCycle}
             showCycleTabs={showCycleTabs}

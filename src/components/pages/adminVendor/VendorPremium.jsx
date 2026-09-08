@@ -1,7 +1,7 @@
 import React from "react";
 import Swal from "sweetalert2";
 import { FiTarget, FiUsers, FiTrendingUp, FiShield } from "react-icons/fi";
-import PlanCards from "./subscription/PlanCards";
+import PlanCards, { planSubtitle } from "./subscription/PlanCards";
 import useSubscriptionPlans from "../../../hooks/useSubscriptionPlans";
 import useRazorpayCheckout from "../../../hooks/useRazorpayCheckout";
 
@@ -73,6 +73,7 @@ const VendorPremium = () => {
     loading,
     error,
     reload,
+    storefrontTabs,
   } = useSubscriptionPlans(true);
 
   const { startCheckout, processing, status, activePlanId } = useRazorpayCheckout({
@@ -122,9 +123,7 @@ const VendorPremium = () => {
 
         <div className="text-center mb-4">
           <h2 className="hw-sec-h">Choose your plan</h2>
-          <p className="hw-sec-p">
-            Every plan unlocks your full storefront. Your listing stays live either way.
-          </p>
+          <p className="hw-sec-p">{planSubtitle(visiblePlans, storefrontTabs)}</p>
         </div>
 
         {loading && (
@@ -159,6 +158,7 @@ const VendorPremium = () => {
           <>
             <PlanCards
               plans={visiblePlans}
+              storefrontTabs={storefrontTabs}
               cycle={cycle}
               onCycleChange={setCycle}
               showCycleTabs={showCycleTabs}

@@ -12,6 +12,8 @@ import vendorSubscriptionApi from "../services/api/vendorSubscriptionApi";
 export default function useSubscriptionPlans(enabled = true) {
   const [plans, setPlans] = useState([]);
   const [access, setAccess] = useState({});
+  // Tab id -> label, so a plan can name the sections it unlocks.
+  const [storefrontTabs, setStorefrontTabs] = useState([]);
   const [cycle, setCycle] = useState("monthly");
   const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState("");
@@ -24,6 +26,7 @@ export default function useSubscriptionPlans(enabled = true) {
       const list = data.plans || [];
       setPlans(list);
       setAccess(data.access || {});
+      setStorefrontTabs(data.storefrontTabs || []);
 
       // Open on a cycle that actually has plans, so the first paint is never an empty
       // tab just because monthly happens to be the default.
@@ -57,6 +60,7 @@ export default function useSubscriptionPlans(enabled = true) {
     plans,
     visiblePlans,
     access,
+    storefrontTabs,
     cycle,
     setCycle,
     showCycleTabs,
