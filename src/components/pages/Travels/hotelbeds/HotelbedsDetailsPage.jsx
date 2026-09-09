@@ -37,7 +37,7 @@ import {
   trackTripjackAnalyticsEvent,
   verifyHotelPaymentAndBook,
 } from "../../../../services/api/hotelApi";
-import { formatDate as fmtDate, formatDateTime } from "../../../../utils/dateFormat";
+import { formatDate as fmtDate } from "../../../../utils/dateFormat";
 import TripJackBookingReview from "./TripJackBookingReview";
 import TripJackBookingStatus from "./TripJackBookingStatus";
 import {
@@ -477,26 +477,26 @@ function HotelAboutModal({ show, onHide, sections = {} }) {
       </div>
     ) : null;
 
+  // TripJack's order and capitalisation, headline first.
   const sectionItems = [
+    ["Headline", sections.headline],
     ["Location", sections.location],
     ["Amenities", sections.amenities],
     ["Rooms", sections.rooms],
     ["Dining", sections.dining],
-    ["Business amenities", sections.businessAmenities],
+    ["Business Amenities", sections.businessAmenities],
+    ["Onsite Payments", sections.onsitePayments],
+    ["Spoken Languages", sections.spokenLanguages],
     ["Attractions", sections.attractions],
-    ["Onsite payments", sections.onsitePayments],
-    ["Spoken languages", sections.spokenLanguages],
   ];
 
   return (
-    <Modal show={show} onHide={onHide} centered size="lg">
+    <Modal show={show} onHide={onHide} centered size="lg" className="hotel-about-modal">
       <div className="modal-content rounded-4">
-        <div className="modal-header border-0">
-          <h5 className="modal-title">About this property</h5>
-          <button type="button" className="btn-close" onClick={onHide} aria-label="Close" />
+        <div className="modal-header border-0 pb-0">
+          <button type="button" className="btn-close ms-auto" onClick={onHide} aria-label="Close" />
         </div>
         <div className="modal-body">
-          {renderSection("Overview", sections.headline || "")}
           {sectionItems.map(([title, content]) => renderSection(title, content))}
         </div>
       </div>
@@ -778,7 +778,40 @@ function MarkupModal({ show, onHide, onUpdate }) {
   );
 }
 
-function RoomPolicyModal({ show, onHide, option, hotelName, starRating, searchId }) {
+// TripJack writes the cancellation slab dates as "09-09-2026".
+function formatSlabDate(value) {
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return "-";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}`;
+}
+
+// "11th Sep 12:00 AM", as TripJack labels the check-in end of the bar.
+function formatPolicyCheckIn(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "Check-in";
+  // "2026-09-12" parses as UTC midnight, which lands at 05:30 in IST -- read the
+  // date part as local midnight so the label reads 12:00 AM.
+  const dateOnly = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const date = dateOnly
+    ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+    : new Date(raw);
+  if (Number.isNaN(date.getTime())) return "Check-in";
+  const day = date.getDate();
+  const suffix =
+    day % 10 === 1 && day !== 11 ? "st"
+      : day % 10 === 2 && day !== 12 ? "nd"
+        : day % 10 === 3 && day !== 13 ? "rd"
+          : "th";
+  const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()];
+  const hours = date.getHours();
+  const mins = String(date.getMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  return `${day}${suffix} ${month} ${hour12}:${mins} ${ampm}`;
+}
+
+function RoomPolicyModal({ show, onHide, option, hotelName, starRating, searchId, checkInDate }) {
   if (!option) return null;
 
   const cancellationPenalties = option.cancellationPenalties || [];
@@ -790,35 +823,32 @@ function RoomPolicyModal({ show, onHide, option, hotelName, starRating, searchId
         <Modal.Title>Room with Cancellation Policy</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <div className="mb-3">
-          <strong>Cancellation Policy:</strong>
-          <div className="mt-2">
-            <Check size={14} color="#22a55a" style={{ marginRight: 8 }} />
-            {isRefundable ? "Refundable" : "Non Refundable"}
-          </div>
+        <div className="hotel-policy-label">Cancellation Policy :</div>
+        <div className="hotel-policy-status">
+          <Check size={14} color="#f59e0b" />
+          <span>{isRefundable ? "Refundable" : "Non Refundable"}</span>
         </div>
 
-        {!isRefundable ? (
-          <div className="alert alert-danger" style={{ borderRadius: 12 }}>
-            <strong>Non-Refundable</strong>
-          </div>
-        ) : null}
+        {/* The bar runs from now to check-in, coloured by whether any of it is free. */}
+        <div className={`hotel-policy-bar ${isRefundable ? "is-refundable" : "is-nonrefundable"}`}>
+          {isRefundable ? "Refundable" : "Non-Refundable"}
+        </div>
 
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div><strong>Now</strong></div>
-          <div className="text-end">
-            <div>{formatDateTime(option.raw?.checkInDate || Date.now())}</div>
-            <div className="text-muted" style={{ fontSize: 13 }}>Check-In</div>
+        <div className="hotel-policy-timeline">
+          <div className="hotel-policy-timeline-start">Now</div>
+          <div className="hotel-policy-timeline-end">
+            <div className="hotel-policy-timeline-time">{formatPolicyCheckIn(checkInDate)}</div>
+            <div className="hotel-policy-timeline-label">Check-In</div>
           </div>
         </div>
 
         {cancellationPenalties.length > 0 ? (
           <>
-            <div className="mb-3">
-              <strong>Cancellation post that will be subject to a fees as follows</strong>
+            <div className="hotel-policy-subheading">
+              Cancellation post that will be subject to a fees as follows
             </div>
 
-            <table className="table table-bordered">
+            <table className="hotel-policy-modal-table">
               <thead>
                 <tr>
                   <th>Cancellation On or After</th>
@@ -829,18 +859,20 @@ function RoomPolicyModal({ show, onHide, option, hotelName, starRating, searchId
               <tbody>
                 {cancellationPenalties.map((penalty, index) => (
                   <tr key={index}>
-                    <td>{fmtDate(penalty.from, '-')}</td>
-                    <td>{fmtDate(penalty.to, '-')}</td>
+                    <td>{formatSlabDate(penalty.from)}</td>
+                    <td>{formatSlabDate(penalty.to)}</td>
                     <td>{penalty.amount ? formatMoney(penalty.amount, option.currency) : '-'}</td>
                   </tr>
                 ))}
+                {/* TripJack carries these two notes as rows of the same table. */}
+                <tr className="hotel-policy-note-row">
+                  <td colSpan={3}>No Show will attract full cancellation charge unless otherwise specified.</td>
+                </tr>
+                <tr className="hotel-policy-note-row">
+                  <td colSpan={3}>Early check out will attract full cancellation charge unless otherwise specified.</td>
+                </tr>
               </tbody>
             </table>
-
-            <div className="text-center text-muted mt-3" style={{ fontSize: 13 }}>
-              <div>No Show will attract full cancellation charge unless otherwise specified.</div>
-              <div className="mt-2">Early check out will attract full cancellation charge unless otherwise specified.</div>
-            </div>
           </>
         ) : (
           <div className="text-center text-muted mt-3" style={{ fontSize: 14 }}>
@@ -876,7 +908,7 @@ const mergeAmenityLists = (...amenityLists) => {
     });
 };
 
-function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onViewDetails, reviewLoadingOptionId, image, bedSummary, guestSummary, amenities, onViewPolicy, onViewMoreAmenities }) {
+function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onViewDetails, reviewLoadingOptionId, image, bedSummary, guestSummary, amenities, onViewPolicy, onViewMoreAmenities, onShowFareInfo }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   
   // Get all images from the first option (they should all have the same room images)
@@ -997,10 +1029,82 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
             reviewLoadingOptionId={reviewLoadingOptionId}
             onViewPolicy={onViewPolicy}
             onViewMoreAmenities={onViewMoreAmenities}
+            onShowFareInfo={onShowFareInfo}
           />
         ))}
       </div>
     </div>
+  );
+}
+
+function RoomFareInfoModal({ show, onHide, option }) {
+  if (!option) return null;
+
+  const fare = option.fareBreakup || {};
+  const currency = fare.currency || option.currency || "INR";
+  // A fare breakup has to reconcile, so it keeps the paise that formatMoney rounds off.
+  const money = (value) => {
+    const amount = Number(value || 0);
+    const symbol = currency === "INR" ? "₹" : `${currency} `;
+    return `${symbol}${amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  // Only what the partner API actually returns. TripJack's own portal adds
+  // supplier-side accounting (marketing fee, gross/net, TCS) that is not exposed
+  // on the Option Object, so it is not invented here.
+  const rows = [
+    { label: "Base Price", value: fare.basePrice, always: true },
+    { label: "Discount", value: fare.discount },
+    { label: "Taxes", value: fare.taxes },
+    { label: "Management Fee", value: fare.managementFee },
+    { label: "Management Fee Tax", value: fare.managementFeeTax },
+    { label: "GST Claimable", value: fare.gstClaimableAmount },
+    { label: "Commission", value: fare.commission },
+  ].filter((row) => row.always || Number(row.value) > 0);
+
+  return (
+    <Modal show={show} onHide={onHide} centered size="sm" className="hotel-fare-info-modal">
+      <Modal.Header closeButton>
+        <Modal.Title as="div" className="hotel-fare-info-title">Info</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="hotel-fare-info-ids">
+          <div className="hotel-fare-info-row">
+            <span>TJ Room Id</span>
+            <strong>{option.roomId || "Not provided"}</strong>
+          </div>
+          <div className="hotel-fare-info-row">
+            <span>Room Type</span>
+            <strong>{option.roomName || "Room"}</strong>
+          </div>
+        </div>
+
+        <div className="hotel-fare-info-heading">Fare Breakup</div>
+
+        {fare.strikethrough ? (
+          <div className="hotel-fare-info-row hotel-fare-info-muted">
+            <span>Gross Price</span>
+            <strong className="hotel-fare-strike">{money(fare.strikethrough)}</strong>
+          </div>
+        ) : null}
+
+        {rows.map((row) => (
+          <div key={row.label} className="hotel-fare-info-row hotel-fare-info-muted">
+            <span>{row.label}</span>
+            <strong>{money(row.value)}</strong>
+          </div>
+        ))}
+
+        <div className="hotel-fare-info-row hotel-fare-info-total">
+          <span>Total Price</span>
+          <strong>{money(fare.totalPrice || option.totalPrice)}</strong>
+        </div>
+
+        {fare.commissionType ? (
+          <div className="hotel-fare-info-note">{`Rate plan: ${fare.commissionType}`}</div>
+        ) : null}
+      </Modal.Body>
+    </Modal>
   );
 }
 
@@ -1010,6 +1114,7 @@ function RoomOptionCard({
   onSelectRoom,
   reviewLoadingOptionId,
   onViewPolicy,
+  onShowFareInfo,
 }) {
   const isReviewing = reviewLoadingOptionId === option.id;
 
@@ -1046,10 +1151,15 @@ function RoomOptionCard({
             <span className="hotel-room-total-compact">
               {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "N/A"}
             </span>
-            <span className="hotel-room-total-tag">
+            <button
+              type="button"
+              className="hotel-room-total-tag"
+              onClick={() => onShowFareInfo(option)}
+              title="Fare breakup"
+            >
               Total
               <CircleHelp size={12} />
-            </span>
+            </button>
           </div>
           <div className="hotel-summary-subcopy">Total Price for 1 room</div>
           <button
@@ -1085,6 +1195,7 @@ function RoomTypesSection({
   roomSectionRef,
   detailLoading,
   reviewLoadingOptionId,
+  onShowFareInfo,
 }) {
   // Group options by room name
   const groupedRooms = useMemo(() => {
@@ -1164,6 +1275,7 @@ function RoomTypesSection({
             bedSummary={group.bedSummary}
             guestSummary={group.guestSummary}
             amenities={group.amenities}
+            onShowFareInfo={onShowFareInfo}
           />
         ))
       )}
@@ -1257,6 +1369,7 @@ function HotelDetailsPage({
   const [markupType, setMarkupType] = useState("percentage");
   const [markupValue, setMarkupValue] = useState(0);
   const [staticContentResponse, setStaticContentResponse] = useState(null);
+  const [fareInfoOption, setFareInfoOption] = useState(null);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [showRoomFilters, setShowRoomFilters] = useState(false);
@@ -2863,6 +2976,13 @@ const retryWithoutRepayment =
               roomSectionRef={roomSectionRef}
               detailLoading={detailLoading}
               reviewLoadingOptionId={reviewLoadingOptionId}
+              onShowFareInfo={setFareInfoOption}
+            />
+
+            <RoomFareInfoModal
+              show={Boolean(fareInfoOption)}
+              onHide={() => setFareInfoOption(null)}
+              option={fareInfoOption}
             />
 
             {selectedOption ? (
@@ -2948,6 +3068,11 @@ const retryWithoutRepayment =
         hotelName={detailModel.name}
         starRating={detailModel.starRating}
         searchId={detailModel.meta.searchId}
+        checkInDate={
+          initialPayload?.searchQuery?.checkinDate ||
+          initialPayload?.searchQuery?.checkInDate ||
+          initialPayload?.searchQuery?.checkIn
+        }
       />
 
       <MarkupModal
