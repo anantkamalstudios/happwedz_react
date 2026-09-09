@@ -122,6 +122,35 @@ const parsePolicyEntries = (value) => {
   return text ? [{ label: "", text }] : [];
 };
 
+const parseReviewInclusions = (inclusions) => {
+  if (!Array.isArray(inclusions) || inclusions.length === 0) return [];
+
+  const objects = [];
+  let buffer = "";
+  inclusions.forEach((entry) => {
+    const text = String(entry || "").trim();
+    if (!text) return;
+    // A continued value resumes at the comma the supplier split on.
+    buffer = buffer ? `${buffer}, ${text}` : text;
+    const parsed = parseJsonSafely(buffer);
+    if (parsed && typeof parsed === "object") {
+      objects.push(parsed);
+      buffer = "";
+    }
+  });
+  // Anything still buffered never closed; show it as plain text rather than drop it.
+  if (buffer) objects.push({ "": buffer.replace(/^\{|\}$/g, "") });
+
+  return objects.flatMap((entry) =>
+    Object.entries(entry)
+      .map(([label, text]) => ({
+        label: String(label || "").replace(/_/g, " ").trim(),
+        text: String(text || "").replace(/\s+/g, " ").trim(),
+      }))
+      .filter((item) => item.text)
+  );
+};
+
 const buildAddressParts = (address = {}) =>
   [
     address?.adr,
@@ -896,6 +925,7 @@ const normalizeHotelDetails = ({
         staticHotel?.policies?.checkInCheckOut?.checkin_from ||
         staticHotel?.checkInTime ||
         "",
+      checkInTill: staticHotel?.policies?.checkInCheckOut?.checkin_till || "",
       checkOutUntil:
         staticHotel?.policies?.checkInCheckOut?.checkout_from ||
         staticHotel?.checkOutTime ||
@@ -1139,6 +1169,19 @@ const normalizeReviewResponseForUi = (
 
   const option = reviewResponse?.option || fallbackOption || {};
   const optionId = String(option?.optionId || option?.id || "");
+  const reviewPricing = option?.pricing || {};
+  const reviewBaseFare = normalizeAmount(reviewPricing?.basePrice);
+  const reviewTotal = normalizeAmount(reviewPricing?.totalPrice);
+  const reviewFeeParts =
+    normalizeAmount(reviewPricing?.taxes) +
+    normalizeAmount(reviewPricing?.mf) +
+    normalizeAmount(reviewPricing?.mft);
+  // Prefer the difference so the three lines always add up, even if a supplier adds
+  // a fee component we do not know about yet.
+  const reviewTaxesAndFees =
+    reviewTotal > 0 && reviewBaseFare > 0
+      ? Math.round((reviewTotal - reviewBaseFare) * 100) / 100
+      : reviewFeeParts;
   const roomInfo = Array.isArray(option?.roomInfo) ? option.roomInfo : [];
   const firstRoom = roomInfo[0] || {};
   const compliance = option?.compliance || {};
@@ -1176,7 +1219,27 @@ const normalizeReviewResponseForUi = (
       images: Array.isArray(fallbackHotel?.images) ? fallbackHotel.images : [],
       img: Array.isArray(fallbackHotel?.img) ? fallbackHotel.img : [],
       rt: Number(fallbackHotel?.starRating || fallbackHotel?.rt || 0),
+      checkInTime: fallbackHotel?.stayTimes?.checkInFrom
+        ? {
+            from: fallbackHotel.stayTimes.checkInFrom,
+            to: fallbackHotel.stayTimes.checkInTill || "",
+          }
+        : null,
+      checkOutTime: fallbackHotel?.stayTimes?.checkOutUntil
+        ? { from: fallbackHotel.stayTimes.checkOutUntil }
+        : null,
     },
+    // The booked option's own policies, with the hotel's static policies as backup.
+    policyNotes: (() => {
+      const fromOption = parseReviewInclusions(option?.inclusions);
+      if (fromOption.length > 0) return fromOption;
+      const info = fallbackHotel?.importantInformation || {};
+      return [
+        ...(Array.isArray(info.knowBeforeYouGo) ? info.knowBeforeYouGo : []),
+        ...(Array.isArray(info.specialInstructions) ? info.specialInstructions : []),
+        ...(Array.isArray(info.mandatoryFees) ? info.mandatoryFees : []),
+      ];
+    })(),
     selectedOption: {
       id: optionId,
       optionId,
@@ -1259,7 +1322,7 @@ const normalizeReviewResponseForUi = (
       : {
           amount: normalizeAmount(pricing?.totalPrice),
           baseFare: normalizeAmount(pricing?.basePrice),
-          taxesAndFees: normalizeAmount(pricing?.taxes),
+          taxesAndFees: reviewTaxesAndFees,
           currency: pricing?.currency || "INR",
           managementFee: normalizeAmount(pricing?.mf),
           managementFeeTax: normalizeAmount(pricing?.mft),
@@ -1301,8 +1364,19 @@ const validateBookingForm = (bookingForm, reviewResponse) => {
       return;
     }
 
+    // Only the lead guest is mandatory, matching TripJack and the API request builder,
+    // which pads any traveller left blank. A passport, when required, is still needed
+    // from every adult.
+    const leadAdultIndex = Math.max(0, travellerInfo.findIndex((item) => item?.pt === "ADULT"));
+
     travellerInfo.forEach((traveller, travellerIndex) => {
       const isAdult = traveller?.pt === "ADULT";
+      const isLead = travellerIndex === leadAdultIndex;
+      const hasAnyName = Boolean(traveller?.fN?.trim() || traveller?.lN?.trim());
+      const needsPassport = isAdult && Boolean(bookingRequirements?.passportRequired);
+      // Skip a blank non-lead guest entirely; validate once someone starts filling it.
+      if (!isLead && !hasAnyName && !needsPassport) return;
+
       const validTitles = isAdult ? ["Mr", "Mrs", "Ms", "Miss"] : ["Master", "Miss"];
       if (!validTitles.includes(String(traveller?.ti || "").trim())) {
         errors.push(`Select a valid title for room ${roomIndex + 1}, traveller ${travellerIndex + 1}.`);
@@ -1313,7 +1387,8 @@ const validateBookingForm = (bookingForm, reviewResponse) => {
       if (!traveller?.lN?.trim()) {
         errors.push(`Enter last name for room ${roomIndex + 1}, traveller ${travellerIndex + 1}.`);
       }
-      if (traveller?.pt === "ADULT" && bookingRequirements?.panRequired) {
+      // PAN is collected once per room, against that room's lead guest.
+      if (isLead && isAdult && bookingRequirements?.panRequired) {
         const normalizedPan = String(traveller?.pan || "")
           .toUpperCase()
           .replace(/[^A-Z0-9]/g, "");

@@ -978,9 +978,11 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
               </span>
             );
           })}
-          <button type="button" className="hotel-inline-link" onClick={handleViewMoreAmenities}>
-            View more amenities
-          </button>
+          {mergedAmenities.length > 0 ? (
+            <button type="button" className="hotel-inline-link" onClick={handleViewMoreAmenities}>
+              View more amenities
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -1006,10 +1008,8 @@ function RoomOptionCard({
   option,
   isSelected,
   onSelectRoom,
-  onViewDetails,
   reviewLoadingOptionId,
   onViewPolicy,
-  onViewMoreAmenities,
 }) {
   const isReviewing = reviewLoadingOptionId === option.id;
 
@@ -1021,23 +1021,37 @@ function RoomOptionCard({
 
   return (
     <div className="hotel-room-option-compact">
-      <div className="hotel-room-option-title">{option.roomName}</div>
       <div className="hotel-room-option-row">
-        <div className="hotel-room-meal-cell">
-          <strong>{option.mealBasis}</strong>
-          <span className="hotel-room-divider">|</span>
-          <span>{option.refundable ? "Refundable" : "Non-refundable"}</span>
-          <span className="hotel-room-divider">|</span>
-          <span>{option.panRequired ? "PAN Required" : "PAN not Required"}</span>
-        </div>
-        <div className="hotel-room-price-cell">
-          <div className="hotel-room-total-compact">
-            {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "N/A"}
+        <div className="hotel-room-option-info">
+          <div className="hotel-room-option-title">{option.roomName}</div>
+          <div className="hotel-room-meal-cell">
+            <strong>{option.mealBasis}</strong>
+            <span className="hotel-room-divider">|</span>
+            <span>{option.refundable ? "Refundable" : "Non-refundable"}</span>
+            <span className="hotel-room-divider">|</span>
+            <span>{option.panRequired ? "PAN Required" : "PAN not Required"}</span>
           </div>
-          <div className="hotel-summary-subcopy">Total <CircleHelp size={12} style={{ display: "inline", marginLeft: 4 }} /></div>
-          <div className="hotel-summary-subcopy">Total Price for 1 room</div>
+          <div className="hotel-room-policy-badge">
+            <Check size={14} color="#22a55a" />
+            <span>{option.cancellationLabel}</span>
+          </div>
+          <button type="button" className="hotel-inline-link hotel-room-viewmore" onClick={handleViewMore}>
+            View more
+          </button>
         </div>
-        <div className="hotel-room-action-cell">
+
+        <div className="hotel-room-price-cell">
+          {/* Price and its "Total" tag share a baseline on TripJack. */}
+          <div className="hotel-room-price-line">
+            <span className="hotel-room-total-compact">
+              {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "N/A"}
+            </span>
+            <span className="hotel-room-total-tag">
+              Total
+              <CircleHelp size={12} />
+            </span>
+          </div>
+          <div className="hotel-summary-subcopy">Total Price for 1 room</div>
           <button
             type="button"
             className="hotel-card-cta"
@@ -1048,15 +1062,6 @@ function RoomOptionCard({
             {isReviewing ? "Reviewing..." : isSelected ? "Selected" : "Select Room"}
           </button>
         </div>
-      </div>
-      <div className="hotel-room-option-footer">
-        <div className="hotel-room-policy-badge">
-          <Check size={14} color="#22a55a" />
-          <span>{option.cancellationLabel}</span>
-        </div>
-        <button type="button" className="hotel-inline-link" onClick={handleViewMore}>
-          View more
-        </button>
       </div>
     </div>
   );
@@ -1106,14 +1111,11 @@ function RoomTypesSection({
     <div className="hotel-room-section-card hoteldetails__bottombox" ref={roomSectionRef}>
       <div className="about-container">
       <div className="hotel-room-section-head header_wrapper">
-        <div>
+        <div className="hotel-room-section-heading">
           <div className="hotel-room-section-title about-room-types-header__title">Room types</div>
-          <div className="hotel-summary-subcopy">
-            {`Showing results ${filteredOptions.length} of ${options.length} room options`}
+          <div className="hotel-room-section-count">
+            {`Showing results of ${filteredOptions.length} of ${options.length} room options`}
           </div>
-        </div>
-
-        <div className="hotel-room-toolbar about-room-types-header__share">
           <div className="hotel-share-group">
             <span>Share by:</span>
             <a className="hotel-whatsapp-btn about-room-types-header__whatsapp" href={shareHref} target="_blank" rel="noreferrer">
@@ -1121,6 +1123,9 @@ function RoomTypesSection({
               WhatsApp
             </a>
           </div>
+        </div>
+
+        <div className="hotel-room-toolbar about-room-types-header__share">
           <RoomFilters
             roomSearch={roomSearch}
             setRoomSearch={setRoomSearch}
@@ -1162,6 +1167,18 @@ function RoomTypesSection({
           />
         ))
       )}
+
+      {!detailLoading && filteredOptions.length > 0 ? (
+        <div className="hotel-room-section-foot">
+          <div>{`Showing ${filteredOptions.length} of ${options.length} room options`}</div>
+          {filteredOptions.length === options.length ? (
+            <div className="hotel-room-section-foot-done">
+              <Check size={13} color="#22a55a" />
+              All options loaded
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -2745,11 +2762,14 @@ const retryWithoutRepayment =
   return (
     <div className="hotel-list-page">
       <div className="hotel-shell">
-        <HotelSearchBarEditable
-          payload={initialPayload}
-          suggestion={initialSuggestion}
-          onBackToSearch={onBackToResults}
-        />
+        {/* TripJack drops the search bar once you are reviewing a booking. */}
+        {!showBookingFormModal ? (
+          <HotelSearchBarEditable
+            payload={initialPayload}
+            suggestion={initialSuggestion}
+            onBackToSearch={onBackToResults}
+          />
+        ) : null}
 
         {showBookingFormModal && reviewResponse && bookingForm ? (
           <TripJackBookingReview

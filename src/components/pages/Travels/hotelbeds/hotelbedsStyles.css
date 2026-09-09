@@ -1,3 +1,9 @@
+  :root {
+    /* Outer width including the gutters; every hotel page shell uses these two. */
+    --hotel-page-max: 1320px;
+    --hotel-page-gutter: 20px;
+  }
+
   /* Main page layout - full width */
   .hotel-list-page {
     background: #f5f5f5;
@@ -5,11 +11,11 @@
   }
 
   .hotel-shell {
-    max-width: 1320px;
+    max-width: var(--hotel-page-max);
     margin: 0 auto;
     width: 100%;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: var(--hotel-page-gutter);
+    padding-right: var(--hotel-page-gutter);
     box-sizing: border-box;
   }
 
@@ -49,18 +55,19 @@
   /* Search bar container */
   .hotel-search-bar-container {
     background: #f5f5f5;
-    padding: 10px 20px 6px;
+    padding: 10px var(--hotel-page-gutter) 6px;
     border-bottom: 1px solid #e5e7eb;
-    max-width: 1320px;
+    max-width: var(--hotel-page-max);
     box-sizing: border-box;
     margin: 0 auto;
   }
 
   /* Page container - full width */
   .page-container {
-    max-width: 1280px;
+    max-width: var(--hotel-page-max);
     width: 100%;
-    padding: 0 20px;
+    padding: 0 var(--hotel-page-gutter);
+    box-sizing: border-box;
     margin-top: 6px;
     margin-left: auto;
     margin-right: auto;
@@ -1224,11 +1231,19 @@
     font-weight: 600;
   }
 
+  /* Nested inside .hotel-shell, which already supplies the page gutters -- applying
+     them twice is what made the detail cards 40px narrower than the search bar. */
+  .hotel-shell > .hotel-detail-shell {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   .hotel-detail-shell {
     display: grid;
-    max-width: 1320px;
-    padding-left: 20px;
-    padding-right: 20px;
+    max-width: var(--hotel-page-max);
+    padding-left: var(--hotel-page-gutter);
+    padding-right: var(--hotel-page-gutter);
     box-sizing: border-box;
     gap: 20px;
     margin-left: auto;
@@ -1432,8 +1447,7 @@
   }
 
   .hotel-detail-section h2,
-  .hotel-detail-section h4,
-  .hotel-room-section-title {
+  .hotel-detail-section h4 {
     color: #1b2231;
     font-size: 16px !important;
     font-weight: 700 !important;
@@ -1721,14 +1735,34 @@
     padding: 16px 20px;
     display: grid;
     gap: 12px;
-    border-bottom: 1px solid #f0f1f5;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e2e5ea;
   }
 
   .hotel-room-section-title {
     color: #1b2231;
-    font-size: 18px;
-    font-weight: 900;
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.2;
     margin: 0;
+  }
+
+  /* TripJack sets the count inline with the heading and shares from the far right. */
+  .hotel-room-section-heading {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .hotel-room-section-count {
+    color: #6d7483;
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  .hotel-room-section-heading .hotel-share-group {
+    margin-left: auto;
   }
 
   .hotel-room-toolbar,
@@ -1914,9 +1948,34 @@
 
   .hotel-room-option-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 160px 120px;
-    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) 200px;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .hotel-room-option-info {
+    display: grid;
+    gap: 6px;
+    justify-items: start;
+  }
+
+  .hotel-room-viewmore {
+    justify-self: start;
+  }
+
+  .hotel-room-price-line {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .hotel-room-total-tag {
+    display: inline-flex;
     align-items: center;
+    gap: 3px;
+    color: #ed1173;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   .hotel-room-meal-cell {
@@ -1924,7 +1983,7 @@
     flex-wrap: wrap;
     gap: 5px;
     align-items: center;
-    font-size: 12px;
+    font-size: 13px;
     color: #111827;
     font-weight: 600;
     line-height: 1.4;
@@ -1942,25 +2001,20 @@
 
   .hotel-room-price-cell {
     text-align: right;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    display: grid;
+    justify-items: end;
+    gap: 3px;
   }
 
   .hotel-room-total-compact {
     color: #1b2231;
-    font-size: 20px;
-    font-weight: 900;
+    font-size: 19px;
+    font-weight: 800;
     line-height: 1;
   }
 
-  .hotel-room-action-cell {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-  }
-
-  .hotel-room-action-cell .hotel-card-cta {
+  .hotel-room-price-cell .hotel-card-cta {
+    margin-top: 5px;
     min-width: 110px;
     padding: 8px 14px;
     font-size: 13px;
@@ -1970,11 +2024,23 @@
     outline: none;
   }
 
-  .hotel-room-option-footer {
-    display: flex;
-    justify-content: space-between;
+  /* TripJack closes the section with the count and a loaded confirmation. */
+  .hotel-room-section-foot {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 14px 20px 18px;
+    border-top: 1px solid #f0f1f5;
+    color: #6d7483;
+    font-size: 13px;
+  }
+
+  .hotel-room-section-foot-done {
+    display: inline-flex;
     align-items: center;
-    padding-top: 0;
+    gap: 5px;
+    color: #22a55a;
+    font-weight: 600;
   }
 
   .hotel-room-policy-badge {
@@ -2388,6 +2454,9 @@
   .hotel-card-cta {
     border-radius: 10px;
     background: linear-gradient(135deg, #ed1173, #f65196);
+    /* Only the detail-side rule set this, so the room-row "Select Room"/"Selected"
+       buttons inherited dark text on the pink gradient. */
+    color: #fff;
     box-shadow: none;
   }
 
@@ -3543,9 +3612,6 @@
 
     .hotel-room-price-cell {
       text-align: left;
-    }
-
-    .hotel-room-action-cell {
-      justify-content: flex-start;
+      justify-items: start;
     }
   }
