@@ -29,8 +29,36 @@ const Header = () => {
   const [activeTab, setActiveTab] = useState("");
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const [openMenu, setOpenMenu] = useState(null);
+  const megaMenuTimeoutRef = useRef(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSubmenu, setMobileSubmenu] = useState(null);
+
+  // Small delay before closing a mega-dropdown so moving the mouse across the
+  // gap between the nav tab and the dropdown panel doesn't close it early.
+  const handleMegaMenuEnter = (name) => {
+    if (megaMenuTimeoutRef.current) {
+      clearTimeout(megaMenuTimeoutRef.current);
+      megaMenuTimeoutRef.current = null;
+    }
+    setOpenMenu(name);
+  };
+
+  const handleMegaMenuLeave = () => {
+    if (megaMenuTimeoutRef.current) {
+      clearTimeout(megaMenuTimeoutRef.current);
+    }
+    megaMenuTimeoutRef.current = setTimeout(() => {
+      setOpenMenu(null);
+    }, 280);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (megaMenuTimeoutRef.current) {
+        clearTimeout(megaMenuTimeoutRef.current);
+      }
+    };
+  }, []);
   const navigate = useNavigate();
   const {
     setSelectCity,
@@ -1140,7 +1168,13 @@ const Header = () => {
                   .header-mainnav {
                     display: flex !important;
                     flex-direction: row !important;
-                    align-items: center !important;
+                    /* Stretch, not center. Centred, each tab was only as tall as its
+                       link, leaving about 10px of dead space between the tab and the
+                       dropdown below it. Moving the cursor down crossed that strip,
+                       hover ended, and the dropdown closed. Stretched, the tab reaches
+                       the bottom of the bar, which is exactly where the dropdown starts.
+                       Each .nav-item still centres its own link, so nothing moves. */
+                    align-items: stretch !important;
                     gap: 6px !important;
                     margin: 0 0 0 14px !important;
                     padding: 0 !important;
@@ -1200,12 +1234,12 @@ const Header = () => {
                         />
                       </Link>
                     </div>
-                    <ul className="navbar-nav header-mainnav d-flex flex-row align-items-center justify-content-start m-0 p-0" style={{ height: "50px", minHeight: "50px" }}>
+                    <ul className="navbar-nav header-mainnav d-flex flex-row justify-content-start m-0 p-0" style={{ height: "50px", minHeight: "50px" }}>
                         {/* Planning Tools Dropdown */}
                         <li
                           className="py-0 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("planning")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("planning")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <div className="dropdown-wrapper">
                             <button
@@ -1416,8 +1450,8 @@ const Header = () => {
                         {/* Venues Dropdown */}
                         <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("venues")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("venues")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <Link
                             to="/venues"
@@ -1581,8 +1615,8 @@ const Header = () => {
                         {/* Vendors Dropdown */}
                         <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("vendors")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("vendors")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <div className="dropdown-wrapper">
                             <Link
@@ -1652,8 +1686,8 @@ const Header = () => {
                         {/* Wedding Inspiration Dropdown */}
                         <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("photography")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("photography")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <div className="dropdown-wrapper">
                             <Link
@@ -1779,8 +1813,8 @@ const Header = () => {
                         {/* E-Invites Dropdown */}
                         {/* <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("einvites")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("einvites")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <div className="dropdown-wrapper">
                             <Link
@@ -1832,8 +1866,8 @@ const Header = () => {
                         </li> */}
                         <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("einvites")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("einvites")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <div className="dropdown-wrapper">
                             <Link

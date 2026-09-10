@@ -14,14 +14,17 @@ export default function MovmentPlusLayout() {
       <SEO />
       <MyProvider>
         <FilterProvider>
-          {/* Homepage navbar */}
-          <Header />
           {/* Movments Plus right sidebar navbar */}
           <MovmentPlusHeader />
-          <main style={{ minHeight: "70vh" }}>
-            <Outlet />
-          </main>
-          <Footer />
+          {/* Homepage navbar stays full width; the sidebar starts below it */}
+          <Header />
+          {/* Page content is pushed left on desktop so it never sits under the permanent sidebar */}
+          <div className="movment_plus_page_content">
+            <main style={{ minHeight: "70vh" }}>
+              <Outlet />
+            </main>
+            <Footer />
+          </div>
         </FilterProvider>
       </MyProvider>
     </>

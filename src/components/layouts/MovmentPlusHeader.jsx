@@ -21,12 +21,23 @@ const NAV_ITEMS = [
   { name: "Photography Login", path: "/vendor-login", icon: <FaCameraRetro /> },
 ];
 
+const DESKTOP_BREAKPOINT = 992;
+const SIDEBAR_WIDTH = 230;
+
 const MovmentPlusHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [activeNav, setActiveNav] = useState("Home");
-  const [isOpen, setIsOpen] = useState(true);
+  // On mobile the sidebar behaves like a toggleable drawer; on desktop it is
+  // always rendered open as a permanent panel, so this only matters on mobile.
+  const [isOpen, setIsOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= DESKTOP_BREAKPOINT : true
+  );
+  // The site header's height (top promo strip + navbar) so the permanent
+  // sidebar starts right below it instead of covering it.
+  const [headerHeight, setHeaderHeight] = useState(92);
 
   const handleLogout = () => {
     dispatch(removeGuestToken());
@@ -42,7 +53,32 @@ const MovmentPlusHeader = () => {
     }
   }, [location.pathname]);
 
-  // Event listeners to open/close/toggle from Header or other triggers
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= DESKTOP_BREAKPOINT);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Track the site header's real height so the sidebar never overlaps it.
+  useEffect(() => {
+    if (!isDesktop) return undefined;
+    const headerEl = document.querySelector(".navbar");
+    if (!headerEl) return undefined;
+
+    const updateHeight = () => setHeaderHeight(headerEl.getBoundingClientRect().height);
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(headerEl);
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, [isDesktop]);
+
+  // Event listeners to open/close/toggle the mobile drawer from other triggers
   useEffect(() => {
     const handleOpen = () => setIsOpen(true);
     const handleClose = () => setIsOpen(false);
@@ -64,47 +100,63 @@ const MovmentPlusHeader = () => {
     };
   }, []);
 
+  // Permanent, always-open panel on desktop; toggleable drawer on mobile.
+  const menuOpen = isDesktop || isOpen;
+
   return (
     <>
-      {/* Click-outside backdrop */}
-      <div
-        className={`movment_nav_backdrop ${isOpen ? "open" : ""}`}
-        onClick={() => setIsOpen(false)}
-        aria-hidden="true"
-      />
+      {/* Click-outside backdrop (mobile drawer only) */}
+      {!isDesktop && (
+        <div
+          className={`movment_nav_backdrop ${isOpen ? "open" : ""}`}
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Anchor Container stuck to Top-Right */}
-      <div className="movment_nav_anchor">
-        {/* Trigger Button */}
-        <button
-          className={`movment_nav_trigger ${isOpen ? "active" : ""}`}
-          onClick={() => setIsOpen(!isOpen)}
-          title={isOpen ? "Close Menu" : "Open Movments+ Menu"}
-          aria-expanded={isOpen}
-          aria-label="Toggle Movments+ Menu"
-        >
-          <FaCamera className="movment_nav_trigger_icon" />
-          <span>Movments+</span>
-          <FaChevronDown
-            className={`movment_nav_chevron ${isOpen ? "rotate" : ""}`}
-          />
-        </button>
+      <div
+        className={`movment_nav_anchor ${isDesktop ? "desktop" : ""}`}
+        style={
+          isDesktop
+            ? { top: headerHeight, height: `calc(100vh - ${headerHeight}px)` }
+            : undefined
+        }
+      >
+        {/* Trigger Button (mobile only, sidebar is always open on desktop) */}
+        {!isDesktop && (
+          <button
+            className={`movment_nav_trigger ${isOpen ? "active" : ""}`}
+            onClick={() => setIsOpen(!isOpen)}
+            title={isOpen ? "Close Menu" : "Open Movments+ Menu"}
+            aria-expanded={isOpen}
+            aria-label="Toggle Movments+ Menu"
+          >
+            <FaCamera className="movment_nav_trigger_icon" />
+            <span>Movments+</span>
+            <FaChevronDown
+              className={`movment_nav_chevron ${isOpen ? "rotate" : ""}`}
+            />
+          </button>
+        )}
 
-        {/* Simple Navbar Dropdown Menu */}
+        {/* Navbar Menu: dropdown drawer on mobile, permanent sidebar on desktop */}
         <nav
-          className={`movment_nav_menu ${isOpen ? "open" : ""}`}
+          className={`movment_nav_menu ${menuOpen ? "open" : ""} ${isDesktop ? "sidebar" : ""}`}
           aria-label="Movments Plus Navigation"
         >
           {/* Header bar */}
           <div className="movment_nav_menu_header">
             <span className="movment_nav_menu_title">Movments+</span>
-            <button
-              className="movment_nav_menu_close"
-              onClick={() => setIsOpen(false)}
-              aria-label="Close"
-            >
-              <FaTimes />
-            </button>
+            {!isDesktop && (
+              <button
+                className="movment_nav_menu_close"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close"
+              >
+                <FaTimes />
+              </button>
+            )}
           </div>
 
           {/* Links list */}
@@ -172,6 +224,20 @@ const MovmentPlusHeader = () => {
           pointer-events: none;
         }
 
+        /* Desktop: permanent sidebar, no floating trigger. Exact top/height
+           (below the site header) is set inline once measured. */
+        .movment_nav_anchor.desktop {
+          top: 100px;
+          height: calc(100vh - 100px);
+        }
+
+        /* Reserve room on desktop so page content never sits under the sidebar */
+        @media (min-width: 992px) {
+          .movment_plus_page_content {
+            margin-right: ${SIDEBAR_WIDTH}px;
+          }
+        }
+
         /* Trigger Button */
         .movment_nav_trigger {
           pointer-events: auto;
@@ -217,7 +283,7 @@ const MovmentPlusHeader = () => {
           pointer-events: auto;
           margin-top: 6px;
           margin-right: 0;
-          width: 230px;
+          width: ${SIDEBAR_WIDTH}px;
           background: #ffffff;
           border-radius: 14px 0 0 14px;
           box-shadow: -4px 8px 25px rgba(0, 0, 0, 0.12);
@@ -235,6 +301,24 @@ const MovmentPlusHeader = () => {
           opacity: 1;
           visibility: visible;
           transform: translateY(0) scale(1);
+        }
+
+        /* Desktop permanent sidebar: fills its anchor, always open, no floating card look */
+        .movment_nav_menu.sidebar {
+          margin-top: 0;
+          height: 100%;
+          border-radius: 0;
+          border: none;
+          border-left: 1px solid #e5e7eb;
+          box-shadow: -2px 0 12px rgba(0, 0, 0, 0.06);
+          display: flex;
+          flex-direction: column;
+          transform: none;
+          transform-origin: initial;
+        }
+
+        .movment_nav_menu.sidebar .movment_nav_menu_list {
+          flex: 1;
         }
 
         /* Menu Header */

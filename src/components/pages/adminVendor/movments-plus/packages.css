@@ -435,6 +435,93 @@
 .allowance-label {
   font-size: .8rem;
   color: #6b7280;
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+}
+
+/* ── Allowance info tooltip ──────────────────────────────────────────────
+   Hover reveals it for a mouse; the button also toggles a pinned .is-open
+   state via JS so a tap on a touch screen — which has no hover — works too. */
+.allowance-info {
+  position: relative;
+  display: inline-flex;
+}
+.allowance-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #b3aeb1;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.allowance-info-btn:hover,
+.allowance-info-btn:focus-visible {
+  color: #ed1173;
+}
+.allowance-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 7px);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 190px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: .72rem;
+  line-height: 1.4;
+  font-weight: 400;
+  text-align: left;
+  padding: .45rem .6rem;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .12s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+.allowance-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1a1a1a;
+}
+.allowance-info:hover .allowance-tooltip,
+.allowance-info.is-open .allowance-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+/* The first row's tooltip would otherwise clip against the card's top edge. */
+.allowance-row:first-child .allowance-tooltip {
+  bottom: auto;
+  top: calc(100% + 7px);
+}
+.allowance-row:first-child .allowance-tooltip::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: #1a1a1a;
+}
+/* Narrow leftmost cards: keep the box from running off the left edge of the
+   viewport instead of centring under an icon that sits close to it. */
+@media (max-width: 480px) {
+  .allowance-tooltip {
+    left: 0;
+    transform: none;
+  }
+  .allowance-tooltip::after {
+    left: 14px;
+    transform: none;
+  }
 }
 .allowance-value {
   font-size: .84rem;
