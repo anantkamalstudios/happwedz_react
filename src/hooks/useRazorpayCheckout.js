@@ -138,5 +138,87 @@ export default function useRazorpayCheckout({ onSuccess, onError } = {}) {
     [fail, onError, onSuccess]
   );
 
-  return { startCheckout, processing, status, activePlanId };
+  /**
+   * Open checkout for a free trial rather than a one-off payment.
+   *
+   * Razorpay is handed a subscription_id instead of an order_id, which turns the same
+   * window into a mandate authorisation: the vendor approves future debits, and nothing
+   * is taken today.
+   */
+  const startTrial = useCallback(
+    async (plan) => {
+      if (inFlight.current) return;
+      inFlight.current = true;
+      setProcessing(true);
+      setActivePlanId(plan?.id ?? null);
+
+      try {
+        setStatus("Preparing your trial\u2026");
+        await loadRazorpayScript();
+
+        const trial = await vendorSubscriptionApi.startTrial(plan.id);
+
+        setStatus("Opening the authorisation window\u2026");
+
+        const rzp = new window.Razorpay({
+          key: trial.razorpayKeyId,
+          // A subscription, not an order. No amount is passed: Razorpay knows the plan,
+          // and passing one here would imply a charge that is not happening today.
+          subscription_id: trial.razorpaySubscriptionId,
+          name: "HappyWedz",
+          description: `${trial.plan.name} \u2014 ${trial.trialDays}-day free trial`,
+          image:
+            "https://happywedz-s3-bucket.s3.ap-south-1.amazonaws.com/uploads/logo/happyWedz.png",
+          theme: { color: "#E91E63" },
+          modal: {
+            ondismiss: () => {
+              setProcessing(false);
+              inFlight.current = false;
+              setStatus("");
+              setActivePlanId(null);
+              // Nothing was charged and no trial was used up, so this is genuinely
+              // nothing more than a closed window.
+              onError?.("Trial not started. You can try again whenever you like.");
+            },
+          },
+          handler: async (response) => {
+            try {
+              setStatus("Starting your trial\u2026");
+              const result = await vendorSubscriptionApi.confirmTrial(
+                response.razorpay_subscription_id || trial.razorpaySubscriptionId
+              );
+              setProcessing(false);
+              inFlight.current = false;
+              setStatus("");
+              setActivePlanId(null);
+              onSuccess?.(result);
+            } catch (err) {
+              fail(
+                err.response?.data?.message ||
+                  "Your trial was authorised but we could not confirm it here. It will start automatically \u2014 please refresh in a minute."
+              );
+            }
+          },
+        });
+
+        rzp.on("payment.failed", (response) => {
+          fail(
+            response?.error?.description ||
+              "We could not verify your payment method. No money has been taken."
+          );
+        });
+
+        rzp.open();
+      } catch (err) {
+        fail(
+          err.response?.data?.message ||
+            err.message ||
+            "Could not start your free trial. Please try again."
+        );
+      }
+    },
+    [fail, onError, onSuccess]
+  );
+
+  return { startCheckout, startTrial, processing, status, activePlanId };
 }

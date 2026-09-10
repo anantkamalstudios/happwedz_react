@@ -261,11 +261,23 @@ const getStaticRoomEntries = (staticHotel = {}) => {
   return [];
 };
 
-const getStaticRoomImages = (staticRoom = {}) =>
-  normalizeImageItems([
+const getStaticRoomImages = (staticRoom = {}) => {
+  const raw = [
     ...(Array.isArray(staticRoom?.images) ? staticRoom.images : []),
     ...(Array.isArray(staticRoom?.img) ? staticRoom.img : []),
-  ]);
+  ];
+  // Hero first, then whatever is captioned "Room", then the rest in supplier order.
+  const rank = (image) => {
+    if (image?.is_hero_image || image?.isHero) return 0;
+    if (String(image?.caption || "").trim().toLowerCase() === "room") return 1;
+    return 2;
+  };
+  const ordered = raw
+    .map((image, index) => ({ image, index }))
+    .sort((a, b) => rank(a.image) - rank(b.image) || a.index - b.index)
+    .map((entry) => entry.image);
+  return normalizeImageItems(ordered);
+};
 
 const getStaticRoomAmenities = (staticRoom = {}) =>
   dedupeStrings([
@@ -286,9 +298,9 @@ const getStaticRoomBedSummary = (staticRoom = {}) => {
     const summary = Object.values(configuration)
       .map((bed) => {
         const quantity = Number(bed?.quantity || bed?.count || bed?.bed_count || 0);
-        const rawLabel = String(bed?.type || bed?.name || bed?.size || "").trim();
-        // "KingBed" -> "King Bed"
-        const label = rawLabel.replace(/([a-z])([A-Z])/g, "$1 $2").trim();
+        // Printed exactly as the supplier writes it ("FullBed"), which is what
+        // TripJack's own room card shows.
+        const label = String(bed?.type || bed?.name || bed?.size || "").trim();
         if (!label && quantity <= 0) return "";
         if (quantity <= 0) return label;
         return `${quantity} ${label || "Bed"}`;
@@ -314,9 +326,10 @@ const getStaticRoomGuestSummary = (staticRoom = {}) => {
   const children = Number(max?.children || 0);
   if (!total && !adults && !children) return "";
 
+  if (total) return `Fits max. ${total} guest${total > 1 ? "s" : ""}`;
+
   const parts = [];
-  if (total) parts.push(`Fits max. ${total} guest${total > 1 ? "s" : ""}`);
-  else if (adults) parts.push(`${adults} adult${adults > 1 ? "s" : ""}`);
+  if (adults) parts.push(`${adults} adult${adults > 1 ? "s" : ""}`);
   if (children) parts.push(`${children} child${children > 1 ? "ren" : ""}`);
   return parts.join(" • ");
 };
@@ -503,9 +516,32 @@ const normalizeRoomOption = (
     passportRequired: Boolean(option?.compliance?.passportRequired ?? hotelInfo?.passportRequired),
     adults: Number(roomInfo?.adt || roomInfo?.adults || 0),
     children: Number(roomInfo?.chd || roomInfo?.children || 0),
+    // Everything the partner API tells us about how this price is built, for the
+    // fare-breakup panel behind the "Total" info icon.
+    fareBreakup: (() => {
+      const pricing = option?.pricing || {};
+      const commercial = option?.commercial || {};
+      const num = (value) => {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : 0;
+      };
+      return {
+        currency: pricing?.currency || option?.currency || option?.sc || "INR",
+        basePrice: num(pricing?.basePrice ?? option?.tfcs?.BF),
+        discount: num(pricing?.discount),
+        taxes: num(pricing?.taxes ?? option?.tfcs?.TAF),
+        managementFee: num(pricing?.mf ?? option?.tfcs?.MF),
+        managementFeeTax: num(pricing?.mft ?? option?.tfcs?.MFT),
+        totalPrice: num(pricing?.totalPrice ?? option?.tp),
+        gstClaimableAmount: num(pricing?.gstClaimableAmount),
+        strikethrough: pricing?.strikethrough != null ? num(pricing.strikethrough) : null,
+        commissionType: commercial?.type || null,
+        commission: num(commercial?.commission),
+      };
+    })(),
     bedSummary: getRoomBedSummary(roomMeta) || staticBedSummary,
     guestSummary:
-      getRoomGuestSummary(roomMeta, roomInfo) || getStaticRoomGuestSummary(staticRoom),
+      getStaticRoomGuestSummary(staticRoom) || getRoomGuestSummary(roomMeta, roomInfo),
     images,
     image: images[0]?.url || "",
     amenities,
@@ -663,9 +699,12 @@ const normalizeHotelDetails = ({
       "",
     ) || {};
   const aboutSections = {
+    // descriptions.headline repeats the long location blurb; the short locality line
+    // TripJack prints under "Headline" ("In Pune (Viman Nagar)") lives inside
+    // descriptions.default, so that one wins.
     headline:
-      staticHotel?.descriptions?.headline ||
       description?.headline ||
+      staticHotel?.descriptions?.headline ||
       "",
     location:
       staticHotel?.descriptions?.location ||

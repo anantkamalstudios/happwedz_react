@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { FiRefreshCw, FiCreditCard } from "react-icons/fi";
+import {
+  FiRefreshCw,
+  FiCreditCard,
+  FiClock,
+  FiAlertTriangle,
+} from "react-icons/fi";
+import Swal from "sweetalert2";
 import vendorSubscriptionApi from "../../../../services/api/vendorSubscriptionApi";
 import PlanPickerModal from "./PlanPickerModal";
 import InvoiceViewerModal from "./InvoiceViewerModal";
@@ -49,6 +55,17 @@ const daysUntil = (value) => {
 };
 
 const css = `
+.hw-notice {
+  display:flex; gap:10px; align-items:flex-start; padding:12px 16px;
+  border-top:1px solid ${LINE}; font-size:.85rem; line-height:1.5;
+}
+.hw-notice svg { flex:0 0 auto; margin-top:2px; }
+.hw-notice--info { background:#f4f7fd; color:#35507e; }
+.hw-notice--warn { background:#fffaf0; color:#7a5210; }
+.hw-cta--quiet {
+  background:transparent; border:1px solid ${LINE}; color:${MUTED}; font-weight:500;
+}
+.hw-cta--quiet:hover { border-color:#d6c8ce; color:${INK}; }
 .hw-bill { --hw-pink:${PINK}; --hw-line:${LINE}; }
 .hw-panel { background:#fff; border:1px solid ${LINE}; border-radius:14px; overflow:hidden; }
 .hw-panel__head {
@@ -128,6 +145,46 @@ const SubscriptionSettings = () => {
 
   const access = data?.access || {};
   const sub = access.subscription;
+
+  /**
+   * Stop future automatic payments.
+   *
+   * Worded differently for a trial, where nothing has been taken at all, and for a paid
+   * plan, where the vendor keeps what they have already paid for. Getting this wrong
+   * either way makes people think they have lost money.
+   */
+  const cancelAutopay = async () => {
+    const trial = sub?.isTrial;
+
+    const confirmed = await Swal.fire({
+      icon: "warning",
+      title: trial ? "Cancel your free trial?" : "Turn off auto-pay?",
+      html: trial
+        ? "You have not been charged anything, and you will not be. Your storefront stays live, but you will not be able to edit it."
+        : `No further payments will be taken. You keep your plan until <b>${date(
+            sub?.endsAt
+          )}</b>.`,
+      showCancelButton: true,
+      confirmButtonText: trial ? "Yes, cancel it" : "Yes, turn it off",
+      cancelButtonText: "Keep it",
+      confirmButtonColor: "#a51d1d",
+    });
+    if (!confirmed.isConfirmed) return;
+
+    try {
+      const result = await vendorSubscriptionApi.cancelAutopay();
+      await load(true);
+      Swal.fire({ icon: "success", title: "Done", text: result.message });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Could not cancel",
+        text:
+          err.response?.data?.message ||
+          "Something went wrong. Please try again, or contact support.",
+      });
+    }
+  };
   const payments = data?.payments || [];
   const left = sub ? daysUntil(sub.endsAt) : null;
   const soon = left !== null && left <= 14;
@@ -165,6 +222,39 @@ const SubscriptionSettings = () => {
           )}
         </div>
 
+        {/* A trial is not a normal plan and must not read like one: the vendor needs
+            the date and the amount, or the first debit becomes a chargeback. */}
+        {sub?.isTrial && !sub.paymentFailing && (
+          <div className="hw-notice hw-notice--info">
+            <FiClock size={16} />
+            <div>
+              <strong>
+                {sub.trialDaysLeft} day{sub.trialDaysLeft === 1 ? "" : "s"} left in your
+                free trial
+              </strong>
+              <div>
+                Nothing has been charged. On {date(sub.trialEndsAt)} we will bill the
+                payment method you saved, unless you cancel before then.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {sub?.paymentFailing && (
+          <div className="hw-notice hw-notice--warn">
+            <FiAlertTriangle size={16} />
+            <div>
+              <strong>We could not take your payment</strong>
+              <div>
+                Your storefront is still live and nothing has been removed. Please update
+                your payment method
+                {sub.graceUntil ? ` before ${date(sub.graceUntil)}` : " soon"} to keep
+                editing.
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="p-4">
           {sub ? (
             <div className="d-flex flex-wrap align-items-start justify-content-between gap-3">
@@ -180,12 +270,20 @@ const SubscriptionSettings = () => {
                   )}
                 </div>
               </div>
-              <button
-                className={`hw-cta ${soon ? "" : "hw-cta--ghost"}`}
-                onClick={() => setShowPicker(true)}
-              >
-                {soon ? "Renew now" : "Change plan"}
-              </button>
+              <div className="d-flex flex-column align-items-stretch gap-2">
+                <button
+                  className={`hw-cta ${soon && !sub.isTrial ? "" : "hw-cta--ghost"}`}
+                  onClick={() => setShowPicker(true)}
+                >
+                  {soon && !sub.isTrial ? "Renew now" : "Change plan"}
+                </button>
+
+                {sub.onAutopay && (
+                  <button className="hw-cta hw-cta--quiet" onClick={cancelAutopay}>
+                    {sub.isTrial ? "Cancel trial" : "Turn off auto-pay"}
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">

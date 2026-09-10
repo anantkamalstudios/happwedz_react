@@ -11,6 +11,27 @@ const BASE = "/vendor/subscription";
 const vendorSubscriptionApi = {
   getPlans: () => axiosInstance.get(`${BASE}/plans`).then((res) => res.data),
 
+  /** Start a free trial on a mandate. Nothing is charged now. */
+  startTrial: (planId) =>
+    axiosInstance
+      .post("/vendor/subscription/trial", { planId })
+      .then((r) => r.data),
+
+  /**
+   * Tell the API the mandate was authorised.
+   *
+   * The webhook does this too and either may arrive first; this only makes the
+   * dashboard update immediately instead of whenever Razorpay calls.
+   */
+  confirmTrial: (razorpaySubscriptionId) =>
+    axiosInstance
+      .post("/vendor/subscription/trial/confirm", { razorpaySubscriptionId })
+      .then((r) => r.data),
+
+  /** Stop future automatic payments. */
+  cancelAutopay: () =>
+    axiosInstance.post("/vendor/subscription/cancel").then((r) => r.data),
+
   createOrder: (planId) =>
     axiosInstance.post(`${BASE}/order`, { planId }).then((res) => res.data),
 

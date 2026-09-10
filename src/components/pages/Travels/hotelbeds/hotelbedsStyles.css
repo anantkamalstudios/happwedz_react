@@ -1976,6 +1976,172 @@
     color: #ed1173;
     font-size: 12px;
     font-weight: 600;
+    /* It opens the fare breakup, so it is a button now. */
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  /* About-this-property modal: TripJack leads each block with a large heading. */
+  .hotel-about-modal .hotel-about-modal-section + .hotel-about-modal-section {
+    margin-top: 20px;
+  }
+
+  .hotel-about-modal .hotel-about-modal-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1b2231;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .hotel-about-modal .hotel-about-modal-copy {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #4b5563;
+  }
+
+  /* Room cancellation-policy dialog. */
+  .hotel-policy-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1b2231;
+  }
+
+  .hotel-policy-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0 14px;
+    font-size: 13px;
+    color: #4f5668;
+  }
+
+  .hotel-policy-bar {
+    border-radius: 999px;
+    padding: 11px 16px;
+    text-align: center;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .hotel-policy-bar.is-nonrefundable {
+    background: #e2574c;
+  }
+
+  .hotel-policy-bar.is-refundable {
+    background: #22a55a;
+  }
+
+  .hotel-policy-timeline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 10px 2px 20px;
+    font-size: 14px;
+    color: #1b2231;
+  }
+
+  .hotel-policy-timeline-end {
+    text-align: right;
+  }
+
+  .hotel-policy-timeline-label {
+    font-weight: 700;
+  }
+
+  .hotel-policy-subheading {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1b2231;
+    margin-bottom: 12px;
+  }
+
+  .hotel-policy-modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e5e7eb;
+    font-size: 13px;
+  }
+
+  .hotel-policy-modal-table th {
+    background: #f6f7f9;
+    color: #1b2231;
+    font-weight: 600;
+    text-align: center;
+    padding: 12px 10px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .hotel-policy-modal-table td {
+    text-align: center;
+    padding: 12px 10px;
+    border: 1px solid #e5e7eb;
+    color: #1b2231;
+  }
+
+  .hotel-policy-modal-table .hotel-policy-note-row td {
+    background: #f6f7f9;
+    color: #4f5668;
+  }
+
+  .hotel-fare-info-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1b2231;
+  }
+
+  .hotel-fare-info-ids {
+    background: #f6f7f9;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+
+  .hotel-fare-info-heading {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1b2231;
+    margin-bottom: 10px;
+  }
+
+  .hotel-fare-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 5px 0;
+    font-size: 13px;
+    color: #1b2231;
+  }
+
+  .hotel-fare-info-row strong {
+    white-space: nowrap;
+  }
+
+  .hotel-fare-info-muted {
+    color: #6d7483;
+  }
+
+  .hotel-fare-strike {
+    text-decoration: line-through;
+  }
+
+  .hotel-fare-info-total {
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #eef0f4;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .hotel-fare-info-note {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #8b92a1;
   }
 
   .hotel-room-meal-cell {
