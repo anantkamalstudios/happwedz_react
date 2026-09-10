@@ -28,9 +28,11 @@ const PlanPickerModal = ({ show, onClose, onPurchased }) => {
     error,
     reload,
     storefrontTabs,
+    trialAvailable,
   } = useSubscriptionPlans(show);
 
-  const { startCheckout, processing, status, activePlanId } = useRazorpayCheckout({
+  const { startCheckout, startTrial, processing, status, activePlanId } =
+    useRazorpayCheckout({
     onSuccess: async () => {
       onClose?.();
       await Swal.fire({
@@ -124,6 +126,8 @@ const PlanPickerModal = ({ show, onClose, onPurchased }) => {
           <PlanCards
             plans={visiblePlans}
             storefrontTabs={storefrontTabs}
+            onStartTrial={startTrial}
+            trialAvailable={trialAvailable}
             cycle={cycle}
             onCycleChange={setCycle}
             showCycleTabs={showCycleTabs}

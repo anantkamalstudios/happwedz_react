@@ -14,6 +14,9 @@ export default function useSubscriptionPlans(enabled = true) {
   const [access, setAccess] = useState({});
   // Tab id -> label, so a plan can name the sections it unlocks.
   const [storefrontTabs, setStorefrontTabs] = useState([]);
+  // Whether this vendor can still start a free trial: the feature is on, they have not
+  // used theirs, and they are not already on a plan.
+  const [trialAvailable, setTrialAvailable] = useState(false);
   const [cycle, setCycle] = useState("monthly");
   const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState("");
@@ -27,6 +30,7 @@ export default function useSubscriptionPlans(enabled = true) {
       setPlans(list);
       setAccess(data.access || {});
       setStorefrontTabs(data.storefrontTabs || []);
+      setTrialAvailable(Boolean(data.trialAvailable));
 
       // Open on a cycle that actually has plans, so the first paint is never an empty
       // tab just because monthly happens to be the default.
@@ -61,6 +65,7 @@ export default function useSubscriptionPlans(enabled = true) {
     visiblePlans,
     access,
     storefrontTabs,
+    trialAvailable,
     cycle,
     setCycle,
     showCycleTabs,

@@ -111,6 +111,9 @@ const styles = `
 }
 .hw-sections__count { color:var(--hw-pink); letter-spacing:0; text-transform:none; font-size:.78rem; }
 .hw-sections__list { font-size:.82rem; line-height:1.55; color:#3b2c34; }
+.hw-trial-note {
+  font-size:.72rem; line-height:1.45; color:var(--hw-muted); text-align:center; margin:0 0 10px;
+}
 .hw-btn {
   margin-top:auto; width:100%; border-radius:9px; padding:12px 18px; font-weight:600; font-size:.95rem;
   border:1px solid var(--hw-pink); cursor:pointer; transition:background .18s ease, color .18s ease, opacity .18s ease;
@@ -137,6 +140,8 @@ const PlanCards = ({
   canPurchase = true,
   disabledReason = "",
   storefrontTabs = [],
+  onStartTrial = null,
+  trialAvailable = false,
 }) => {
   // Labels for the ids a plan lists. Without them a vendor is asked to pay for
   // "vendor-pricing" rather than "Pricing & Packages".
@@ -255,6 +260,29 @@ const PlanCards = ({
                       <span>Every storefront section</span>
                     </div>
                   )}
+
+                {/* A trial is offered only when the plan allows one, the vendor still
+                    has theirs to spend, and they are not already on a plan. Showing it
+                    otherwise would be a button that fails when pressed. */}
+                {!isCurrent && trialAvailable && plan.trial_enabled && onStartTrial && (
+                  <>
+                    <button
+                      className="hw-btn hw-btn--solid mb-2"
+                      onClick={() => onStartTrial(plan)}
+                      disabled={processing || !canPurchase}
+                      title={canPurchase ? undefined : disabledReason}
+                    >
+                      {processing && processingPlanId === plan.id
+                        ? processingLabel || "Starting\u2026"
+                        : `Start ${plan.trial_days || 14}-day free trial`}
+                    </button>
+                    <p className="hw-trial-note">
+                      No charge today. We save a payment method and bill{" "}
+                      {formatPrice(plan.price_inr)} after{" "}
+                      {plan.trial_days || 14} days unless you cancel.
+                    </p>
+                  </>
+                )}
 
                 {isCurrent ? (
                   <button className="hw-btn hw-btn--done" disabled>

@@ -74,9 +74,11 @@ const VendorPremium = () => {
     error,
     reload,
     storefrontTabs,
+    trialAvailable,
   } = useSubscriptionPlans(true);
 
-  const { startCheckout, processing, status, activePlanId } = useRazorpayCheckout({
+  const { startCheckout, startTrial, processing, status, activePlanId } =
+    useRazorpayCheckout({
     onSuccess: async () => {
       await Swal.fire({
         icon: "success",
@@ -159,6 +161,8 @@ const VendorPremium = () => {
             <PlanCards
               plans={visiblePlans}
               storefrontTabs={storefrontTabs}
+              onStartTrial={startTrial}
+              trialAvailable={trialAvailable}
               cycle={cycle}
               onCycleChange={setCycle}
               showCycleTabs={showCycleTabs}
