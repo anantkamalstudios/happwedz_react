@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Modal, Offcanvas } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -177,7 +177,42 @@ function RoomOptionSkeleton() {
   );
 }
 
-function HotelHeader({ detailModel, onBackToResults, onEditMarkup, markupEnabled }) {
+// Suppliers are inconsistent about city casing ("MUMBAI", "mumbai"); TripJack
+// shows "Mumbai" in the trail.
+// The supplier's address repeats the city in caps and tacks on the country;
+// TripJack title-cases the city and stops at the postcode.
+const formatAddressLine = (value) => {
+  const parts = String(value || "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (!parts.length) return "";
+  const trimmed =
+    parts.length > 1 && parts[parts.length - 1].toLowerCase() === "india"
+      ? parts.slice(0, -1)
+      : parts;
+  return trimmed.map((part) => toTitleCase(part)).join(", ");
+};
+
+const toTitleCase = (value) => {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  // Only normalise when the supplier shouted ("MUMBAI") or whispered ("mumbai");
+  // anything already mixed case is left as the supplier wrote it.
+  const isAllCaps = text === text.toUpperCase();
+  const isAllLower = text === text.toLowerCase();
+  if (!isAllCaps && !isAllLower) return text;
+  return text.toLowerCase().replace(/\b[a-z]/g, (ch) => ch.toUpperCase());
+};
+
+function HotelHeader({
+  detailModel,
+  onBackToResults,
+  onEditMarkup,
+  markupEnabled,
+  isFavourite,
+  onToggleFavourite,
+}) {
   const [showViewDropdown, setShowViewDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -194,26 +229,44 @@ function HotelHeader({ detailModel, onBackToResults, onEditMarkup, markupEnabled
 
   return (
     <>
-      <div className="hotel-detail-breadcrumb">
-        {`Home > ${detailModel.cityName || "Hotels"} > ${detailModel.name}`}
-      </div>
-
-      <div className="hotel-detail-header-row mt-3">
+      <div className="hotel-detail-header-row">
         <div>
-          <button type="button" className="hotel-inline-link mb-2" onClick={onBackToResults}>
-            {"< Back to results"}
-          </button>
-          <h1 className="hotel-detail-title">{detailModel.name}</h1>
-          {detailModel.starRating ? (
-            <div className="hotel-stars mt-2">{renderStars(detailModel.starRating)}</div>
-          ) : null}
+          <div className="hotel-detail-title-row">
+            <h1 className="hotel-detail-title">{detailModel.name}</h1>
+            {detailModel.starRating ? (
+              <div className="hotel-stars">{renderStars(detailModel.starRating)}</div>
+            ) : null}
+          </div>
           <div className="hotel-detail-address">
             <MapPin size={14} />
-            <span>{detailModel.fullAddress || "Address unavailable"}</span>
+            <span>{formatAddressLine(detailModel.fullAddress) || "Address unavailable"}</span>
+            {detailModel.mapInfo?.openMapsHref ? (
+              <a
+                className="hotel-inline-link hotel-detail-map-link"
+                href={detailModel.mapInfo.openMapsHref}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <MapPin size={13} />
+                Show on map
+              </a>
+            ) : null}
           </div>
         </div>
 
         <div className="hotel-detail-actions">
+          {/* Shares the results page's favourites store, so a heart set here shows
+              there too. Per-browser until a favourites endpoint exists. */}
+          <button
+            type="button"
+            className={`hotel-detail-fav-btn${isFavourite ? " is-active" : ""}`}
+            onClick={onToggleFavourite}
+          >
+            <Heart size={16} fill={isFavourite ? "currentColor" : "none"} />
+            Favourite
+          </button>
+
           <div style={{ position: "relative" }} ref={dropdownRef}>
             {/* <button
               type="button"
@@ -305,6 +358,7 @@ function HotelBookingSummaryCard({
   hotelPanRequired,
   hotelPassportRequired,
   reviewLoadingOptionId,
+  stayTimes,
 }) {
   if (!option) return null;
 
@@ -318,28 +372,37 @@ function HotelBookingSummaryCard({
             <div className="hotel-summary-room">{option.roomName}</div>
             <div className="hotel-summary-subcopy">{roomSummary}</div>
           </div>
-          {/* <button type="button" className="hotel-inline-link" onClick={() => onViewDetails(option)}>
+          <button
+            type="button"
+            className="hotel-inline-link"
+            onClick={() => onViewDetails(option)}
+          >
             View details
-          </button> */}
+          </button>
         </div>
 
-        <ul className="hotel-summary-points">
-          <li>{option.mealBasis}</li>
-          <li>{option.panRequired || hotelPanRequired ? "PAN Required" : "PAN not Required"}</li>
-          {option.passportRequired || hotelPassportRequired ? <li>Passport Required</li> : null}
-        </ul>
+        {/* TripJack sets the inclusions against the price on one line rather than
+            stacking them, which is what made our card so much taller than theirs. */}
+        <div className="hotel-summary-terms">
+          <ul className="hotel-summary-points">
+            <li>{option.mealBasis}</li>
+            <li>{option.panRequired || hotelPanRequired ? "PAN Required" : "PAN not Required"}</li>
+            {option.passportRequired || hotelPassportRequired ? <li>Passport Required</li> : null}
+          </ul>
 
-        <div className="hotel-summary-price-row">
-          <div>
-            <div className="hotel-nightly mb-1">
-              {option.nightlyPrice ? `${formatMoney(option.nightlyPrice, option.currency)} /night` : "Nightly price unavailable"}
-            </div>
+          <div className="hotel-summary-price-block">
+            {/* The nightly figure only earns its place on a multi-night stay. */}
+            {option.nightlyPrice && option.totalPrice && option.nightlyPrice !== option.totalPrice ? (
+              <div className="hotel-nightly mb-1">
+                {`${formatMoney(option.nightlyPrice, option.currency)} /night`}
+              </div>
+            ) : null}
             <div className="hotel-summary-price">
               {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "Price unavailable"}
+              <CircleHelp size={14} color="#6d7483" />
             </div>
             <div className="hotel-summary-subcopy mt-1">Total Price for 1 room</div>
           </div>
-          <CircleHelp size={15} color="#6d7483" />
         </div>
 
         <button
@@ -352,17 +415,32 @@ function HotelBookingSummaryCard({
         </button>
       </div>
 
-      <div className="hotel-summary-card">
+      <div className="hotel-summary-card hotel-summary-card--more">
         <div className="d-flex justify-content-between gap-3 align-items-center">
-          <div>
-            <div className="fw-bold fs-14">More options available</div>
-            <div className="hotel-summary-subcopy mt-1">Compare all room types and inclusions</div>
-          </div>
+          <div className="hotel-summary-more-title">More options available</div>
           <button type="button" className="hotel-detail-ghost-btn" onClick={onViewAllRooms}>
             View all rooms
+            <ChevronDown size={14} />
           </button>
         </div>
       </div>
+
+      {stayTimes && (stayTimes.checkInFrom || stayTimes.checkOutUntil) ? (
+        <div className="hotel-summary-card hotel-stay-times">
+          {stayTimes.checkInFrom ? (
+            <div className="hotel-stay-time">
+              <span className="hotel-stay-time-label">Check-in from:</span>
+              <span className="hotel-stay-time-value">{stayTimes.checkInFrom}</span>
+            </div>
+          ) : null}
+          {stayTimes.checkOutUntil ? (
+            <div className="hotel-stay-time">
+              <span className="hotel-stay-time-label">Check-out until:</span>
+              <span className="hotel-stay-time-value">{stayTimes.checkOutUntil}</span>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
     </div>
   );
@@ -376,14 +454,16 @@ function HotelAboutSection({ aboutText, headline, onOpenModal, hasDetails }) {
   const visible = shouldClamp ? `${copy.slice(0, 240).trim()}...` : copy;
 
   return (
-    <section className="hotel-detail-section">
+    <section className="hotel-detail-section hotel-about-section">
       <h4>About this property</h4>
-      <div className="hotel-detail-copy">{visible}</div>
-      {hasDetails || shouldClamp ? (
-        <button type="button" className="hotel-inline-link mt-2" onClick={onOpenModal}>
-          View more
-        </button>
-      ) : null}
+      <div className="hotel-detail-copy">
+        {visible}
+        {hasDetails || shouldClamp ? (
+          <button type="button" className="hotel-inline-link hotel-detail-readmore" onClick={onOpenModal}>
+            Read more
+          </button>
+        ) : null}
+      </div>
     </section>
   );
 }
@@ -508,7 +588,7 @@ function HotelAmenities({ amenities, onViewMore }) {
   if (!amenities.length) return null;
 
   return (
-    <section className="hotel-detail-section">
+    <section className="hotel-detail-section hotel-amenities-section">
       <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
         <h4 className="mb-0">Amenities</h4>
         {amenities.length > 0 ? (
@@ -518,29 +598,6 @@ function HotelAmenities({ amenities, onViewMore }) {
         ) : null}
       </div>
 
-      <div className="hotel-detail-amenities">
-        {amenities.slice(0, 6).map((amenity, index) => {
-          // Convert amenity to string safely
-          let amenityText = "";
-          if (typeof amenity === "string") {
-            amenityText = amenity;
-          } else if (typeof amenity === "object" && amenity !== null) {
-            amenityText = amenity.name || amenity.nm || amenity.label || String(amenity);
-          } else {
-            amenityText = String(amenity || "");
-          }
-          
-          // Skip if empty or is still an object string
-          if (!amenityText || amenityText === "[object Object]") return null;
-          
-          return (
-            <span key={`amenity-${index}-${amenityText}`} className="hotel-detail-amenity">
-              <Check size={14} color="#ed1173" />
-              {amenityText}
-            </span>
-          );
-        })}
-      </div>
     </section>
   );
 }
@@ -921,9 +978,11 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
               </span>
             );
           })}
-          <button type="button" className="hotel-inline-link" onClick={handleViewMoreAmenities}>
-            View more amenities
-          </button>
+          {mergedAmenities.length > 0 ? (
+            <button type="button" className="hotel-inline-link" onClick={handleViewMoreAmenities}>
+              View more amenities
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -937,6 +996,7 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
             onViewDetails={onViewDetails}
             reviewLoadingOptionId={reviewLoadingOptionId}
             onViewPolicy={onViewPolicy}
+            onViewMoreAmenities={onViewMoreAmenities}
           />
         ))}
       </div>
@@ -948,7 +1008,6 @@ function RoomOptionCard({
   option,
   isSelected,
   onSelectRoom,
-  onViewDetails,
   reviewLoadingOptionId,
   onViewPolicy,
 }) {
@@ -962,23 +1021,37 @@ function RoomOptionCard({
 
   return (
     <div className="hotel-room-option-compact">
-      <div className="hotel-room-option-title">{option.roomName}</div>
       <div className="hotel-room-option-row">
-        <div className="hotel-room-meal-cell">
-          <strong>{option.mealBasis}</strong>
-          <span className="hotel-room-divider">|</span>
-          <span>{option.refundable ? "Refundable" : "Non-refundable"}</span>
-          <span className="hotel-room-divider">|</span>
-          <span>{option.panRequired ? "PAN Required" : "PAN not Required"}</span>
-        </div>
-        <div className="hotel-room-price-cell">
-          <div className="hotel-room-total-compact">
-            {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "N/A"}
+        <div className="hotel-room-option-info">
+          <div className="hotel-room-option-title">{option.roomName}</div>
+          <div className="hotel-room-meal-cell">
+            <strong>{option.mealBasis}</strong>
+            <span className="hotel-room-divider">|</span>
+            <span>{option.refundable ? "Refundable" : "Non-refundable"}</span>
+            <span className="hotel-room-divider">|</span>
+            <span>{option.panRequired ? "PAN Required" : "PAN not Required"}</span>
           </div>
-          <div className="hotel-summary-subcopy">Total <CircleHelp size={12} style={{ display: "inline", marginLeft: 4 }} /></div>
-          <div className="hotel-summary-subcopy">Total Price for 1 room</div>
+          <div className="hotel-room-policy-badge">
+            <Check size={14} color="#22a55a" />
+            <span>{option.cancellationLabel}</span>
+          </div>
+          <button type="button" className="hotel-inline-link hotel-room-viewmore" onClick={handleViewMore}>
+            View more
+          </button>
         </div>
-        <div className="hotel-room-action-cell">
+
+        <div className="hotel-room-price-cell">
+          {/* Price and its "Total" tag share a baseline on TripJack. */}
+          <div className="hotel-room-price-line">
+            <span className="hotel-room-total-compact">
+              {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "N/A"}
+            </span>
+            <span className="hotel-room-total-tag">
+              Total
+              <CircleHelp size={12} />
+            </span>
+          </div>
+          <div className="hotel-summary-subcopy">Total Price for 1 room</div>
           <button
             type="button"
             className="hotel-card-cta"
@@ -989,15 +1062,6 @@ function RoomOptionCard({
             {isReviewing ? "Reviewing..." : isSelected ? "Selected" : "Select Room"}
           </button>
         </div>
-      </div>
-      <div className="hotel-room-option-footer">
-        <div className="hotel-room-policy-badge">
-          <Check size={14} color="#22a55a" />
-          <span>{option.cancellationLabel}</span>
-        </div>
-        <button type="button" className="hotel-inline-link" onClick={handleViewMore}>
-          View more
-        </button>
       </div>
     </div>
   );
@@ -1047,14 +1111,11 @@ function RoomTypesSection({
     <div className="hotel-room-section-card hoteldetails__bottombox" ref={roomSectionRef}>
       <div className="about-container">
       <div className="hotel-room-section-head header_wrapper">
-        <div>
+        <div className="hotel-room-section-heading">
           <div className="hotel-room-section-title about-room-types-header__title">Room types</div>
-          <div className="hotel-summary-subcopy">
-            {`Showing results ${filteredOptions.length} of ${options.length} room options`}
+          <div className="hotel-room-section-count">
+            {`Showing results of ${filteredOptions.length} of ${options.length} room options`}
           </div>
-        </div>
-
-        <div className="hotel-room-toolbar about-room-types-header__share">
           <div className="hotel-share-group">
             <span>Share by:</span>
             <a className="hotel-whatsapp-btn about-room-types-header__whatsapp" href={shareHref} target="_blank" rel="noreferrer">
@@ -1062,6 +1123,9 @@ function RoomTypesSection({
               WhatsApp
             </a>
           </div>
+        </div>
+
+        <div className="hotel-room-toolbar about-room-types-header__share">
           <RoomFilters
             roomSearch={roomSearch}
             setRoomSearch={setRoomSearch}
@@ -1103,6 +1167,18 @@ function RoomTypesSection({
           />
         ))
       )}
+
+      {!detailLoading && filteredOptions.length > 0 ? (
+        <div className="hotel-room-section-foot">
+          <div>{`Showing ${filteredOptions.length} of ${options.length} room options`}</div>
+          {filteredOptions.length === options.length ? (
+            <div className="hotel-room-section-foot-done">
+              <Check size={13} color="#22a55a" />
+              All options loaded
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1210,6 +1286,36 @@ function HotelDetailsPage({
       bookingPollSessionRef.current += 1;
     };
   }, []);
+
+  // Same store the results page hearts use, so a favourite set in either place shows
+  // in the other. Per-browser until a favourites endpoint exists.
+  const FAVOURITE_STORAGE_KEY = "happywedz.hotelFavourites";
+  const favouriteKey = String(selectedHotel?.id || selectedHotel?.hid || "");
+  const [isFavourite, setIsFavourite] = useState(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(FAVOURITE_STORAGE_KEY) || "[]");
+      return Array.isArray(saved) && saved.map(String).includes(favouriteKey);
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleFavourite = useCallback(() => {
+    if (!favouriteKey) return;
+    setIsFavourite((prev) => {
+      const next = !prev;
+      try {
+        const saved = JSON.parse(window.localStorage.getItem(FAVOURITE_STORAGE_KEY) || "[]");
+        const set = new Set(Array.isArray(saved) ? saved.map(String) : []);
+        if (next) set.add(favouriteKey);
+        else set.delete(favouriteKey);
+        window.localStorage.setItem(FAVOURITE_STORAGE_KEY, JSON.stringify([...set]));
+      } catch {
+        // Blocked storage: the toggle still works for this session.
+      }
+      return next;
+    });
+  }, [favouriteKey]);
 
   const detailModel = useMemo(
     () =>
@@ -1338,16 +1444,6 @@ function HotelDetailsPage({
       "spokenLanguages",
     ].some((key) => typeof sections[key] === "string" && sections[key].trim());
   }, [detailModel.aboutSections]);
-
-  const hasImportantInfo = useMemo(() => {
-    const propertyInfo = detailModel.propertyInfo || {};
-    const important = detailModel.importantInformation || {};
-    const hasProperty = Object.values(propertyInfo).some((value) => value && String(value).trim());
-    const hasNotes = ["specialInstructions", "knowBeforeYouGo", "mandatoryFees"].some(
-      (key) => Array.isArray(important[key]) && important[key].length > 0
-    );
-    return hasProperty || hasNotes;
-  }, [detailModel.propertyInfo, detailModel.importantInformation]);
 
   const filteredOptions = useMemo(() => {
     const query = roomSearch.trim().toLowerCase();
@@ -2666,11 +2762,14 @@ const retryWithoutRepayment =
   return (
     <div className="hotel-list-page">
       <div className="hotel-shell">
-        <HotelSearchBarEditable
-          payload={initialPayload}
-          suggestion={initialSuggestion}
-          onBackToSearch={onBackToResults}
-        />
+        {/* TripJack drops the search bar once you are reviewing a booking. */}
+        {!showBookingFormModal ? (
+          <HotelSearchBarEditable
+            payload={initialPayload}
+            suggestion={initialSuggestion}
+            onBackToSearch={onBackToResults}
+          />
+        ) : null}
 
         {showBookingFormModal && reviewResponse && bookingForm ? (
           <TripJackBookingReview
@@ -2695,13 +2794,18 @@ const retryWithoutRepayment =
         ) : detailLoading && !detailModel.name ? (
           <HotelDetailsSkeleton />
         ) : (
-          <div className="hotel-detail-shell hoteldetails hotel__container">
-            <div className="hotel-detail-card hotel-detail-hero-card hotel-details-container">
+           <div className="hotel-detail-shell hoteldetails hotel__container">
+             <div className="hotel-detail-breadcrumb hotel-detail-breadcrumb--outside">
+               {`Home > ${toTitleCase(detailModel.cityName) || "Hotels"} > ${detailModel.name}`}
+             </div>
+             <div className="hotel-detail-card hotel-detail-hero-card hotel-details-container">
               <HotelHeader
                 detailModel={detailModel}
                 onBackToResults={onBackToResults}
                 onEditMarkup={() => setShowMarkupModal(true)}
                 markupEnabled={markupEnabled}
+                isFavourite={isFavourite}
+                onToggleFavourite={toggleFavourite}
               />
               
               <div className="hotel-detail-overview hotel-basic-info">
@@ -2719,18 +2823,6 @@ const retryWithoutRepayment =
                     sections={detailModel.aboutSections || {}}
                   />
                   <HotelAmenities amenities={detailModel.amenities} onViewMore={handleOpenAmenitiesModal} />
-                  {hasImportantInfo ? (
-                    <section className="hotel-detail-section">
-                      <h4>Important information</h4>
-                      <button
-                        type="button"
-                        className="hotel-inline-link"
-                        onClick={() => setShowImportantInfoModal(true)}
-                      >
-                        View property &amp; important information
-                      </button>
-                    </section>
-                  ) : null}
                   <HotelImportantInfoModal
                     show={showImportantInfoModal}
                     onHide={() => setShowImportantInfoModal(false)}
@@ -2748,6 +2840,7 @@ const retryWithoutRepayment =
                   hotelPanRequired={detailModel.panRequired}
                   hotelPassportRequired={detailModel.passportRequired}
                   reviewLoadingOptionId={reviewLoadingOptionId}
+                  stayTimes={detailModel.stayTimes}
                 />
               </div>
             </div>

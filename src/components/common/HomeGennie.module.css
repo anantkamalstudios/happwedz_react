@@ -1,0 +1,475 @@
+/* The corner assistant panel.
+   Layout used to be inline styles branching on window.innerWidth, which is read
+   once at render and so never responded to a resize or an orientation change.
+   It is media queries now. The launcher button keeps its inline styles — its
+   sizing is tied to the video/webp swap in the component. */
+
+.panel {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 440px;
+    height: 650px;
+    max-height: calc(100vh - 48px);
+    background-color: #fff;
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    z-index: 99999;
+    overflow: hidden;
+}
+
+@media (max-width: 576px) {
+    .panel {
+        bottom: 0;
+        right: 0;
+        width: 100vw;
+        height: 80dvh;
+        max-height: 80vh;
+        border-radius: 0;
+    }
+}
+
+/* ===== Header ===== */
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #fce7f3;
+    flex-shrink: 0;
+}
+
+.headerMain {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.iconBtn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: rgba(236, 72, 153, 0.08);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+    color: #ec4899;
+    padding: 0;
+    text-decoration: none;
+}
+
+.iconBtn:hover {
+    background-color: rgba(236, 72, 153, 0.16);
+}
+
+.iconBtnActive {
+    background-color: rgba(236, 72, 153, 0.2);
+}
+
+.headerLogo {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.headerLogo img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+.headerTitle {
+    font-weight: 600;
+    font-size: 17px;
+    margin: 0;
+    color: #ec4899;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 576px) {
+    .headerTitle {
+        font-size: 15px;
+    }
+
+    .iconBtn,
+    .headerLogo {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* ===== Recent chats drawer =====
+   The full page gets a permanent sidebar; there is no room for one here, so the
+   same list drops down over the transcript and closes when a chat is picked. */
+
+.recentDrawer {
+    border-bottom: 1px solid #fce7f3;
+    background: #fff;
+    max-height: 220px;
+    overflow-y: auto;
+    flex-shrink: 0;
+    padding: 8px;
+}
+
+.recentLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 8px;
+    display: block;
+}
+
+.recentItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.recentItem:hover {
+    background-color: #fdf2f8;
+}
+
+.recentItemActive {
+    background-color: #fce7f3;
+}
+
+.recentTitle {
+    flex: 1;
+    min-width: 0;
+    font-size: 12.5px;
+    color: #374151;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.recentDelete {
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    flex-shrink: 0;
+}
+
+.recentDelete:hover {
+    color: #ec4899;
+}
+
+.recentEmpty {
+    font-size: 12px;
+    color: #9ca3af;
+    padding: 8px 10px;
+    margin: 0;
+}
+
+/* ===== Transcript ===== */
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+    background: linear-gradient(180deg, rgba(252, 231, 243, 0.3) 0%, white 100%);
+}
+
+@media (max-width: 576px) {
+    .messages {
+        padding: 12px;
+    }
+}
+
+.row {
+    display: flex;
+    margin-bottom: 16px;
+    align-items: flex-end;
+}
+
+.rowUser {
+    justify-content: flex-end;
+}
+
+.rowAi {
+    justify-content: flex-start;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 4px;
+    flex-shrink: 0;
+    align-self: flex-end;
+}
+
+.avatar img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+.bubble {
+    padding: 12px 16px;
+    background: #fff;
+    color: #1f2937;
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    min-width: 0;
+}
+
+.bubbleUser {
+    max-width: 80%;
+    border-radius: 24px 24px 4px 24px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+/* Assistant replies carry vendor/product/order cards, so they get more of the
+   panel width than a plain user bubble needs. */
+.bubbleAi {
+    max-width: calc(100% - 36px);
+    flex: 1;
+    border-radius: 24px 24px 24px 4px;
+}
+
+.typingBubble {
+    background-color: #fff;
+    border: 1px solid #f3f4f6;
+    border-radius: 24px 24px 24px 4px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 12px 20px;
+}
+
+.typingDots {
+    display: flex;
+    gap: 4px;
+}
+
+.typingDots span {
+    width: 8px;
+    height: 8px;
+    background-color: #9ca3af;
+    border-radius: 50%;
+    animation: gennieBounce 1s infinite;
+}
+
+.typingDots span:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.typingDots span:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+@keyframes gennieBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* ===== Empty state ===== */
+
+.welcome {
+    text-align: center;
+    padding: 24px 0 20px;
+}
+
+.welcomeLogo {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 100%);
+}
+
+.welcomeLogo img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+.welcomeTitle {
+    font-weight: 600;
+    color: #ec4899;
+    margin-bottom: 6px;
+    font-size: 17px;
+}
+
+.welcomeSub {
+    font-size: 13px;
+    color: #db2777;
+    margin: 0;
+}
+
+.startersLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    padding: 0 4px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.starterGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0 4px;
+}
+
+.starterPill {
+    text-align: left;
+    padding: 10px;
+    border-radius: 14px;
+    background-color: #fff;
+    border: 1px solid #fce7f3;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-width: 0;
+}
+
+.starterPill:hover {
+    border-color: #fbcfe8;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+}
+
+.starterTitle {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #ec4899;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.starterSub {
+    font-size: 11px;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ===== Composer ===== */
+
+.composer {
+    border-top: 1px solid #f3f4f6;
+    padding: 14px 16px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 576px) {
+    .composer {
+        padding: 12px;
+        gap: 6px;
+    }
+}
+
+.newChatBtn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: #fce7f3;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: #ec4899;
+    transition: background-color 0.2s;
+}
+
+.newChatBtn:hover {
+    background-color: #fbcfe8;
+}
+
+.inputWrap {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+}
+
+.input {
+    width: 100%;
+    padding: 12px 46px 12px 16px;
+    border-radius: 50px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+    border-color: #fbcfe8;
+    box-shadow: 0 0 0 3px rgba(252, 231, 243, 0.5);
+}
+
+@media (max-width: 576px) {
+    .input {
+        padding: 10px 40px 10px 14px;
+        font-size: 12px;
+    }
+}
+
+.sendBtn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #ec4899;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.sendBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sendBtn:not(:disabled):hover {
+    transform: translateY(-50%) scale(1.05);
+}
