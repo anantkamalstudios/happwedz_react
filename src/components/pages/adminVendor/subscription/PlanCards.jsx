@@ -1,5 +1,7 @@
-import React from "react";
-import { FiCheck } from "react-icons/fi";
+import React, { useState } from "react";
+import { FiCheck, FiX, FiArrowRight } from "react-icons/fi";
+import CenteredModal from "../../../ui/CenteredModal";
+import STOREFRONT_TAB_GUIDE from "./storefrontTabGuide";
 
 /**
  * The plan grid, shared by the full Upgrade page and the picker modal.
@@ -101,16 +103,11 @@ const styles = `
   flex:0 0 18px; width:18px; height:18px; border-radius:50%; background:${PINK_SOFT}; color:var(--hw-pink);
   display:inline-flex; align-items:center; justify-content:center; margin-top:1px;
 }
-.hw-sections {
-  background:#fbf7f9; border:1px solid var(--hw-line); border-radius:9px; padding:10px 12px;
-}
-.hw-sections__head {
+.hw-unlocks-head {
   display:flex; align-items:center; justify-content:space-between; gap:8px;
   font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em;
-  color:#7a6470; margin-bottom:5px;
+  color:#7a6470; margin-bottom:10px;
 }
-.hw-sections__count { color:var(--hw-pink); letter-spacing:0; text-transform:none; font-size:.78rem; }
-.hw-sections__list { font-size:.82rem; line-height:1.55; color:#3b2c34; }
 .hw-trial-note {
   font-size:.72rem; line-height:1.45; color:var(--hw-muted); text-align:center; margin:0 0 10px;
 }
@@ -124,6 +121,40 @@ const styles = `
 .hw-btn--ghost:hover:not(:disabled) { background:${PINK_SOFT}; }
 .hw-btn:disabled { opacity:.55; cursor:not-allowed; }
 .hw-btn--done { background:#eef4ef; color:#2f6b41; border-color:#cfe2d5; }
+.hw-know-more {
+  display:inline-flex; align-items:center; gap:5px; margin-top:8px; padding:0;
+  background:none; border:0; color:var(--hw-pink); font-size:.82rem; font-weight:600; cursor:pointer;
+  text-decoration:underline; text-underline-offset:3px; text-decoration-color:rgba(194,24,91,.35);
+}
+.hw-know-more:hover { text-decoration-color:currentColor; }
+.hw-guide { display:flex; flex-direction:column; flex:1 1 auto; min-height:0; color:var(--hw-ink); }
+.hw-guide__head {
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+  padding:20px 22px 14px; border-bottom:1px solid var(--hw-line); flex:0 0 auto;
+}
+.hw-guide__title { margin:4px 0 2px; font-size:1.2rem; font-weight:700; color:var(--hw-ink); }
+.hw-guide__sub { margin:0; font-size:.85rem; color:var(--hw-muted); }
+.hw-guide__close {
+  flex:0 0 auto; width:32px; height:32px; border-radius:8px; border:0; background:transparent;
+  color:var(--hw-muted); display:inline-flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.hw-guide__close:hover { background:#f6f1f3; color:var(--hw-ink); }
+.hw-guide__body { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 22px; }
+.hw-guide__item { display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-bottom:1px solid #f3edf0; }
+.hw-guide__item:last-child { border-bottom:0; }
+.hw-guide__name { font-weight:600; font-size:.92rem; color:var(--hw-ink); }
+.hw-guide__desc { font-size:.84rem; line-height:1.5; color:var(--hw-muted); margin-top:2px; }
+.hw-guide__foot {
+  flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 22px; border-top:1px solid var(--hw-line); background:#fcfafb;
+  font-size:.78rem; line-height:1.45; color:var(--hw-muted);
+}
+.hw-guide__done {
+  flex:0 0 auto; border:1px solid var(--hw-line); background:#fff; color:var(--hw-ink);
+  font-weight:600; font-size:.85rem; border-radius:8px; padding:8px 16px; cursor:pointer;
+}
+.hw-guide__done:hover { border-color:#d6c8ce; }
+@media (max-width:520px) { .hw-guide__foot { flex-direction:column; align-items:stretch; } }
 @media (prefers-reduced-motion: reduce) { .hw-card, .hw-btn, .hw-cycle button { transition:none; } }
 `;
 
@@ -157,6 +188,16 @@ const PlanCards = ({
     (plan.allowed_tabs || [])
       .filter((id) => id !== "business" && tabLabels[id])
       .map((id) => tabLabels[id]);
+
+  // In the storefront's own order, so the modal reads like the sidebar the vendor
+  // will actually see once they are on the plan.
+  const unlockedTabs = (plan) =>
+    storefrontTabs.filter(
+      (t) => t.id !== "business" && (plan.allowed_tabs || []).includes(t.id)
+    );
+
+  // The plan whose "Know more" was clicked, or null while the modal is closed.
+  const [guidePlan, setGuidePlan] = useState(null);
   // A price card reads as a card at roughly 320px. Left to fill a wide container, two
   // of them stretch to ~600px each and stop looking like prices at all — so the grid
   // is capped to what the number of plans actually needs, and centred.
@@ -221,45 +262,44 @@ const PlanCards = ({
 
                 <div className="hw-rule" />
 
-                <div className="mb-3">
-                  {(plan.features || []).map((feature, i) => (
-                    <div className="hw-feat" key={i}>
-                      <span className="hw-tick" aria-hidden="true">
-                        <FiCheck size={11} strokeWidth={3} />
-                      </span>
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
+                {/* What the money buys, as a ticked list. This replaces the free-text
+                    bullets an admin used to type, which could say anything and drift
+                    out of step with what the plan actually unlocked. These cannot. */}
+                {sellableTabCount > 0 && (
+                  <div className="mb-3">
+                    <div className="hw-unlocks-head">What you can edit</div>
 
-                {/* What the money actually buys. Only worth listing when plans differ:
-                    if every plan opens the whole storefront, this is noise on all of
-                    them and the price is the only thing being compared. */}
-                {sellableTabCount > 0 &&
-                  unlockedSections(plan).length > 0 &&
-                  unlockedSections(plan).length < sellableTabCount && (
-                    <div className="hw-sections mb-3">
-                      <div className="hw-sections__head">
-                        Storefront sections you can edit
-                        <span className="hw-sections__count">
-                          {unlockedSections(plan).length} of {sellableTabCount}
+                    {unlockedSections(plan).length === sellableTabCount ? (
+                      <div className="hw-feat">
+                        <span className="hw-tick" aria-hidden="true">
+                          <FiCheck size={11} strokeWidth={3} />
+                        </span>
+                        <span>
+                          Every storefront section &mdash; photos, videos, pricing,
+                          availability, promotions and more
                         </span>
                       </div>
-                      <div className="hw-sections__list">
-                        {unlockedSections(plan).join(" \u00b7 ")}
-                      </div>
-                    </div>
-                  )}
+                    ) : (
+                      unlockedSections(plan).map((label) => (
+                        <div className="hw-feat" key={label}>
+                          <span className="hw-tick" aria-hidden="true">
+                            <FiCheck size={11} strokeWidth={3} />
+                          </span>
+                          <span>{label}</span>
+                        </div>
+                      ))
+                    )}
 
-                {sellableTabCount > 0 &&
-                  unlockedSections(plan).length === sellableTabCount && (
-                    <div className="hw-feat mb-3">
-                      <span className="hw-tick" aria-hidden="true">
-                        <FiCheck size={11} strokeWidth={3} />
-                      </span>
-                      <span>Every storefront section</span>
-                    </div>
-                  )}
+                    <button
+                      type="button"
+                      className="hw-know-more"
+                      onClick={() => setGuidePlan(plan)}
+                    >
+                      Know more about what you&rsquo;ll get
+                      <FiArrowRight size={13} />
+                    </button>
+                  </div>
+                )}
 
                 {/* A trial is offered only when the plan allows one, the vendor still
                     has theirs to spend, and they are not already on a plan. Showing it
@@ -305,6 +345,72 @@ const PlanCards = ({
           );
         })}
       </div>
+
+      {/* One modal shared by every card, opened with the plan it describes. Wrapped
+          in hw-plans because it is portalled to <body>, outside the card grid, and
+          would otherwise lose the colour variables the cards are drawn with. */}
+      <CenteredModal
+        show={Boolean(guidePlan)}
+        onClose={() => setGuidePlan(null)}
+        maxWidth={560}
+        labelledBy="hw-guide-title"
+      >
+        {guidePlan && (
+          <div className="hw-plans hw-guide">
+            <div className="hw-guide__head">
+              <div>
+                <div className="hw-eyebrow">{guidePlan.name}</div>
+                <h3 id="hw-guide-title" className="hw-guide__title">
+                  What you&rsquo;ll get
+                </h3>
+                <p className="hw-guide__sub">
+                  The storefront sections this plan lets you edit, and what each one is for.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="hw-guide__close"
+                onClick={() => setGuidePlan(null)}
+                aria-label="Close"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+
+            <div className="hw-guide__body">
+              {unlockedTabs(guidePlan).map((tab) => (
+                <div className="hw-guide__item" key={tab.id}>
+                  <span className="hw-tick" aria-hidden="true">
+                    <FiCheck size={11} strokeWidth={3} />
+                  </span>
+                  <div>
+                    <div className="hw-guide__name">{tab.label}</div>
+                    {STOREFRONT_TAB_GUIDE[tab.id] && (
+                      <div className="hw-guide__desc">
+                        {STOREFRONT_TAB_GUIDE[tab.id]}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hw-guide__foot">
+              <span>
+                Business details comes with every plan &mdash; it is where your
+                verification documents are kept.
+              </span>
+              <button
+                type="button"
+                className="hw-guide__done"
+                onClick={() => setGuidePlan(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      </CenteredModal>
     </div>
   );
 };

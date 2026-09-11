@@ -1,12 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import { loadRazorpayScript } from "../../../../services/api/cabApi";
 import Loader from "../../../ui/Loader";
 import MomentsQuotaBanner from "./MomentsQuotaBanner";
 import "./packages.css";
 import { CiStar } from "react-icons/ci";
+import { FiInfo } from "react-icons/fi";
 import { IoCheckmark } from "react-icons/io5";
 import Swal from "sweetalert2";
+
+// Same wording as the admin's own help text for these fields (MomentsPlanForm.jsx),
+// so a vendor reading "what is Storage" and an admin editing a plan's storage limit
+// are told the same thing.
+const ALLOWANCE_INFO = {
+  Storage: "Total size of all photos and videos you upload.",
+  Events: "Separate wedding galleries you can create.",
+  "Access codes":
+    "Share links you generate so a couple or their guests can view a gallery.",
+  "Media files": "Number of photos and videos you can upload, regardless of size.",
+};
 
 const PackagesStorage = () => {
   const [availablePackages, setAvailablePackages] = useState([]);
@@ -14,6 +26,22 @@ const PackagesStorage = () => {
   const [quota, setQuota] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // "<packageId>:<label>" of the one open tooltip, or null. A ref rather than only
+  // state because the outside-click listener below needs the current value without
+  // being re-subscribed on every open/close.
+  const [openInfoKey, setOpenInfoKey] = useState(null);
+  const openInfoKeyRef = useRef(openInfoKey);
+  openInfoKeyRef.current = openInfoKey;
+
+  // Tap or click anywhere else closes an open tooltip — necessary on touch devices,
+  // which have no hover to fall back on.
+  useEffect(() => {
+    const closeOnOutsideClick = () => {
+      if (openInfoKeyRef.current) setOpenInfoKey(null);
+    };
+    document.addEventListener("click", closeOnOutsideClick);
+    return () => document.removeEventListener("click", closeOnOutsideClick);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -321,12 +349,40 @@ const PackagesStorage = () => {
                   ["Events", pkg.max_events ?? "Unlimited"],
                   ["Access codes", pkg.max_access_codes ?? "Unlimited"],
                   ["Media files", pkg.max_media_files ?? "Unlimited"],
-                ].map(([label, value]) => (
-                  <li key={label} className="allowance-row">
-                    <span className="allowance-label">{label}</span>
-                    <span className="allowance-value">{value}</span>
-                  </li>
-                ))}
+                ].map(([label, value]) => {
+                  const infoKey = `${pkg.id}:${label}`;
+                  const isOpen = openInfoKey === infoKey;
+
+                  return (
+                    <li key={label} className="allowance-row">
+                      <span className="allowance-label">
+                        {label}
+                        <span className={`allowance-info ${isOpen ? "is-open" : ""}`}>
+                          <button
+                            type="button"
+                            className="allowance-info-btn"
+                            aria-label={`What is ${label}?`}
+                            aria-expanded={isOpen}
+                            onClick={(e) => {
+                              // Stops this same click from reaching the card's own
+                              // onClick (which would open checkout) and from
+                              // reaching the outside-click listener above (which
+                              // would immediately close what this just opened).
+                              e.stopPropagation();
+                              setOpenInfoKey(isOpen ? null : infoKey);
+                            }}
+                          >
+                            <FiInfo size={13} />
+                          </button>
+                          <span className="allowance-tooltip inter" role="tooltip">
+                            {ALLOWANCE_INFO[label]}
+                          </span>
+                        </span>
+                      </span>
+                      <span className="allowance-value">{value}</span>
+                    </li>
+                  );
+                })}
               </ul>
 
               {features.length > 0 && (
