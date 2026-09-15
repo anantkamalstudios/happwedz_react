@@ -1,6 +1,7 @@
 import axiosInstance from "./axiosInstance";
+import { API_BASE_URL } from "../../config/constants";
 
-const LEGACY_BASE_URL = "https://happywedz.com/api/Flight_booking";
+const LEGACY_BASE_URL = `${API_BASE_URL}/Flight_booking`;
 // const LEGACY_BASE_URL = 'https://happywedz.com/Flight_booking';
 
 const isTripJackSearchQuery = (payload) =>

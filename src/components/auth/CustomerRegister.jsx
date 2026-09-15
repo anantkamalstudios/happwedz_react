@@ -8,6 +8,7 @@ import axiosInstance from "../../services/api/axiosInstance";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { API_BASE_URL } from "../../config/constants";
 
 const CustomerRegister = () => {
   const [formData, setFormData] = useState({
@@ -52,7 +53,7 @@ const CustomerRegister = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("https://happywedz.com/api/sign-in-cms");
+        const res = await fetch(`${API_BASE_URL}/sign-in-cms`);
         const data = await res.json();
         setSignInCms(data?.data || data || null);
       } catch (err) {

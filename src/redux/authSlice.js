@@ -5,6 +5,7 @@ import {
   clearSsoCookies,
   readHwCookie,
 } from "../utils/ssoCookies";
+import { API_BASE_URL } from "../config/constants";
 
 // Initialize state from localStorage if available
 const storedToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -163,7 +164,7 @@ export const toggleWishlist = (vendor) => async (dispatch, getState) => {
   }
 
   try {
-    const response = await fetch("https://happywedz.com/api/wishlist/toggle", {
+    const response = await fetch(`${API_BASE_URL}/wishlist/toggle`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

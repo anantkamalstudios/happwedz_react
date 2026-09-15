@@ -10,11 +10,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { FaEyeSlash, FaEye } from "react-icons/fa";
 import axiosInstance from "../../services/api/axiosInstance";
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL ||
-  "https://happywedz.com/api";
-
 import { safeSetItem, sanitizeForStorage } from "../../utils/safeStorage";
 
 const VendorRegister = () => {

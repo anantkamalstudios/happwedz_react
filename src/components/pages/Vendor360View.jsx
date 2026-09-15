@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Image360Modal from "../ui/Image360Modal";
 import { get360Assets } from "../../utils/view360Helper";
+import { API_BASE_URL } from "../../config/constants";
 
 const Vendor360View = () => {
   const { id: paramId } = useParams();
@@ -24,7 +25,7 @@ const Vendor360View = () => {
       setLoading(false);
       return;
     }
-    const url = `https://happywedz.com/api/vendor-services/${vendorServiceId}`;
+    const url = `${API_BASE_URL}/vendor-services/${vendorServiceId}`;
     setLoading(true);
     fetch(url, { mode: "cors" })
       .then((res) => res.json())

@@ -4,7 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import ErrorState from "../ui/ErrorState";
 import { fetchVendorTypesWithSubcategoriesApi } from "../../services/api/vendorTypesWithSubcategoriesApi";
 
-import { IMAGE_BASE_URL } from "../../config/constants";
+import { IMAGE_BASE_URL as IMAGE_BASE_URL_RAW } from "../../config/constants";
+
+const IMAGE_BASE_URL = IMAGE_BASE_URL_RAW.replace(/\/+$/, "");
 
 const WeddingCategories = ({ onSelect }) => {
   const [categories, setCategories] = useState([]);
@@ -23,7 +25,7 @@ const WeddingCategories = ({ onSelect }) => {
       const vendorTypes = await fetchVendorTypesWithSubcategoriesApi();
       const apiData = vendorTypes.map((cat) => {
         const imageSrc = cat.hero_image
-          ? "https://happywedzbackend.happywedz.com" + cat.hero_image
+          ? IMAGE_BASE_URL + cat.hero_image
           : "logo-no-bg.png";
         return {
           id: cat.id,

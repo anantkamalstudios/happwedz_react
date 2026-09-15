@@ -8,8 +8,12 @@ import {
   extractRatingFilters,
   extractReviewFilters,
 } from "../utils/priceFilterUtils";
+import {
+  API_BASE_URL,
+  IMAGE_BASE_URL as IMAGE_BASE_URL_RAW,
+} from "../config/constants";
 
-const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
+const IMAGE_BASE_URL = IMAGE_BASE_URL_RAW.replace(/\/+$/, "");
 const normalizeServiceStatus = (value) => {
   const normalized = String(value || "")
     .trim()
@@ -183,9 +187,7 @@ const useApiData = (
           params.append("filters", JSON.stringify(nonPriceFilters));
         }
 
-        const apiBaseUrl =
-          import.meta.env.VITE_API_URL || "https://happywedz.com/api";
-        const apiUrl = `${apiBaseUrl}/vendor-services?${params.toString()}`;
+        const apiUrl = `${API_BASE_URL}/vendor-services?${params.toString()}`;
 
         const cacheKey = apiUrl;
         if (cacheRef.current.has(cacheKey)) {

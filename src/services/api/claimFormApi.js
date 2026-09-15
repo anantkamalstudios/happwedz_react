@@ -1,6 +1,5 @@
 import axios from "axios";
-
-const BASE_URL = "https://happywedz.com/api";
+import { API_BASE_URL as BASE_URL } from "../../config/constants";
 
 export const fetchVendorServiceDetails = async (vendorServiceId) => {
   try {

@@ -1,6 +1,5 @@
 import axios from "axios";
-
-const API_BASE_URL = "https://happywedz.com/api";
+import { API_BASE_URL } from "../../config/constants";
 // const API_BASE_URL = "https://happywedz.com";
 
 const vendorServicesApi = {

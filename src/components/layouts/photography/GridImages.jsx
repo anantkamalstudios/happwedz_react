@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import usePhotography from "../../../hooks/usePhotography";
+import { IMAGE_BASE_URL as IMAGE_BASE_URL_RAW } from "../../../config/constants";
+
+const IMAGE_BASE_URL = IMAGE_BASE_URL_RAW.replace(/\/+$/, "");
 
 const GridImages = ({ category, searchQuery, photos }) => {
   const { typesWithCategories, fetchTypesWithCategories } = usePhotography();
@@ -14,28 +17,19 @@ const GridImages = ({ category, searchQuery, photos }) => {
       let fallbackUrl = null;
 
       if (url?.startsWith("http://happywedz.com/uploads/photography/")) {
-        url = url.replace(
-          "http://happywedz.com",
-          "https://happywedzbackend.happywedz.com"
-        );
+        url = url.replace("http://happywedz.com", IMAGE_BASE_URL);
         // Extract filename and create fallback URL for blogs folder
         const filename = url.split("/").pop();
-        fallbackUrl = `https://happywedzbackend.happywedz.com/uploads/blogs/${filename}`;
+        fallbackUrl = `${IMAGE_BASE_URL}/uploads/blogs/${filename}`;
       }
       if (url?.startsWith("https://happywedz.com/uploads/photography/")) {
-        url = url.replace(
-          "https://happywedz.com",
-          "https://happywedzbackend.happywedz.com"
-        );
+        url = url.replace("https://happywedz.com", IMAGE_BASE_URL);
         // Extract filename and create fallback URL for blogs folder
         const filename = url.split("/").pop();
-        fallbackUrl = `https://happywedzbackend.happywedz.com/uploads/blogs/${filename}`;
+        fallbackUrl = `${IMAGE_BASE_URL}/uploads/blogs/${filename}`;
       }
       if (url?.startsWith("https://happywedz.com/uploads/blogs/")) {
-        url = url.replace(
-          "https://happywedz.com",
-          "https://happywedzbackend.happywedz.com"
-        );
+        url = url.replace("https://happywedz.com", IMAGE_BASE_URL);
       }
 
       return { ...img, url, fallbackUrl };

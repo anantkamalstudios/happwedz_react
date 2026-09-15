@@ -28,6 +28,7 @@ import FlowerJewelleryMasterProfile from "./FlowerJewelleryMasterProfile";
 import BridalOutfitMasterProfile from "./BridalOutfitMasterProfile";
 import RentalOutfitMasterProfile from "./RentalOutfitMasterProfile";
 import CocktailGownMasterProfile from "./CocktailGownMasterProfile";
+import { API_BASE_URL } from "../../../../config/constants";
 
 const VendorFacilities = ({
   formData,
@@ -47,7 +48,7 @@ const VendorFacilities = ({
       try {
         if (vendor?.vendor_type_id) {
           const response = await axios.get(
-            `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`,
+            `${API_BASE_URL}/vendor-types/${vendor.vendor_type_id}`,
           );
           const typeData = response.data || {};
           setFetchedVendorTypeName(typeData.name || "");

@@ -10,6 +10,7 @@ import { IoStorefrontOutline } from "react-icons/io5";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import vendorServicesApi from "../../../services/api/vendorServicesApi";
 import { useVendorAccess } from "../../../context/VendorAccessContext";
+import { API_BASE_URL } from "../../../config/constants";
 
 const Navbar = () => {
   const { slug } = useParams();
@@ -63,7 +64,7 @@ const Navbar = () => {
 
       try {
         const response = await fetch(
-          `https://happywedz.com/api/vendor-services/${serviceId}/storefront-completion`,
+          `${API_BASE_URL}/vendor-services/${serviceId}/storefront-completion`,
           {
             method: "GET",
             headers: {
@@ -126,7 +127,7 @@ const Navbar = () => {
       if (!token) return;
 
       try {
-        const response = await fetch("https://happywedz.com/api/inbox", {
+        const response = await fetch(`${API_BASE_URL}/inbox`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

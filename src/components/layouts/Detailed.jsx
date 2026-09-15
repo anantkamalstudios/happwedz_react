@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { IMAGE_BASE_URL } from "../../config/constants";
+import { API_BASE_URL, IMAGE_BASE_URL } from "../../config/constants";
 import { Container, Row, Col, Button, Modal } from "react-bootstrap";
 import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -108,7 +108,6 @@ import ReviewSection from "../pages/ReviewSection";
 import axios from "axios";
 import { subVenuesData } from "../../data/subVenuesData";
 import { subVendorsData } from "../../data/subVendorsData";
-const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 import SectionTabs from "./SectionTabs";
 import ShimmerVendorDetail from "../ui/ShimmerVendorDetail";
@@ -5193,7 +5192,7 @@ const Detailed = () => {
 
     const fetchWishlist = async () => {
       try {
-        const res = await fetch(`https://happywedz.com/api/wishlist`, {
+        const res = await fetch(`${API_BASE_URL}/wishlist`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -5339,11 +5338,21 @@ const Detailed = () => {
           // The row's own `slug` column is what links point at; `attributes.slug`
           // is a legacy value from the import and can be stale, so it comes second.
           const candidateSlugs = [resData.slug, resData.attributes?.slug]
-            .map((s) => String(s || "").toLowerCase().trim())
+            .map((s) =>
+              String(s || "")
+                .toLowerCase()
+                .trim(),
+            )
             .filter(Boolean);
 
-          const itemName = String(resData.attributes?.name || resData.name || "").toLowerCase().trim();
-          const cleanTarget = String(targetSlug || "").toLowerCase().trim();
+          const itemName = String(
+            resData.attributes?.name || resData.name || "",
+          )
+            .toLowerCase()
+            .trim();
+          const cleanTarget = String(targetSlug || "")
+            .toLowerCase()
+            .trim();
           if (!cleanTarget) return false;
 
           const targetBase = stripId(cleanTarget);
@@ -5356,7 +5365,11 @@ const Detailed = () => {
 
           if (itemName) {
             const nameSlug = toSlug(itemName);
-            if (nameSlug && targetBase && (nameSlug.includes(targetBase) || targetBase.includes(nameSlug))) {
+            if (
+              nameSlug &&
+              targetBase &&
+              (nameSlug.includes(targetBase) || targetBase.includes(nameSlug))
+            ) {
               return true;
             }
           }
@@ -5367,22 +5380,32 @@ const Detailed = () => {
         // 1. Direct request (by numeric ID or slug)
         try {
           if (/^\d+$/.test(slug)) {
-            const idResponse = await axios.get(`${cleanApiBase}/api/vendor-services/${slug}`);
-            if (idResponse.data && (idResponse.data.id || idResponse.data.attributes)) {
+            const idResponse = await axios.get(
+              `${cleanApiBase}/api/vendor-services/${slug}`,
+            );
+            if (
+              idResponse.data &&
+              (idResponse.data.id || idResponse.data.attributes)
+            ) {
               data = idResponse.data;
             }
           } else {
             const response = await axios.get(
-              `${cleanApiBase}/api/vendor-services/slug/${slug}`,
+              `${cleanApiBase}/vendor-services/slug/${slug}`,
             );
             if (
               response.data &&
-              (response.data.id || response.data.vendor_id || response.data.attributes) &&
+              (response.data.id ||
+                response.data.vendor_id ||
+                response.data.attributes) &&
               isSlugMatch(response.data, slug)
             ) {
               data = response.data;
             } else {
-              console.debug("Direct slug returned mismatched vendor, falling back to name search...", response.data?.attributes?.name);
+              console.debug(
+                "Direct slug returned mismatched vendor, falling back to name search...",
+                response.data?.attributes?.name,
+              );
             }
           }
         } catch (directErr) {
@@ -5396,31 +5419,51 @@ const Detailed = () => {
         if (!data) {
           try {
             // Strip trailing numeric suffixes (e.g. elegance-pixs-6388 -> elegance pixs)
-            const cleanSearch = slug.replace(/-\d+$/, "").replace(/[-_]+/g, " ").trim();
-            const searchRes = await axios.get(`${cleanApiBase}/api/vendor-services`, {
-              params: {
-                search: cleanSearch,
-                limit: 10,
-                ...(city && city !== "all" ? { city } : {}),
+            const cleanSearch = slug
+              .replace(/-\d+$/, "")
+              .replace(/[-_]+/g, " ")
+              .trim();
+            const searchRes = await axios.get(
+              `${cleanApiBase}/api/vendor-services`,
+              {
+                params: {
+                  search: cleanSearch,
+                  limit: 10,
+                  ...(city && city !== "all" ? { city } : {}),
+                },
               },
-            });
+            );
             const items =
               searchRes.data?.data ||
               (Array.isArray(searchRes.data) ? searchRes.data : []);
             if (items.length > 0) {
               const targetBase = slug.replace(/-\d+$/, "").toLowerCase();
-              const matched = items.find((it) => {
-                const itSlug = String(it.attributes?.slug || it.slug || "").toLowerCase();
-                const itName = String(it.attributes?.name || it.name || "").toLowerCase().replace(/\s+/g, "-");
-                return itSlug === slug.toLowerCase() || itSlug.includes(targetBase) || itName.includes(targetBase) || targetBase.includes(itName);
-              }) || items[0];
+              const matched =
+                items.find((it) => {
+                  const itSlug = String(
+                    it.attributes?.slug || it.slug || "",
+                  ).toLowerCase();
+                  const itName = String(it.attributes?.name || it.name || "")
+                    .toLowerCase()
+                    .replace(/\s+/g, "-");
+                  return (
+                    itSlug === slug.toLowerCase() ||
+                    itSlug.includes(targetBase) ||
+                    itName.includes(targetBase) ||
+                    targetBase.includes(itName)
+                  );
+                }) || items[0];
 
               if (matched && (matched.id || matched.vendor_id)) {
                 try {
                   const matchedDetailRes = await axios.get(
                     `${cleanApiBase}/api/vendor-services/${matched.id || matched.vendor_id}`,
                   );
-                  if (matchedDetailRes.data && (matchedDetailRes.data.id || matchedDetailRes.data.attributes)) {
+                  if (
+                    matchedDetailRes.data &&
+                    (matchedDetailRes.data.id ||
+                      matchedDetailRes.data.attributes)
+                  ) {
                     data = matchedDetailRes.data;
                   }
                 } catch {}
@@ -5467,22 +5510,42 @@ const Detailed = () => {
                 address: staticMatch.location || "",
                 veg_price: staticMatch.vegPrice || 1200,
                 non_veg_price: staticMatch.nonVegPrice || 1500,
-                veg_description: "A rich vegetarian spread featuring Indian starters, rich paneer curries, seasonal vegetables, dal, rice, breads, salad, and desserts.",
-                non_veg_description: "A flavorful non-vegetarian menu featuring succulent kebabs, chicken specialties, aromatic biryani, breads, and desserts.",
+                veg_description:
+                  "A rich vegetarian spread featuring Indian starters, rich paneer curries, seasonal vegetables, dal, rice, breads, salad, and desserts.",
+                non_veg_description:
+                  "A flavorful non-vegetarian menu featuring succulent kebabs, chicken specialties, aromatic biryani, breads, and desserts.",
                 menus: [
                   {
                     title: "Veg Menu",
                     type: "veg",
                     price: staticMatch.vegPrice || 1200,
-                    description: "A rich vegetarian spread featuring Indian starters, rich paneer curries, seasonal vegetables, dal, rice, breads, salad, and desserts.",
-                    items: ["Paneer Butter Masala", "Dal Makhani", "Mix Veg Kolhapuri", "Veg Biryani", "Butter Naan", "Green Salad", "Gulab Jamun"],
+                    description:
+                      "A rich vegetarian spread featuring Indian starters, rich paneer curries, seasonal vegetables, dal, rice, breads, salad, and desserts.",
+                    items: [
+                      "Paneer Butter Masala",
+                      "Dal Makhani",
+                      "Mix Veg Kolhapuri",
+                      "Veg Biryani",
+                      "Butter Naan",
+                      "Green Salad",
+                      "Gulab Jamun",
+                    ],
                   },
                   {
                     title: "Non-Veg Menu",
                     type: "non-veg",
                     price: staticMatch.nonVegPrice || 1500,
-                    description: "A flavorful non-vegetarian menu featuring succulent kebabs, chicken specialties, aromatic biryani, breads, and desserts.",
-                    items: ["Chicken Tikka", "Butter Chicken", "Chicken Dum Biryani", "Dal Tadka", "Butter Naan", "Green Salad", "Gulab Jamun"],
+                    description:
+                      "A flavorful non-vegetarian menu featuring succulent kebabs, chicken specialties, aromatic biryani, breads, and desserts.",
+                    items: [
+                      "Chicken Tikka",
+                      "Butter Chicken",
+                      "Chicken Dum Biryani",
+                      "Dal Tadka",
+                      "Butter Naan",
+                      "Green Salad",
+                      "Gulab Jamun",
+                    ],
                   },
                 ],
                 about_us: staticMatch.description || "",
@@ -5680,7 +5743,7 @@ const Detailed = () => {
       let answers = [];
       try {
         const response = await axios.get(
-          `https://happywedz.com/api/faq-answers/${dynamicVendorId}`,
+          `${API_BASE_URL}/faq-answers/${dynamicVendorId}`,
         );
         answers = response.data || [];
       } catch (error) {
@@ -6686,7 +6749,8 @@ const Detailed = () => {
       } catch {}
     }
 
-    const rawVegMenu = parsedMenus.find((m) => m?.type === "veg") || parsedMenus[0] || {};
+    const rawVegMenu =
+      parsedMenus.find((m) => m?.type === "veg") || parsedMenus[0] || {};
     const rawNonVegMenu =
       parsedMenus.find((m) => m?.type === "non-veg") ||
       (parsedMenus.length > 1 ? parsedMenus[1] : {}) ||
@@ -6722,7 +6786,9 @@ const Detailed = () => {
       if (!items) return [];
       const list = Array.isArray(items) ? items : [items];
       return list
-        .flatMap((it) => (typeof it === "string" ? it.split(",") : [String(it)]))
+        .flatMap((it) =>
+          typeof it === "string" ? it.split(",") : [String(it)],
+        )
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
     };
@@ -6752,11 +6818,26 @@ const Detailed = () => {
 
   // Extract Pricing & Packages Details (Description, Brochure Image, Brochure PDF Name)
   const pricingDetails = (() => {
-    const desc = venueData?.attributes?.pricing_description || venueData?.pricing_description || "";
-    const brochureBase64 = venueData?.attributes?.pricing_brochure_base64 || venueData?.pricing_brochure_base64 || null;
-    const brochureName = venueData?.attributes?.pricing_brochure_name || venueData?.pricing_brochure_name || null;
-    const brochureUrl = venueData?.attributes?.pricing_brochure_url || venueData?.pricing_brochure_url || null;
-    const startingPrice = venueData?.attributes?.starting_price ?? venueData?.starting_price ?? null;
+    const desc =
+      venueData?.attributes?.pricing_description ||
+      venueData?.pricing_description ||
+      "";
+    const brochureBase64 =
+      venueData?.attributes?.pricing_brochure_base64 ||
+      venueData?.pricing_brochure_base64 ||
+      null;
+    const brochureName =
+      venueData?.attributes?.pricing_brochure_name ||
+      venueData?.pricing_brochure_name ||
+      null;
+    const brochureUrl =
+      venueData?.attributes?.pricing_brochure_url ||
+      venueData?.pricing_brochure_url ||
+      null;
+    const startingPrice =
+      venueData?.attributes?.starting_price ??
+      venueData?.starting_price ??
+      null;
 
     const isImage = !!(
       (brochureBase64 && brochureBase64.startsWith("data:image")) ||
@@ -7362,7 +7443,9 @@ const Detailed = () => {
                                 <h3 className="fs-18 fw-bold text-success mb-0">
                                   Vegetarian Menu
                                 </h3>
-                                <small className="text-muted">Pure Veg Options</small>
+                                <small className="text-muted">
+                                  Pure Veg Options
+                                </small>
                               </div>
                             </div>
 
@@ -7373,12 +7456,20 @@ const Detailed = () => {
                                 </span>
                                 <span className="fs-20 fw-bold text-dark">
                                   {(() => {
-                                    const num = String(menusData.veg.price).replace(/[^0-9]/g, "");
+                                    const num = String(
+                                      menusData.veg.price,
+                                    ).replace(/[^0-9]/g, "");
                                     if (num) {
                                       return (
                                         <>
-                                          ₹ {parseInt(num, 10).toLocaleString("en-IN")}
-                                          <span className="fs-13 text-muted fw-normal"> / plate</span>
+                                          ₹{" "}
+                                          {parseInt(num, 10).toLocaleString(
+                                            "en-IN",
+                                          )}
+                                          <span className="fs-13 text-muted fw-normal">
+                                            {" "}
+                                            / plate
+                                          </span>
                                         </>
                                       );
                                     }
@@ -7403,7 +7494,8 @@ const Detailed = () => {
                           {menusData.veg.items.length > 0 && (
                             <div className="mt-auto pt-2">
                               <span className="d-block fw-semibold text-dark fs-13 mb-2 text-uppercase tracking-wider">
-                                Menu Inclusions ({menusData.veg.items.length} items)
+                                Menu Inclusions ({menusData.veg.items.length}{" "}
+                                items)
                               </span>
                               <div className="d-flex flex-wrap gap-2">
                                 {menusData.veg.items.map((item, idx) => (
@@ -7477,7 +7569,9 @@ const Detailed = () => {
                                 <h3 className="fs-18 fw-bold text-danger mb-0">
                                   Non-Vegetarian Menu
                                 </h3>
-                                <small className="text-muted">Includes Non-Veg Specialties</small>
+                                <small className="text-muted">
+                                  Includes Non-Veg Specialties
+                                </small>
                               </div>
                             </div>
 
@@ -7488,12 +7582,20 @@ const Detailed = () => {
                                 </span>
                                 <span className="fs-20 fw-bold text-dark">
                                   {(() => {
-                                    const num = String(menusData.nonVeg.price).replace(/[^0-9]/g, "");
+                                    const num = String(
+                                      menusData.nonVeg.price,
+                                    ).replace(/[^0-9]/g, "");
                                     if (num) {
                                       return (
                                         <>
-                                          ₹ {parseInt(num, 10).toLocaleString("en-IN")}
-                                          <span className="fs-13 text-muted fw-normal"> / plate</span>
+                                          ₹{" "}
+                                          {parseInt(num, 10).toLocaleString(
+                                            "en-IN",
+                                          )}
+                                          <span className="fs-13 text-muted fw-normal">
+                                            {" "}
+                                            / plate
+                                          </span>
                                         </>
                                       );
                                     }
@@ -7518,7 +7620,8 @@ const Detailed = () => {
                           {menusData.nonVeg.items.length > 0 && (
                             <div className="mt-auto pt-2">
                               <span className="d-block fw-semibold text-dark fs-13 mb-2 text-uppercase tracking-wider">
-                                Menu Inclusions ({menusData.nonVeg.items.length} items)
+                                Menu Inclusions ({menusData.nonVeg.items.length}{" "}
+                                items)
                               </span>
                               <div className="d-flex flex-wrap gap-2">
                                 {menusData.nonVeg.items.map((item, idx) => (
@@ -7551,7 +7654,10 @@ const Detailed = () => {
 
             {/* PRICING & PACKAGES DETAILS */}
             {pricingDetails.hasAny && (
-              <div id="pricing-packages" className="venue-pricing-packages mb-5 p-2">
+              <div
+                id="pricing-packages"
+                className="venue-pricing-packages mb-5 p-2"
+              >
                 <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
                   <div className="d-flex align-items-center gap-2">
                     <div
@@ -7572,7 +7678,9 @@ const Detailed = () => {
                       <h2 className="details-section-title fw-bold fs-22 mb-0">
                         Pricing & Packages
                       </h2>
-                      <small className="text-muted">Pricing plans & brochures</small>
+                      <small className="text-muted">
+                        Pricing plans & brochures
+                      </small>
                     </div>
                   </div>
 
@@ -7580,8 +7688,11 @@ const Detailed = () => {
                     <span className="badge bg-light text-dark border px-3 py-2 fs-13 fw-semibold">
                       Starting from ₹{" "}
                       {parseInt(
-                        String(pricingDetails.startingPrice).replace(/[^0-9]/g, "") || 0,
-                        10
+                        String(pricingDetails.startingPrice).replace(
+                          /[^0-9]/g,
+                          "",
+                        ) || 0,
+                        10,
                       ).toLocaleString("en-IN")}
                     </span>
                   )}
@@ -7601,7 +7712,14 @@ const Detailed = () => {
                   <div className="card-body p-4">
                     <Row className="g-4 align-items-start">
                       {/* Description & Details Column */}
-                      <Col lg={pricingDetails.imageSrc || pricingDetails.brochureName ? 7 : 12} xs={12}>
+                      <Col
+                        lg={
+                          pricingDetails.imageSrc || pricingDetails.brochureName
+                            ? 7
+                            : 12
+                        }
+                        xs={12}
+                      >
                         {pricingDetails.description ? (
                           <div>
                             <h5 className="fw-semibold text-dark mb-2 fs-16">
@@ -7622,8 +7740,12 @@ const Detailed = () => {
                             <h5 className="fw-semibold text-dark mb-2 fs-16">
                               Pricing Information
                             </h5>
-                            <p className="text-secondary fs-14 mb-3" style={{ lineHeight: "1.7" }}>
-                              Contact this vendor for customized pricing plans, package inclusions, and date availability.
+                            <p
+                              className="text-secondary fs-14 mb-3"
+                              style={{ lineHeight: "1.7" }}
+                            >
+                              Contact this vendor for customized pricing plans,
+                              package inclusions, and date availability.
                             </p>
                           </div>
                         )}
@@ -7648,8 +7770,11 @@ const Detailed = () => {
                               >
                                 ₹{" "}
                                 {parseInt(
-                                  String(pricingDetails.startingPrice).replace(/[^0-9]/g, "") || 0,
-                                  10
+                                  String(pricingDetails.startingPrice).replace(
+                                    /[^0-9]/g,
+                                    "",
+                                  ) || 0,
+                                  10,
                                 ).toLocaleString("en-IN")}
                               </span>
                             </div>
@@ -7658,13 +7783,16 @@ const Detailed = () => {
                               variant="primary"
                               className="rounded-pill px-3 py-2 ms-auto"
                               style={{
-                                background: "linear-gradient(135deg, #ed1173 0%, #c40a5a 100%)",
+                                background:
+                                  "linear-gradient(135deg, #ed1173 0%, #c40a5a 100%)",
                                 border: "none",
                                 fontSize: "13px",
                                 fontWeight: 600,
                                 boxShadow: "0 2px 8px rgba(237, 17, 115, 0.25)",
                               }}
-                              onClick={() => handleShowPricingModal(venueData.vendor_id)}
+                              onClick={() =>
+                                handleShowPricingModal(venueData.vendor_id)
+                              }
                             >
                               Request Quote
                             </Button>
@@ -7673,7 +7801,8 @@ const Detailed = () => {
                       </Col>
 
                       {/* Brochure Preview Column */}
-                      {(pricingDetails.imageSrc || pricingDetails.brochureName) && (
+                      {(pricingDetails.imageSrc ||
+                        pricingDetails.brochureName) && (
                         <Col lg={5} xs={12}>
                           <div
                             className="p-3 p-md-4 rounded-4"
@@ -7699,24 +7828,31 @@ const Detailed = () => {
                                     justifyContent: "center",
                                     color: "#ed1173",
                                     border: "1px solid #fbcfe8",
-                                    boxShadow: "0 2px 6px rgba(237,17,115,0.08)",
+                                    boxShadow:
+                                      "0 2px 6px rgba(237,17,115,0.08)",
                                   }}
                                 >
                                   <FaTag size={12} />
                                 </span>
-                                <span className="fw-bold text-dark fs-14">Rate Card & Brochure</span>
+                                <span className="fw-bold text-dark fs-14">
+                                  Rate Card & Brochure
+                                </span>
                               </div>
                               <span
                                 className="badge px-2 py-1"
                                 style={{
                                   backgroundColor:
                                     pricingDetails.isPdf ||
-                                    pricingDetails.brochureName?.toLowerCase().endsWith(".pdf")
+                                    pricingDetails.brochureName
+                                      ?.toLowerCase()
+                                      .endsWith(".pdf")
                                       ? "#fee2e2"
                                       : "#fce4ec",
                                   color:
                                     pricingDetails.isPdf ||
-                                    pricingDetails.brochureName?.toLowerCase().endsWith(".pdf")
+                                    pricingDetails.brochureName
+                                      ?.toLowerCase()
+                                      .endsWith(".pdf")
                                       ? "#b91c1c"
                                       : "#c2185b",
                                   fontSize: "10.5px",
@@ -7725,7 +7861,9 @@ const Detailed = () => {
                                 }}
                               >
                                 {pricingDetails.isPdf ||
-                                pricingDetails.brochureName?.toLowerCase().endsWith(".pdf")
+                                pricingDetails.brochureName
+                                  ?.toLowerCase()
+                                  .endsWith(".pdf")
                                   ? "PDF BROCHURE"
                                   : "IMAGE BROCHURE"}
                               </span>
@@ -7745,7 +7883,10 @@ const Detailed = () => {
                                 >
                                   <img
                                     src={pricingDetails.imageSrc}
-                                    alt={pricingDetails.brochureName || "Pricing Brochure"}
+                                    alt={
+                                      pricingDetails.brochureName ||
+                                      "Pricing Brochure"
+                                    }
                                     style={{
                                       width: "100%",
                                       height: "100%",
@@ -7753,8 +7894,14 @@ const Detailed = () => {
                                       display: "block",
                                       transition: "transform 0.3s ease",
                                     }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-                                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                                    onMouseEnter={(e) =>
+                                      (e.currentTarget.style.transform =
+                                        "scale(1.03)")
+                                    }
+                                    onMouseLeave={(e) =>
+                                      (e.currentTarget.style.transform =
+                                        "scale(1)")
+                                    }
                                   />
                                   <div
                                     className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white"
@@ -7763,19 +7910,28 @@ const Detailed = () => {
                                       opacity: 0,
                                       transition: "opacity 0.2s ease",
                                     }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
-                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+                                    onMouseEnter={(e) =>
+                                      (e.currentTarget.style.opacity = 1)
+                                    }
+                                    onMouseLeave={(e) =>
+                                      (e.currentTarget.style.opacity = 0)
+                                    }
                                   >
                                     <div className="d-flex align-items-center gap-2 bg-dark px-3 py-1.5 rounded-pill bg-opacity-75">
                                       <FaEye size={13} />
-                                      <span className="fs-12 fw-medium">View Full Size</span>
+                                      <span className="fs-12 fw-medium">
+                                        View Full Size
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
                                 <div className="d-flex align-items-center justify-content-between mt-2 pt-1">
                                   <small
                                     className="text-muted"
-                                    title={pricingDetails.brochureName || "Price List Image"}
+                                    title={
+                                      pricingDetails.brochureName ||
+                                      "Price List Image"
+                                    }
                                     style={{
                                       maxWidth: "60%",
                                       overflow: "hidden",
@@ -7784,20 +7940,28 @@ const Detailed = () => {
                                       display: "inline-block",
                                     }}
                                   >
-                                    <FaImage className="me-1" style={{ color: "#ed1173" }} />
-                                    {pricingDetails.brochureName || "Price List Image"}
+                                    <FaImage
+                                      className="me-1"
+                                      style={{ color: "#ed1173" }}
+                                    />
+                                    {pricingDetails.brochureName ||
+                                      "Price List Image"}
                                   </small>
                                   <button
                                     type="button"
                                     className="btn btn-link btn-sm text-decoration-none p-0 fw-semibold"
-                                    style={{ color: "#ed1173", fontSize: "12px" }}
+                                    style={{
+                                      color: "#ed1173",
+                                      fontSize: "12px",
+                                    }}
                                     onClick={() => setShowBrochureModal(true)}
                                   >
                                     Click to preview 🔍
                                   </button>
                                 </div>
                               </div>
-                            ) : pricingDetails.isPdf || pricingDetails.brochureName ? (
+                            ) : pricingDetails.isPdf ||
+                              pricingDetails.brochureName ? (
                               <div
                                 className="p-3 bg-white rounded-3 d-flex align-items-center gap-3"
                                 style={{
@@ -7812,7 +7976,8 @@ const Detailed = () => {
                                     width: "48px",
                                     height: "48px",
                                     borderRadius: "10px",
-                                    background: "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                                    background:
+                                      "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
                                     color: "#dc2626",
                                     display: "flex",
                                     alignItems: "center",
@@ -7823,7 +7988,13 @@ const Detailed = () => {
                                 >
                                   <FaFilePdf size={24} />
                                 </div>
-                                <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+                                <div
+                                  style={{
+                                    flex: 1,
+                                    minWidth: 0,
+                                    overflow: "hidden",
+                                  }}
+                                >
                                   <div
                                     className="fw-semibold text-dark fs-14"
                                     title={pricingDetails.brochureName}
@@ -7838,21 +8009,38 @@ const Detailed = () => {
                                     {pricingDetails.brochureName}
                                   </div>
                                   <div className="d-flex align-items-center gap-2 mt-1 flex-wrap">
-                                    <small className="text-muted fs-12">Official Price Brochure</small>
-                                    <span className="text-muted" style={{ fontSize: "10px" }}>•</span>
+                                    <small className="text-muted fs-12">
+                                      Official Price Brochure
+                                    </small>
+                                    <span
+                                      className="text-muted"
+                                      style={{ fontSize: "10px" }}
+                                    >
+                                      •
+                                    </span>
                                     <button
                                       type="button"
                                       className="btn btn-link btn-sm p-0 text-decoration-none fw-semibold"
-                                      style={{ color: "#ed1173", fontSize: "12px" }}
+                                      style={{
+                                        color: "#ed1173",
+                                        fontSize: "12px",
+                                      }}
                                       onClick={() => {
                                         if (pricingDetails.brochureUrl) {
-                                          window.open(pricingDetails.brochureUrl, "_blank");
+                                          window.open(
+                                            pricingDetails.brochureUrl,
+                                            "_blank",
+                                          );
                                         } else {
-                                          handleShowPricingModal(venueData.vendor_id);
+                                          handleShowPricingModal(
+                                            venueData.vendor_id,
+                                          );
                                         }
                                       }}
                                     >
-                                      {pricingDetails.brochureUrl ? "Download PDF →" : "Request PDF Copy →"}
+                                      {pricingDetails.brochureUrl
+                                        ? "Download PDF →"
+                                        : "Request PDF Copy →"}
                                     </button>
                                   </div>
                                 </div>
@@ -8342,26 +8530,40 @@ const Detailed = () => {
                       <div className="fw-semibold text-dark fs-14">
                         Available Dates
                       </div>
-                      <span className="badge bg-light text-muted border px-2 py-1" style={{ fontSize: "11px", fontWeight: 500 }}>
-                        {availabilityMonths.length} {availabilityMonths.length === 1 ? "Month" : "Months"}
+                      <span
+                        className="badge bg-light text-muted border px-2 py-1"
+                        style={{ fontSize: "11px", fontWeight: 500 }}
+                      >
+                        {availabilityMonths.length}{" "}
+                        {availabilityMonths.length === 1 ? "Month" : "Months"}
                       </span>
                     </div>
 
                     {(() => {
-                      const m = availabilityMonths[availMonthIndex] || availabilityMonths[0];
+                      const m =
+                        availabilityMonths[availMonthIndex] ||
+                        availabilityMonths[0];
                       if (!m) return null;
                       const hasPrev = availMonthIndex > 0;
-                      const hasNext = availMonthIndex < availabilityMonths.length - 1;
+                      const hasNext =
+                        availMonthIndex < availabilityMonths.length - 1;
 
                       return (
                         <div
                           key={m.key}
                           className="avail-month-card mb-3 shadow-sm"
-                          style={{ border: "1px solid #e2e8f0", borderRadius: "12px", overflow: "hidden" }}
+                          style={{
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "12px",
+                            overflow: "hidden",
+                          }}
                         >
                           <div
                             className="avail-month-header px-3 py-2 d-flex align-items-center justify-content-between"
-                            style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}
+                            style={{
+                              backgroundColor: "#f8fafc",
+                              borderBottom: "1px solid #e2e8f0",
+                            }}
                           >
                             <button
                               type="button"
@@ -8370,14 +8572,22 @@ const Detailed = () => {
                                 width: "28px",
                                 height: "28px",
                                 borderRadius: "6px",
-                                border: hasPrev ? "1px solid #cbd5e1" : "1px solid #e2e8f0",
-                                backgroundColor: hasPrev ? "#ffffff" : "#f1f5f9",
+                                border: hasPrev
+                                  ? "1px solid #cbd5e1"
+                                  : "1px solid #e2e8f0",
+                                backgroundColor: hasPrev
+                                  ? "#ffffff"
+                                  : "#f1f5f9",
                                 color: hasPrev ? "#0f172a" : "#94a3b8",
                                 cursor: hasPrev ? "pointer" : "not-allowed",
                                 transition: "all 0.15s ease",
                               }}
                               disabled={!hasPrev}
-                              onClick={() => setAvailMonthIndex((prev) => Math.max(0, prev - 1))}
+                              onClick={() =>
+                                setAvailMonthIndex((prev) =>
+                                  Math.max(0, prev - 1),
+                                )
+                              }
                               title="Previous Month"
                               aria-label="Previous Month"
                             >
@@ -8395,8 +8605,12 @@ const Detailed = () => {
                                 width: "28px",
                                 height: "28px",
                                 borderRadius: "6px",
-                                border: hasNext ? "1px solid #cbd5e1" : "1px solid #e2e8f0",
-                                backgroundColor: hasNext ? "#ffffff" : "#f1f5f9",
+                                border: hasNext
+                                  ? "1px solid #cbd5e1"
+                                  : "1px solid #e2e8f0",
+                                backgroundColor: hasNext
+                                  ? "#ffffff"
+                                  : "#f1f5f9",
                                 color: hasNext ? "#0f172a" : "#94a3b8",
                                 cursor: hasNext ? "pointer" : "not-allowed",
                                 transition: "all 0.15s ease",
@@ -8404,7 +8618,10 @@ const Detailed = () => {
                               disabled={!hasNext}
                               onClick={() =>
                                 setAvailMonthIndex((prev) =>
-                                  Math.min(availabilityMonths.length - 1, prev + 1)
+                                  Math.min(
+                                    availabilityMonths.length - 1,
+                                    prev + 1,
+                                  ),
                                 )
                               }
                               title="Next Month"
@@ -8503,7 +8720,10 @@ const Detailed = () => {
           centered
           backdrop={true}
         >
-          <Modal.Header closeButton style={{ borderBottom: "1px solid #f0f0f0" }}>
+          <Modal.Header
+            closeButton
+            style={{ borderBottom: "1px solid #f0f0f0" }}
+          >
             <Modal.Title className="fs-16 fw-bold text-dark d-flex align-items-center gap-2">
               <FaImage style={{ color: "#ed1173" }} />
               {pricingDetails.brochureName || "Pricing Brochure & Rate Card"}

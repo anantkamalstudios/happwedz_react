@@ -1,5 +1,4 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://happywedz.com/api";
+import { API_BASE_URL } from "../../config/constants";
 
 // Helper to get auth headers
 const getAuthHeaders = () => {

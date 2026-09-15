@@ -79,16 +79,18 @@ const MessageBody = ({ msg, compact = false, onFeatureComplete }) => {
 
             {msg.vendors && msg.vendors.length > 0 && (
                 <div className={styles.vendorsContainer}>
-                    {msg.vendors.map((vendor, i) => (
+                    {msg.vendors.map((vendor, i) => {
+                        const vendorLink = vendor.contact_link || (vendor.vendor_id ? `/details/info/${vendor.vendor_id}` : null);
+                        return (
                         <div
                             key={i}
                             className={styles.vendorCard}
                             onClick={() => {
-                                if (vendor.vendor_id) {
-                                    window.location.href = `/details/info/${vendor.vendor_id}`;
+                                if (vendorLink) {
+                                    window.location.href = vendorLink;
                                 }
                             }}
-                            style={{ cursor: vendor.vendor_id ? 'pointer' : 'default' }}
+                            style={{ cursor: vendorLink ? 'pointer' : 'default' }}
                         >
                             <div className={styles.vendorHeader}>
                                 <h4>{vendor.name}</h4>
@@ -102,7 +104,8 @@ const MessageBody = ({ msg, compact = false, onFeatureComplete }) => {
                                 <FaTags /> <span>{vendor.why_recommended?.join(" • ")}</span>
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 
