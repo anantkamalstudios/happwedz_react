@@ -4,7 +4,30 @@ export const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   "https://happywedz.com/api";
 // Host that serves relative upload paths (/uploads/...) written by the backend.
-export const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com/";
+export const IMAGE_BASE_URL =
+  (
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_API_URL ||
+    "https://api.happywedz.com"
+  ).replace(/\/+$/, "") + "/";
+
+// General AI service (recommendations, design studio, etc).
+export const AI_API_BASE_URL =
+  import.meta.env.VITE_AI_API_BASE_URL || "https://www.happywedz.com/ai/api";
+
+// Beauty/AI service (try-on uploads, makeup, product filters).
+export const BEAUTY_API_BASE_URL = (
+  import.meta.env.VITE_BEAUTY_API_BASE_URL || "https://www.happywedz.com/ai/api"
+).replace(/\/+$/, "");
+
+// Genie (Shaadi AI chat assistant) service.
+export const SHADI_AI_API_BASE_URL =
+  import.meta.env.VITE_SHADI_AI_API_BASE_URL ||
+  "https://shaadiai.happywedz.com/api";
+
+// Origin of the HappyWedz Store subdomain (see VITE_STORE_ORIGIN in .env).
+export const STORE_ORIGIN =
+  import.meta.env.VITE_STORE_ORIGIN || "https://store.happywedz.com";
 
 // Legacy vendor media rows store absolute URLs against the S3 bucket's REST
 // endpoint, and that bucket is the origin that actually holds the files — so the

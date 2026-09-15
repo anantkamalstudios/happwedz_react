@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { FaqQuestions } from "./FaqData.js";
 import axiosInstance from "../../../../services/api/axiosInstance";
+import { API_BASE_URL } from "../../../../config/constants";
 
 function Faq({ formData, setFormData, onSave }) {
   const { vendor } = useSelector((state) => state.vendorAuth);
@@ -53,7 +54,7 @@ function Faq({ formData, setFormData, onSave }) {
     const fetchSubcategory = async () => {
       if (vendor?.vendor_type_id) {
         try {
-          const res = await fetch(`https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`);
+          const res = await fetch(`${API_BASE_URL}/vendor-types/${vendor.vendor_type_id}`);
           if (!res.ok) return;
           const typeData = await res.json();
           const subcategoryId = formData.vendor_subcategory_id || vendor?.vendor_subcategory_id;
@@ -76,7 +77,7 @@ function Faq({ formData, setFormData, onSave }) {
     async function fetchVendorType() {
       if (vendor?.vendor_type_id) {
         try {
-          const res = await fetch(`https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`);
+          const res = await fetch(`${API_BASE_URL}/vendor-types/${vendor.vendor_type_id}`);
           if (res.ok) {
             const data = await res.json();
             setSubcategories(data?.subcategories || []);

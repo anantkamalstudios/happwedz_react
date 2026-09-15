@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Modal, Toast } from "react-bootstrap";
 import axios from "axios";
 import SummernoteEditor from "../../../ui/SummernoteEditor";
+import { API_BASE_URL } from "../../../../config/constants";
 
 const normalizeUiStatus = (value) => {
   const normalized = String(value || "").trim().toLowerCase();
@@ -103,7 +104,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave, onSaveSuccess }) => {
       if (vendor?.vendor_type_id) {
         try {
           const response = await axios.get(
-            `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`
+            `${API_BASE_URL}/vendor-types/${vendor.vendor_type_id}`
           );
           const vendorTypeData = response.data;
           setVendorTypeName(vendorTypeData?.name || "Unknown Type");

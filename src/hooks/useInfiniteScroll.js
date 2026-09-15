@@ -12,6 +12,7 @@ import { hasView360 } from "../utils/view360Helper";
 import {
   IMAGE_BASE_URL as UPLOADS_BASE_URL,
   toCdnUrl,
+  API_BASE_URL,
 } from "../config/constants";
 
 const IMAGE_BASE_URL = UPLOADS_BASE_URL.replace(/\/+$/, "");
@@ -375,9 +376,7 @@ const useInfiniteScroll = (
           params.append("filters", JSON.stringify(nonPriceFilters));
         }
 
-        const apiBaseUrl =
-          import.meta.env.VITE_API_URL || "https://happywedz.com/api";
-        const apiUrl = `${apiBaseUrl}/vendor-services?${params.toString()}`;
+        const apiUrl = `${API_BASE_URL}/vendor-services?${params.toString()}`;
         const cacheKey = apiUrl;
 
         // Abort any previous request

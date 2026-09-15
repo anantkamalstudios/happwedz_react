@@ -13,6 +13,7 @@ import usePhotography from "../../hooks/usePhotography";
 import { useFilter } from "../../context/realWedding.context";
 import axiosInstance from "../../services/api/axiosInstance";
 import { fetchVendorTypesWithSubcategoriesApi } from "../../services/api/vendorTypesWithSubcategoriesApi";
+import { API_BASE_URL, STORE_ORIGIN } from "../../config/constants";
 
 const Header = () => {
   // Add state to track window width for responsive UI
@@ -75,11 +76,10 @@ const Header = () => {
   const [mostSearchedBlogs, setMostSearchedBlogs] = useState([]);
 
   useEffect(() => {
-    const apiBase = import.meta.env.VITE_API_URL || "https://happywedz.com/api";
     const fetchCategories = async (type, setter) => {
       try {
         const res = await fetch(
-          `${apiBase}/blog-categories/all?type=${type}&status=active`,
+          `${API_BASE_URL}/blog-categories/all?type=${type}&status=active`,
         );
         const json = await res.json();
         const arr = Array.isArray(json.data) ? json.data : [];
@@ -775,7 +775,7 @@ const Header = () => {
                 {/* Shop */}
                 <li className="mb-2">
                   <a
-                    href="https://store.happywedz.com/"
+                    href={`${STORE_ORIGIN}/`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
@@ -1956,7 +1956,7 @@ const Header = () => {
                           <div className="dropdown-wrapper">
                             <a
                               className="nav-link text-white fs-16"
-                              href="https://store.happywedz.com/"
+                              href={`${STORE_ORIGIN}/`}
                               id="shopLink"
                               role="button"
                               target="_blank"

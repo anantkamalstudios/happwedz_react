@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import usePhotography from "../../hooks/usePhotography";
 import ShimmerMasonry from "../ui/ShimmerMasonry";
+import { IMAGE_BASE_URL as IMAGE_BASE_URL_RAW } from "../../config/constants";
+
+const IMAGE_BASE_URL = IMAGE_BASE_URL_RAW.replace(/\/+$/, "");
 
 const MasonryImageSection = () => {
   const { fetchAllPhotos, allPhotos, loading } = usePhotography();
@@ -32,18 +35,12 @@ const MasonryImageSection = () => {
           if (
             imageUrl?.startsWith("http://happywedz.com/uploads/photography/")
           ) {
-            imageUrl = imageUrl.replace(
-              "http://happywedz.com",
-              "https://happywedzbackend.happywedz.com"
-            );
+            imageUrl = imageUrl.replace("http://happywedz.com", IMAGE_BASE_URL);
           }
           if (
             imageUrl?.startsWith("https://happywedz.com/uploads/photography/")
           ) {
-            imageUrl = imageUrl.replace(
-              "https://happywedz.com",
-              "https://happywedzbackend.happywedz.com"
-            );
+            imageUrl = imageUrl.replace("https://happywedz.com", IMAGE_BASE_URL);
           }
 
           const size = index % 2 === 0 ? "large" : "medium";

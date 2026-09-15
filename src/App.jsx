@@ -73,6 +73,9 @@ const BlogDetails = lazy(() => import("./components/pages/BlogDetails"));
 const VendorLeadsPage = lazy(
   () => import("./components/pages/adminVendor/VendorLeadsPage"),
 );
+const InstagramCallback = lazy(
+  () => import("./components/pages/adminVendor/InstagramCallback"),
+);
 const ReviewsPage = lazy(() => import("./components/pages/WriteReviewPage"));
 const AboutUs = lazy(() => import("./components/layouts/AboutUs"));
 const DestinationWedding = lazy(
@@ -644,6 +647,10 @@ function App() {
               <Route
                 path="/vendor-dashboard/total-leads"
                 element={<VendorLeadsPage />}
+              />
+              <Route
+                path="/instagram-callback"
+                element={<InstagramCallback />}
               />
               <Route path="/write-review/:vendorId" element={<ReviewsPage />} />
               <Route

@@ -8,6 +8,7 @@ import { FaSearch } from "react-icons/fa";
 import PricingModal from "../../../layouts/PricingModal";
 import vendorServicesApi from "../../../../services/api/vendorServicesApi";
 import axiosInstance from "../../../../services/api/axiosInstance";
+import { IMAGE_BASE_URL as IMAGE_BASE_URL_RAW } from "../../../../config/constants";
 
 const Wishlist = () => {
   useSelector((state) => state.auth.token); // keep for detecting auth state
@@ -23,7 +24,7 @@ const Wishlist = () => {
     setShowModal(true);
   };
 
-  const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
+  const IMAGE_BASE_URL = IMAGE_BASE_URL_RAW.replace(/\/+$/, "");
   const getImageUrl = (path) => {
     if (!path) return "/images/imageNotFound.jpg";
     if (/^https?:\/\//i.test(path)) return path;
@@ -34,7 +35,7 @@ const Wishlist = () => {
     const fetchWishlist = async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get(`https://happywedz.com/api/wishlist`);
+        const res = await axiosInstance.get(`/wishlist`);
         const data = res.data;
 
         if (data.success && data.data.length > 0) {
@@ -118,7 +119,7 @@ const Wishlist = () => {
 
     try {
       const response = await axiosInstance.post(
-        "https://happywedz.com/api/wishlist/toggle",
+        "/wishlist/toggle",
         { vendor_services_id: vendorId }
       );
 

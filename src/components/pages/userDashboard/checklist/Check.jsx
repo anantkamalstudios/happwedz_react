@@ -26,9 +26,9 @@ import ChecklistPDF from "./ChecklistPDF";
 import { formatDate } from "../../../../utils/dateFormat";
 import { Dropdown } from "react-bootstrap";
 import "./Checklist.css";
+import { API_BASE_URL } from "../../../../config/constants";
 
-const CATEGORY_API =
-  "https://happywedz.com/api/vendor-types/with-subcategories/all";
+const CATEGORY_API = `${API_BASE_URL}/vendor-types/with-subcategories/all`;
 
 const Check = () => {
   const dispatch = useDispatch();
