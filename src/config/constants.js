@@ -62,6 +62,11 @@ const LEGACY_UPLOAD_ORIGINS = [
 
 const API_ORIGIN = IMAGE_BASE_URL.replace(/\/+$/, "");
 
+// encodeURI escapes "%" itself, so running it over an already-encoded key turns
+// %23 into %2523 and the request 404s. Several blog uploads are named after
+// hashtags and carry %23 throughout, so only encode what is not encoded yet.
+const encodeOnce = (url) => (/%[0-9A-Fa-f]{2}/.test(url) ? url : encodeURI(url));
+
 /**
  * Resolve whatever a CMS row holds into a URL the browser can actually load.
  *
@@ -92,11 +97,11 @@ export const resolveMediaUrl = (value, fallback = null) => {
     );
     // Bucket URLs fall through untouched (or onto the CDN when configured).
     if (legacy) url = API_ORIGIN + url.slice(legacy.length);
-    return toCdnUrl(encodeURI(url));
+    return toCdnUrl(encodeOnce(url));
   }
 
   // A bare filename means a disk upload, which the API serves under /uploads
   // — matching toPublicUrl() in the backend's src/utils/s3Media.js.
   const path = url.startsWith("/") ? url : `/uploads/${url}`;
-  return encodeURI(API_ORIGIN + path);
+  return encodeOnce(API_ORIGIN + path);
 };
