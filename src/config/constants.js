@@ -54,6 +54,10 @@ export const toCdnUrl = (url) =>
 // web app shared an origin. happywedz.com has no /uploads route today, so any
 // such URL has to be moved onto the API origin or it resolves to index.html.
 const LEGACY_UPLOAD_ORIGINS = [
+  // The retired cPanel backend. Its DNS no longer resolves, so rows still
+  // pointing at it hang until the browser gives up rather than failing fast.
+  "https://happywedzbackend.happywedz.com",
+  "http://happywedzbackend.happywedz.com",
   "https://happywedz.com:4000",
   "http://happywedz.com:4000",
   "https://happywedz.com",
