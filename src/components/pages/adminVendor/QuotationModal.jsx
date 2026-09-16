@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useToast } from "../../layouts/toasts/Toast";
-
-const API_BASE_URL = "https://happywedz.com";
+import { formatDate } from "../../../utils/dateFormat";
+import { API_BASE_URL } from "../../../config/constants";
 
 const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
   const [submitting, setSubmitting] = useState(false);
@@ -36,7 +36,7 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
     setLoadingHistory(true);
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/request-pricing/vendor/quotation-history?userId=${lead.request.user.id}`,
+        `${API_BASE_URL}/request-pricing/vendor/quotation-history?userId=${lead.request.user.id}`,
         {
           headers: {
             Authorization: `Bearer ${vendorToken}`,
@@ -80,7 +80,7 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
       };
 
       const response = await fetch(
-        `${API_BASE_URL}/api/request-pricing/requests/${lead.request.id}/quotation`,
+        `${API_BASE_URL}/request-pricing/requests/${lead.request.id}/quotation`,
         {
           method: "POST",
           headers: {
@@ -181,9 +181,7 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
                       <small className="text-muted">
                         {/* If we had a createdAt, we'd use it here. 
                             For now, relying on validTill or just order. */}
-                        {q.quote?.createdAt
-                          ? new Date(q.quote.createdAt).toLocaleDateString()
-                          : ""}
+                        {formatDate(q.quote?.createdAt)}
                       </small>
                     </div>
                     <div className="card-body">

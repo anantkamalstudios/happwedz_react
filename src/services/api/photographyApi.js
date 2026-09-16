@@ -1,7 +1,15 @@
 // Photography API service
 import axios from "axios";
+import { API_BASE_URL } from "../../config/constants";
 
-const BASE_URL = "https://happywedz.com/api";
+const getBaseUrl = () => {
+  const envUrl = API_BASE_URL;
+  if (envUrl.includes("localhost")) {
+    return envUrl.replace(/\/api$/, "");
+  }
+  return envUrl;
+};
+const BASE_URL = getBaseUrl();
 
 // Get main photography types
 export const getPhotographyTypes = async () => {
@@ -42,9 +50,10 @@ export const getPhotographyByType = async (id) => {
 };
 
 // Get photos by subcategory
-export const getPhotographyByCategory = async (id) => {
-  const response = await axios.get(
-    `${BASE_URL}/photography/filter?category=${id}`
-  );
+export const getPhotographyByCategory = async (id, city) => {
+  const url = city 
+    ? `${BASE_URL}/photography/filter?category=${id}&city=${city}`
+    : `${BASE_URL}/photography/filter?category=${id}`;
+  const response = await axios.get(url);
   return response.data;
 };

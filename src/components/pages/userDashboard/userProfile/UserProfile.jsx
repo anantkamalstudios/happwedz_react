@@ -10,6 +10,7 @@ import {
   Button,
   Spinner,
   Alert,
+  Modal,
 } from "react-bootstrap";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -18,7 +19,8 @@ import { TextField } from "@mui/material";
 import dayjs from "dayjs";
 import { setCredentials } from "../../../../redux/authSlice";
 import { getImageUrl } from "../../../../utils/imageUtils";
-import { FaUndo, FaSave, FaImage, FaCamera } from "react-icons/fa";
+import { FaUndo, FaSave, FaImage, FaCamera, FaCropAlt, FaRedo } from "react-icons/fa";
+import { API_BASE_URL } from "../../../../config/constants";
 
 const initialState = {
   id: "",
@@ -53,6 +55,36 @@ const UserProfile = ({ user, token }) => {
     confirmPassword: "",
   });
   const [initialValues, setInitialValues] = useState(null);
+
+  // Image Cropper States
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [cropTargetField, setCropTargetField] = useState("profileImage");
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const handlePointerDown = (e) => {
+    setIsDragging(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setDragStart({ x: clientX - offsetX, y: clientY - offsetY });
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setOffsetX(clientX - dragStart.x);
+    setOffsetY(clientY - dragStart.y);
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+  };
 
   useEffect(() => {
     if (!effectiveUser || !userId) return;
@@ -115,7 +147,7 @@ const UserProfile = ({ user, token }) => {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`https://happywedz.com/api/user/${userId}`, {
+        const res = await fetch(`${API_BASE_URL}/user/${userId}`, {
           headers: {
             "Content-Type": "application/json",
             ...(effectiveToken
@@ -170,7 +202,70 @@ const UserProfile = ({ user, token }) => {
     const { name, files } = e.target;
     if (!files || files.length === 0) return;
     const file = files[0];
-    setFormData((prev) => ({ ...prev, [name]: file }));
+
+    if (name === "coverImage") {
+      setFormData((prev) => ({ ...prev, [name]: file }));
+      e.target.value = "";
+      return;
+    }
+
+    const imageObjectUrl = URL.createObjectURL(file);
+    setCropImageSrc(imageObjectUrl);
+    setCropTargetField(name);
+    setZoom(1);
+    setRotation(0);
+    setOffsetX(0);
+    setOffsetY(0);
+    setShowCropModal(true);
+    e.target.value = "";
+  };
+
+  const handleCropSave = () => {
+    if (!cropImageSrc) return;
+    const img = new Image();
+    img.src = cropImageSrc;
+    img.onload = () => {
+      const isProfile = cropTargetField === "profileImage";
+      const targetSize = isProfile ? 400 : 800;
+      const targetHeight = isProfile ? 400 : 350;
+      const canvas = document.createElement("canvas");
+      canvas.width = targetSize;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, targetSize, targetHeight);
+      ctx.save();
+
+      ctx.translate(targetSize / 2, targetHeight / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.scale(zoom, zoom);
+
+      const aspect = img.width / img.height;
+      let drawW = targetSize;
+      let drawH = targetSize / aspect;
+      if (drawH < targetHeight) {
+        drawH = targetHeight;
+        drawW = targetHeight * aspect;
+      }
+
+      ctx.drawImage(
+        img,
+        -drawW / 2 + offsetX,
+        -drawH / 2 + offsetY,
+        drawW,
+        drawH
+      );
+      ctx.restore();
+
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const croppedFile = new File([blob], `${cropTargetField}_cropped.jpg`, {
+          type: "image/jpeg",
+        });
+        setFormData((prev) => ({ ...prev, [cropTargetField]: croppedFile }));
+        setShowCropModal(false);
+      }, "image/jpeg", 0.92);
+    };
   };
 
   const handlePasswordFieldChange = (e) => {
@@ -250,7 +345,7 @@ const UserProfile = ({ user, token }) => {
         };
 
         const passwordRes = await axios.put(
-          `https://happywedz.com/api/user/${userId}/change-password`,
+          `${API_BASE_URL}/user/${userId}/change-password`,
           passwordBody,
           {
             headers: {
@@ -294,7 +389,7 @@ const UserProfile = ({ user, token }) => {
           body.append("coverImage", formData.coverImage);
 
         res = await axios.put(
-          `https://happywedz.com/api/user/${userId}`,
+          `${API_BASE_URL}/user/${userId}`,
           body,
           {
             headers: {
@@ -329,7 +424,7 @@ const UserProfile = ({ user, token }) => {
           jsonBody.coverImage = formData.coverImage;
         }
         res = await axios.put(
-          `https://happywedz.com/api/user/${userId}`,
+          `${API_BASE_URL}/user/${userId}`,
           jsonBody,
           {
             headers: {
@@ -416,6 +511,10 @@ const UserProfile = ({ user, token }) => {
 
   return (
     <Container className="py-3 py-md-4">
+      <style>{`
+        .profile-avatar-upload:hover .profile-avatar-overlay { opacity: 1; }
+        .profile-avatar-upload:focus-within { outline: 2px solid #0d6efd; outline-offset: 2px; }
+      `}</style>
       <Row className="g-3 g-md-4">
         <Col xs={12}>
           <Card className="border-0 shadow-sm">
@@ -436,30 +535,99 @@ const UserProfile = ({ user, token }) => {
             <Card.Body>
               <Row className="align-items-center">
                 <Col xs="auto">
-                  <div
+                  <label
+                    htmlFor="profileImageUpload"
+                    className="profile-avatar-upload"
+                    title="Click to upload profile photo"
                     style={{
+                      position: "relative",
+                      display: "block",
                       width: "96px",
                       height: "96px",
                       borderRadius: "50%",
-                      overflow: "hidden",
                       border: "3px solid #fff",
                       marginTop: "-72px",
                       boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
                       backgroundColor: "#f3f4f6",
+                      cursor: "pointer",
                     }}
                   >
-                    {profilePreview ? (
-                      <img
-                        src={profilePreview}
-                        alt="Profile"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
-                    ) : null}
-                  </div>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "50%",
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {profilePreview ? (
+                        <img
+                          src={profilePreview}
+                          alt="Profile"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <FaCamera size={26} color="#9ca3af" />
+                      )}
+                    </div>
+
+                    {/* hover overlay */}
+                    <div
+                      className="profile-avatar-overlay"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        borderRadius: "50%",
+                        background: "rgba(0,0,0,0.45)",
+                        color: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        opacity: 0,
+                        transition: "opacity .15s ease",
+                      }}
+                    >
+                      {profilePreview ? "Change" : "Upload"}
+                    </div>
+
+                    {/* camera badge */}
+                    <span
+                      style={{
+                        position: "absolute",
+                        right: "-2px",
+                        bottom: "-2px",
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "50%",
+                        background: "#0d6efd",
+                        border: "2px solid #fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                      }}
+                    >
+                      <FaCamera size={13} color="#fff" />
+                    </span>
+
+                    <input
+                      id="profileImageUpload"
+                      type="file"
+                      accept="image/*"
+                      name="profileImage"
+                      onChange={handleImageChange}
+                      style={{ display: "none" }}
+                    />
+                  </label>
                 </Col>
                 <Col>
                   <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
@@ -488,22 +656,14 @@ const UserProfile = ({ user, token }) => {
                           className="d-none"
                         />
                       </Form.Group>
-                      <Form.Group controlId="profileImage" className="mb-0">
-                        <Form.Label
-                          className="btn btn-outline-primary btn-sm mb-0 fs-14 d-inline-flex align-items-center justify-content-center"
-                          title="Change photo"
-                          aria-label="Change photo"
-                        >
-                          <FaCamera size={16} />
-                        </Form.Label>
-                        <Form.Control
-                          type="file"
-                          accept="image/*"
-                          name="profileImage"
-                          onChange={handleImageChange}
-                          className="d-none"
-                        />
-                      </Form.Group>
+                      <label
+                        htmlFor="profileImageUpload"
+                        className="btn btn-outline-primary btn-sm mb-0 fs-14 d-inline-flex align-items-center justify-content-center"
+                        title="Change photo"
+                        aria-label="Change photo"
+                      >
+                        <FaCamera size={16} />
+                      </label>
                     </div>
                   </div>
                 </Col>
@@ -579,6 +739,7 @@ const UserProfile = ({ user, token }) => {
                               ? dayjs(formData.weddingDate)
                               : null
                           }
+                          format="DD/MM/YYYY"
                           onChange={handleDateChange}
                           slotProps={{
                             textField: {
@@ -625,14 +786,14 @@ const UserProfile = ({ user, token }) => {
 
                   <Col md={3}>
                     <Form.Group controlId="weddingVenue">
-                      <Form.Label className="fs-16">Wedding Venue</Form.Label>
+                      <Form.Label className="fs-16">Wedding City</Form.Label>
                       <Form.Control
                         className="fs-14"
                         type="text"
                         name="weddingVenue"
                         value={formData.weddingVenue}
                         onChange={handleChange}
-                        placeholder="Venue"
+                        placeholder="Wedding City"
                       />
                     </Form.Group>
                   </Col>
@@ -791,6 +952,156 @@ const UserProfile = ({ user, token }) => {
           </Card>
         </Col>
       </Row>
+
+      {/* Image Cropper Modal */}
+      <Modal
+        show={showCropModal}
+        onHide={() => setShowCropModal(false)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title className="fs-18 fw-bold">
+            <FaCropAlt className="me-2" style={{ color: "#ed1173" }} />
+            Crop {cropTargetField === "profileImage" ? "Profile Picture" : "Cover Photo"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <p className="text-muted small mb-2">
+            💡 Drag the image with your mouse or finger to align it inside the crop circle.
+          </p>
+          <div
+            onMouseDown={handlePointerDown}
+            onMouseMove={handlePointerMove}
+            onMouseUp={handlePointerUp}
+            onMouseLeave={handlePointerUp}
+            onTouchStart={handlePointerDown}
+            onTouchMove={handlePointerMove}
+            onTouchEnd={handlePointerUp}
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "360px",
+              backgroundColor: "#111",
+              overflow: "hidden",
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: isDragging ? "grabbing" : "grab",
+              userSelect: "none",
+              touchAction: "none",
+            }}
+          >
+            {cropImageSrc && (
+              <img
+                src={cropImageSrc}
+                alt="Crop Preview"
+                draggable={false}
+                style={{
+                  transform: `translate(${offsetX}px, ${offsetY}px) rotate(${rotation}deg) scale(${zoom})`,
+                  transition: isDragging ? "none" : "transform 0.05s ease-out",
+                  maxHeight: "100%",
+                  maxWidth: "100%",
+                  objectFit: "contain",
+                  userSelect: "none",
+                  pointerEvents: "none",
+                }}
+              />
+            )}
+            {/* Viewport Mask Overlay */}
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: cropTargetField === "profileImage" ? "220px" : "320px",
+                height: cropTargetField === "profileImage" ? "220px" : "180px",
+                borderRadius: cropTargetField === "profileImage" ? "50%" : "8px",
+                border: "2px dashed #ed1173",
+                boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
+
+          <div className="mt-3 px-3">
+            <Row className="align-items-center mb-2">
+              <Col xs={3} className="text-end fw-bold fs-14">Zoom:</Col>
+              <Col xs={7}>
+                <Form.Range
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                />
+              </Col>
+              <Col xs={2} className="text-start fs-14">{zoom.toFixed(1)}x</Col>
+            </Row>
+
+            <Row className="align-items-center mb-2">
+              <Col xs={3} className="text-end fw-bold fs-14">Pan Horizontal (X):</Col>
+              <Col xs={7}>
+                <Form.Range
+                  min={-150}
+                  max={150}
+                  value={offsetX}
+                  onChange={(e) => setOffsetX(parseInt(e.target.value))}
+                />
+              </Col>
+              <Col xs={2} className="text-start fs-14">{offsetX}px</Col>
+            </Row>
+
+            <Row className="align-items-center mb-2">
+              <Col xs={3} className="text-end fw-bold fs-14">Pan Vertical (Y):</Col>
+              <Col xs={7}>
+                <Form.Range
+                  min={-150}
+                  max={150}
+                  value={offsetY}
+                  onChange={(e) => setOffsetY(parseInt(e.target.value))}
+                />
+              </Col>
+              <Col xs={2} className="text-start fs-14">{offsetY}px</Col>
+            </Row>
+
+            <div className="d-flex justify-content-center gap-2 mt-3">
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={() => setRotation((r) => (r + 90) % 360)}
+              >
+                <FaRedo className="me-1" /> Rotate 90°
+              </Button>
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={() => {
+                  setZoom(1);
+                  setRotation(0);
+                  setOffsetX(0);
+                  setOffsetY(0);
+                }}
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCropModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            style={{ backgroundColor: "#ed1173", borderColor: "#ed1173" }}
+            onClick={handleCropSave}
+          >
+            Apply & Save Crop
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

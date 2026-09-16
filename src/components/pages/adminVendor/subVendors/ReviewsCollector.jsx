@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { API_BASE_URL } from "../../../../config/constants";
 
 export default function ReviewRequestForm() {
   const { vendor, token } = useSelector((state) => state.vendorAuth) || {};
@@ -25,15 +26,18 @@ export default function ReviewRequestForm() {
 
   const vendorId = vendor?.id || vendor?.vendorId;
   const [serviceId, setServiceId] = useState(null);
+  const [serviceSlug, setServiceSlug] = useState(null);
 
-  const reviewUrl = `${window.location.origin}/write-review/${serviceId}`;
+  const reviewUrl = serviceSlug
+    ? `${window.location.origin}/write-review/${serviceId}/${serviceSlug}`
+    : `${window.location.origin}/write-review/${serviceId}`;
 
   useEffect(() => {
     if (!token) return;
     const fetchBooked = async () => {
       try {
         const res = await axios.get(
-          "https://happywedz.com/api/inbox?filter=booked",
+          `${API_BASE_URL}/inbox?filter=booked`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -51,7 +55,7 @@ export default function ReviewRequestForm() {
       if (!vendorId) return;
       try {
         const res = await axios.get(
-          `https://happywedz.com/api/vendor-services/vendor/${vendorId}`,
+          `${API_BASE_URL}/vendor-services/vendor/${vendorId}`,
           { headers: token ? { Authorization: `Bearer ${token}` } : {} }
         );
         const raw = res?.data;
@@ -66,9 +70,11 @@ export default function ReviewRequestForm() {
           const preferred = list.find((s) => s?.vendor_subcategory_id === 2);
           const chosen = preferred || list[0];
           if (chosen?.id) setServiceId(chosen.id);
+          setServiceSlug(chosen?.slug || null);
         }
       } catch (e) {
         setServiceId(null);
+        setServiceSlug(null);
       }
     };
     fetchServiceId();
@@ -126,7 +132,7 @@ export default function ReviewRequestForm() {
     setLoading(true);
     try {
       await axios.post(
-        `https://happywedz.com/api/reviews/send-review-request/${requestId}`,
+        `${API_BASE_URL}/reviews/send-review-request/${requestId}`,
         {
           message,
           reviewLink: reviewUrl,
@@ -410,7 +416,8 @@ export default function ReviewRequestForm() {
             <button
               className={`btn ${
                 copied ? "btn-success" : "btn-outline-primary border-none"
-              } d-flex align-items-center justify-content-center gap-2 px-3 flex-shrink-0`}
+              } d-flex align-items-center justify-content-center`}
+              style={{ flex: "0 0 auto", width: 44, minWidth: 44, padding: 0 }}
               onClick={copyUrl}
             >
               {copied ? <Check size={16} /> : <Copy size={16} />}

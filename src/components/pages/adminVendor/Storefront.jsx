@@ -1,8 +1,8 @@
 import { IMAGE_BASE_URL } from "../../../config/constants.js";
-import React, { useMemo, useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
-import { FaRegBuilding } from "react-icons/fa";
 import { Nav } from "react-bootstrap";
+import "./Storefront.css";
 import {
   CiBullhorn,
   CiCircleQuestion,
@@ -53,7 +53,9 @@ import SocialDetails from "./subVendors/SocialDetails";
 import axiosInstance from "../../../services/api/axiosInstance";
 import { TbView360Number } from "react-icons/tb";
 import View360 from "./subVendors/View360";
-
+import { FiLock } from "react-icons/fi";
+import { useVendorAccess } from "../../../context/VendorAccessContext";
+import LockedTabOverlay from "./LockedTabOverlay";
 // Reusable New Tag component
 const NewTag = () => (
   <span
@@ -72,11 +74,75 @@ const NewTag = () => (
   </span>
 );
 
+const normalizeServiceStatus = (value) => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "publish" || normalized === "published") return "publish";
+  if (
+    normalized === "hide" ||
+    normalized === "draft" ||
+    normalized === "archived"
+  )
+    return "hide";
+  return "";
+};
+
+/**
+ * Subcategory ids for the multi-select, primary first.
+ * Reads the `subcategories` join the API now returns, falling back to whatever
+ * we already had locally, then to the single primary id.
+ */
+const buildSubcategoryIds = (apiData, prev) => {
+  const primary = apiData?.vendor_subcategory_id;
+  let ids = [];
+
+  if (Array.isArray(apiData?.subcategories) && apiData.subcategories.length) {
+    ids = apiData.subcategories.map((s) => s.id);
+  } else if (Array.isArray(prev?.vendor_subcategory_ids)) {
+    ids = [...prev.vendor_subcategory_ids];
+  }
+
+  if (primary && !ids.some((id) => id == primary)) ids.unshift(primary);
+
+  // Keep the primary at index 0 — VendorBasicInfo treats the first as primary
+  return primary ? [primary, ...ids.filter((id) => id != primary)] : ids;
+};
+
+/** Ignore React click events mistakenly passed as onClick={onSave} */
+const isFormSavePayload = (payload) =>
+  payload &&
+  typeof payload === "object" &&
+  !Array.isArray(payload) &&
+  !payload.nativeEvent &&
+  !(payload instanceof Event);
+
+const safeStringifyFormData = (value) => {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "{}";
+  }
+};
+
 const Storefront = ({ setCompletion }) => {
   const [active, setActive] = useState("business");
   const [showModal, setShowModal] = useState(false);
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
+  const access = useVendorAccess();
+
+  /** Can the vendor edit this tab right now? Used for the sidebar lock glyphs. */
+  const isTabEditable = useCallback(
+    (tabId) => {
+      if (access.loading || !access.stage) return true;
+      if (tabId === "business") return access.canEditBusinessDetails;
+      return access.editableTabs.includes(tabId);
+    },
+    [access.loading, access.stage, access.canEditBusinessDetails, access.editableTabs]
+  );
   const [formData, setFormData] = useState({ attributes: vendor || {} });
+  const formDataRef = useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
   const [photoDrafts, setPhotoDrafts] = useState([]);
   const [videoDrafts, setVideoDrafts] = useState([]);
   const [view360Images, setView360Images] = useState([]);
@@ -97,6 +163,7 @@ const Storefront = ({ setCompletion }) => {
           localStorage.removeItem("vendorFormData");
           localStorage.removeItem("photoDraftsMeta");
           localStorage.removeItem("videoDraftsMeta");
+          localStorage.removeItem("vendorServiceId");
           setFormData({});
           setPhotoDrafts([]);
           setVideoDrafts([]);
@@ -107,6 +174,10 @@ const Storefront = ({ setCompletion }) => {
           vendor.id,
           token
         );
+        
+        const actualData = serviceData 
+          ? (Array.isArray(serviceData) ? serviceData[0] : serviceData) 
+          : null;
 
         // Fetch vendor type name from API (like VendorBasicInfo)
         if (vendor.vendor_type_id) {
@@ -114,19 +185,23 @@ const Storefront = ({ setCompletion }) => {
             const response = await axiosInstance.get(
               `/vendor-types/${vendor.vendor_type_id}`
             );
-            const vendorTypeData = response.data;
-            setVendorTypeName(vendorTypeData?.name || "");
+            const vendorTypeData = response.data || {};
+            const subcategoryId = actualData?.vendor_subcategory_id || vendor.vendor_subcategory_id;
+            const subcats = vendorTypeData.subcategories || [];
+            const subcat = subcats.find(s => s.id == subcategoryId);
+            
+            if (subcat && subcat.name) {
+              setVendorTypeName(subcat.name);
+            } else {
+              setVendorTypeName(vendorTypeData.name || "");
+            }
           } catch (err) {
-            setVendorTypeName("");
+            console.error(err);
           }
         }
 
         // If data exists, merge it into formData.
         if (serviceData) {
-          const actualData = Array.isArray(serviceData)
-            ? serviceData[0]
-            : serviceData;
-
           if (actualData) {
             let gallery = [];
             let videos = [];
@@ -147,13 +222,13 @@ const Storefront = ({ setCompletion }) => {
                 // legacy shape: { gallery: [...], videos: [...] }
                 gallery = Array.isArray(actualData.media.gallery)
                   ? actualData.media.gallery.map((g) =>
-                      typeof g === "string" ? g : g.url || g.path || null
-                    )
+                    typeof g === "string" ? g : g.url || g.path || null
+                  )
                   : [];
                 videos = Array.isArray(actualData.media.videos)
                   ? actualData.media.videos.map((v) =>
-                      typeof v === "string" ? v : v.url || v.path || null
-                    )
+                    typeof v === "string" ? v : v.url || v.path || null
+                  )
                   : [];
               }
             }
@@ -163,12 +238,6 @@ const Storefront = ({ setCompletion }) => {
                 actualData.attributes.video ||
                 actualData.attributes.vedio ||
                 [];
-              const panoImagesAttr = actualData.attributes.view360_images || [];
-              const panoVideosAttr = actualData.attributes.view360_video || [];
-              const panoImagesTop =
-                actualData.view360_images || actualData.view360_image || [];
-              const panoVideosTop =
-                actualData.view360_video || actualData.view360Videos || [];
               if (Array.isArray(videosFromAttr)) {
                 const normalizedVideos = videosFromAttr
                   .map((v) =>
@@ -177,60 +246,38 @@ const Storefront = ({ setCompletion }) => {
                   .filter(Boolean);
                 videos = [...new Set([...videos, ...normalizedVideos])];
               }
-              if (Array.isArray(panoImagesAttr)) {
-                panoImages = panoImagesAttr
-                  .map((v) =>
-                    typeof v === "string" ? v : v.url || v.path || null
-                  )
-                  .filter(Boolean);
-              } else if (
-                typeof panoImagesAttr === "string" &&
-                panoImagesAttr.trim()
-              ) {
-                panoImages = [panoImagesAttr];
-              }
-              if (Array.isArray(panoVideosAttr)) {
-                panoVideos = panoVideosAttr
-                  .map((v) =>
-                    typeof v === "string" ? v : v.url || v.path || null
-                  )
-                  .filter(Boolean);
-              } else if (
-                typeof panoVideosAttr === "string" &&
-                panoVideosAttr.trim()
-              ) {
-                panoVideos = [panoVideosAttr];
-              }
-              if (Array.isArray(panoImagesTop)) {
-                panoImages = [
-                  ...panoImages,
-                  ...panoImagesTop
+
+              // Prefer whichever source is actually present rather than merging both:
+              // a union can only grow, so a stale entry left behind in either location
+              // (e.g. after a removal that only updated one of the two) would otherwise
+              // resurrect forever.
+              const toUrlList = (val) => {
+                if (Array.isArray(val)) {
+                  return val
                     .map((v) =>
                       typeof v === "string" ? v : v.url || v.path || null
                     )
-                    .filter(Boolean),
-                ];
-              } else if (
-                typeof panoImagesTop === "string" &&
-                panoImagesTop.trim()
-              ) {
-                panoImages = [...panoImages, panoImagesTop];
-              }
-              if (Array.isArray(panoVideosTop)) {
-                panoVideos = [
-                  ...panoVideos,
-                  ...panoVideosTop
-                    .map((v) =>
-                      typeof v === "string" ? v : v.url || v.path || null
-                    )
-                    .filter(Boolean),
-                ];
-              } else if (
-                typeof panoVideosTop === "string" &&
-                panoVideosTop.trim()
-              ) {
-                panoVideos = [...panoVideos, panoVideosTop];
-              }
+                    .filter(Boolean);
+                }
+                if (typeof val === "string" && val.trim()) return [val];
+                return null; // not provided by this source
+              };
+
+              const topImages = toUrlList(
+                actualData.view360_images ?? actualData.view360_image
+              );
+              const attrImages = toUrlList(
+                actualData.attributes.view360_images
+              );
+              panoImages = topImages ?? attrImages ?? [];
+
+              const topVideos = toUrlList(
+                actualData.view360_video ?? actualData.view360Videos
+              );
+              const attrVideos = toUrlList(
+                actualData.attributes.view360_video
+              );
+              panoVideos = topVideos ?? attrVideos ?? [];
             }
 
             // Deduplicate 360 media
@@ -245,118 +292,138 @@ const Storefront = ({ setCompletion }) => {
 
             const photoDraftsData = Array.isArray(gallery)
               ? gallery.map((item, index) => {
-                  let preview = cleanUrl(item || "");
-                  if (preview && preview.startsWith("/uploads/"))
-                    preview = IMAGE_BASE_URL + preview;
-                  return {
-                    preview,
-                    file: null,
-                  };
-                })
+                let preview = cleanUrl(item || "");
+                if (preview && preview.startsWith("/uploads/"))
+                  preview = IMAGE_BASE_URL + preview;
+                return {
+                  preview,
+                  file: null,
+                };
+              })
               : [];
             setPhotoDrafts(photoDraftsData.filter((p) => p.preview));
 
             const videoDraftsData = Array.isArray(videos)
               ? videos.map((item, index) => {
-                  let preview = cleanUrl(item || "");
-                  if (preview && preview.startsWith("/uploads/"))
-                    preview = IMAGE_BASE_URL + preview;
-                  return {
-                    id: `video_${index}`,
-                    title: "",
-                    type: "video",
-                    preview,
-                    file: null,
-                  };
-                })
+                let preview = cleanUrl(item || "");
+                if (preview && preview.startsWith("/uploads/"))
+                  preview = IMAGE_BASE_URL + preview;
+                return {
+                  id: `video_${index}`,
+                  title: "",
+                  type: "video",
+                  preview,
+                  file: null,
+                };
+              })
               : [];
             setVideoDrafts(videoDraftsData.filter((v) => v.preview));
             const panoImageDrafts = Array.isArray(panoImages)
               ? panoImages.map((item, index) => {
-                  let preview = cleanUrl(item || "");
-                  if (preview && preview.startsWith("/uploads/"))
-                    preview = IMAGE_BASE_URL + preview;
-                  return {
-                    id: `pano_${index}`,
-                    preview,
-                    file: null,
-                  };
-                })
+                let preview = cleanUrl(item || "");
+                if (preview && preview.startsWith("/uploads/"))
+                  preview = IMAGE_BASE_URL + preview;
+                return {
+                  id: `pano_${index}`,
+                  preview,
+                  file: null,
+                };
+              })
               : [];
             setView360Images(panoImageDrafts.filter((v) => v.preview));
             const panoVideoDrafts = Array.isArray(panoVideos)
               ? panoVideos.map((item, index) => {
-                  let preview = cleanUrl(item || "");
-                  if (preview && preview.startsWith("/uploads/"))
-                    preview = IMAGE_BASE_URL + preview;
-                  return {
-                    id: `pano_video_${index}`,
-                    preview,
-                    file: null,
-                  };
-                })
+                let preview = cleanUrl(item || "");
+                if (preview && preview.startsWith("/uploads/"))
+                  preview = IMAGE_BASE_URL + preview;
+                return {
+                  id: `pano_video_${index}`,
+                  preview,
+                  file: null,
+                };
+              })
               : [];
             setView360Videos(panoVideoDrafts.filter((v) => v.preview));
-            if (actualData && actualData.attributes) {
+
+            if (actualData) {
+              const attrs = actualData.attributes || {};
               setFormData((prev) => ({
                 ...prev,
                 ...actualData,
-                deals: actualData.attributes.deals || [],
-                contact: actualData.attributes.contact
+                // Prioritize API response, as it reflects successful updates, then local state, then Redux
+                vendor_subcategory_id: actualData.vendor_subcategory_id || prev.vendor_subcategory_id || vendor.vendor_subcategory_id,
+                // Full subcategory set from the join table; falls back to the primary
+                vendor_subcategory_ids: buildSubcategoryIds(actualData, prev),
+                id: actualData.id ?? prev.id,
+                status: normalizeServiceStatus(actualData.status),
+                availabilityActive: attrs.availability_active !== false,
+                deals: attrs.deals || [],
+                contact: attrs.contact
                   ? {
-                      contactName: actualData.attributes.contact.name || "",
-                      phone: actualData.attributes.contact.phone || "",
-                      altPhone: actualData.attributes.contact.altPhone || "",
-                      email: actualData.attributes.contact.email || "",
-                      website: actualData.attributes.contact.website || "",
-                      whatsappNumber:
-                        actualData.attributes.contact.whatsapp || "",
-                      inquiryEmail:
-                        actualData.attributes.contact.inquiryEmail || "",
-                    }
+                    contactName: attrs.contact.name || "",
+                    phone: attrs.contact.phone || "",
+                    altPhone: attrs.contact.altPhone || "",
+                    email: attrs.contact.email || "",
+                    website: attrs.contact.website || "",
+                    whatsappNumber: attrs.contact.whatsapp || "",
+                    inquiryEmail: attrs.contact.inquiryEmail || "",
+                  }
                   : {},
-                city: actualData.attributes.city || "",
+                city: attrs.city || "",
 
-                location: actualData.attributes.location
+                location: attrs.location
                   ? {
-                      address: actualData.attributes.address || "",
-
-                      city: actualData.attributes.city || "",
-                      state: actualData.attributes.location.state || "",
-                      country:
-                        actualData.attributes.location.country || "India",
-                      pincode: actualData.attributes.location.pincode || "",
-                      latitude: actualData.attributes.latitude || "",
-                      longitude: actualData.attributes.longitude || "",
-
-                      serviceAreas:
-                        actualData.attributes.location.serviceAreas || [],
-                    }
+                    address: attrs.address || "",
+                    city: attrs.city || "",
+                    state: attrs.location.state || "",
+                    country: attrs.location.country || "India",
+                    pincode: attrs.location.pincode || "",
+                    latitude: attrs.latitude || "",
+                    longitude: attrs.longitude || "",
+                    exact_location_text:
+                      attrs.venue_master?.identity?.exact_location_text || "",
+                    map_pin_url:
+                      attrs.venue_master?.identity?.map_pin_url || "",
+                    serviceAreas: attrs.location.serviceAreas || [],
+                  }
                   : {},
 
                 // Pricing fields mapping
-                startingPrice: actualData.attributes.starting_price || "",
-                priceRange: actualData.attributes.price_range || {
+                startingPrice: attrs.starting_price || "",
+                priceRange: attrs.price_range || {
                   min: "",
                   max: "",
                 },
-                PriceRange: actualData.attributes.PriceRange || "",
+                PriceRange: attrs.PriceRange || "",
+                pricingDescription: attrs.pricing_description || "",
+                pricingBrochureUrl: attrs.pricing_brochure_url || null,
+                // base64 brochure (images only — PDFs skip base64 due to DB size limits)
+                pricingBrochureBase64: attrs.pricing_brochure_base64 || null,
+                // Restore filename independently — works for both images and PDFs
+                pricingFileName: attrs.pricing_brochure_name || null,
+                pricingFileType: attrs.pricing_brochure_base64
+                  ? (attrs.pricing_brochure_base64.startsWith("data:image") ? "image" : "pdf")
+                  : (attrs.pricing_brochure_name
+                    ? (attrs.pricing_brochure_name.toLowerCase().endsWith(".pdf") ? "pdf" : "image")
+                    : null),
+                pricingFilePreview: attrs.pricing_brochure_base64?.startsWith("data:image")
+                  ? attrs.pricing_brochure_base64
+                  : null,
 
-                capacity: actualData.attributes.capacity || {
+                capacity: attrs.capacity || {
                   min: "",
                   max: "",
                 },
-                // indoorOutdoor: actualData.attributes.indoor_outdoor || "",
-                // alcoholPolicy: actualData.attributes.alcohol_policy || "",
-                outside_alcohol: actualData.attributes.outside_alcohol || "",
-                cateringPolicy: actualData.attributes.catering_policy || "",
-                rooms: actualData.attributes.rooms || "",
-                cancellationPolicy:
-                  actualData.attributes.cancellation_policy || "",
-                refundPolicy: actualData.attributes.refund_policy || "",
+                // indoorOutdoor: attrs.indoor_outdoor || "",
+                // alcoholPolicy: attrs.alcohol_policy || "",
+                outside_alcohol: attrs.outside_alcohol || "",
+                cateringPolicy: attrs.catering_policy || "",
+                rooms: attrs.rooms || "",
+                cancellationPolicy: attrs.cancellation_policy || "",
+                refundPolicy: attrs.refund_policy || "",
 
-                payment_terms: actualData.attributes.payment_terms || "",
-                parking: actualData.attributes.parking || "",
+                payment_terms: attrs.payment_terms || "",
+                parking: attrs.parking || "",
 
                 // tnc: actualData.attributes.tnc || "",
 
@@ -366,49 +433,76 @@ const Storefront = ({ setCompletion }) => {
                 // djPolicy: actualData.attributes.dj_policy || "",
                 // primaryCTA: actualData.attributes.primary_cta || "enquire",
                 // sortWeight: actualData.attributes.sort_weight || "",
-                timing: actualData.attributes.timing || {
+                timing: attrs.timing || {
                   open: "",
                   close: "",
                   lastEntry: "",
                 },
-                // ctaUrl: actualData.attributes.cta_url || "",
-                // ctaPhone: actualData.attributes.cta_phone || "",
-                // autoReply: actualData.attributes.auto_reply || "",
+                // ctaUrl: attrs.cta_url || "",
+                // ctaPhone: attrs.cta_phone || "",
+                // autoReply: attrs.auto_reply || "",
 
-                // New attributes from Detailed.jsx
-                veg_price: actualData.attributes.veg_price || "",
-                non_veg_price: actualData.attributes.non_veg_price || "",
-                photo_package_price:
-                  actualData.attributes.photo_package_price || "",
-                photo_video_package_price:
-                  actualData.attributes.photo_video_package_price || "",
-                happywedz_since:
-                  actualData.attributes.happywedz_since ||
-                  actualData.attributes.HappyWedz ||
-                  "",
-                // HappyWedz:
-                //   actualData.attributes.HappyWedz ||
-                //   actualData.attributes.happywedz_since ||
-                //   "",
-                travel_info: actualData.attributes.travel_info || "",
-                offerings: actualData.attributes.offerings || "",
-                delivery_time: actualData.attributes.delivery_time || "",
-                decorPolicy: actualData.attributes.decor_policy || "",
-                area: actualData.attributes.area || "",
-                start_venue: actualData.attributes.start_venue || "",
-                space: actualData.attributes.space || "",
-                dJ_policy: actualData.attributes.dJ_policy || "",
-                video: actualData.attributes.video || [],
-                availableSlots: actualData.attributes.available_slots || [],
+                veg_price: attrs.veg_price || "",
+                non_veg_price: attrs.non_veg_price || "",
+                veg_description: attrs.veg_description || "",
+                non_veg_description: attrs.non_veg_description || "",
+                menu_description: attrs.menu_description || "",
+                photo_package_price: attrs.photo_package_price || "",
+                photo_video_package_price: attrs.photo_video_package_price || "",
+                happywedz_since: attrs.happywedz_since || attrs.HappyWedz || "",
+                travel_info: attrs.travel_info || "",
+                offerings: attrs.offerings || "",
+                delivery_time: attrs.delivery_time || "",
+                decorPolicy: attrs.decor_policy || "",
+                area: attrs.area || "",
+                start_venue: attrs.start_venue || "",
+                space: attrs.space || "",
+                dJ_policy: attrs.dJ_policy || "",
+                video: attrs.video || [],
+                availableSlots: attrs.available_slots || [],
+                // Master Profiles from both branches
+                venue_master: attrs.venue_master || {},
+                caterer_master: attrs.caterer_master || {},
+                photographer_master: attrs.photographer_master || {},
+                makeup_artist_master: attrs.makeup_artist_master || {},
+                jewellery_master: attrs.jewellery_master || {},
+                jewellery_rental_master: attrs.jewellery_rental_master || {},
+                bridal_outfit_master: attrs.bridal_outfit_master || {},
+                rental_outfit_master: attrs.rental_outfit_master || {},
+                cocktail_gown_master: attrs.cocktail_gown_master || {},
+                accessories_master: attrs.accessories_master || {},
+                flower_jewellery_master: attrs.flower_jewellery_master || {},
+                wedding_planner_master: attrs.wedding_planner_master || {},
+                decorator_master: attrs.decorator_master || {},
+                trousseau_master: attrs.trousseau_master || {},
+                gift_master: attrs.gift_master || {},
+                favor_master: attrs.favor_master || {},
+                invitation_master: attrs.invitation_master || {},
+                wedding_suit_master: attrs.wedding_suit_master || {},
+                sherwani_master: attrs.sherwani_master || {},
+                mehndi_artist_master: attrs.mehndi_artist_master || {},
+                florist_master: attrs.florist_master || {},
+                pandit_master: attrs.pandit_master || {},
+                dj_master: attrs.dj_master || actualData.dj_master || {},
+                sangeet_choreographer_master: attrs.sangeet_choreographer_master || actualData.sangeet_choreographer_master || {},
+                wedding_entertainer_master: attrs.wedding_entertainer_master || actualData.wedding_entertainer_master || {},
+                pre_wedding_location_master: attrs.pre_wedding_location_master || null,
+                pre_wedding_photographer_master: attrs.pre_wedding_photographer_master || null,
+                
 
                 attributes: {
                   ...prev.attributes,
-                  ...actualData.attributes,
-                  email:
-                    actualData.attributes.contact?.email ||
-                    prev.attributes?.email,
+                  ...attrs,
+                  email: attrs.contact?.email || prev.attributes?.email,
                 },
               }));
+
+              if (actualData.id) {
+                localStorage.setItem(
+                  "vendorServiceId",
+                  actualData.id.toString()
+                );
+              }
             }
           }
         }
@@ -460,26 +554,333 @@ const Storefront = ({ setCompletion }) => {
     }
   }, [formData.id]);
 
-  const handleSave = async () => {
-    localStorage.setItem("vendorFormData", JSON.stringify(formData));
-    if (formData.id) {
-      try {
-        const fd = buildFormData();
-        await vendorServicesApi.createOrUpdateService(fd, token, formData.id);
-      } catch (e) {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: `Failed to update. ${
-            typeof e === "string" ? e : e?.message || "Unknown error"
-          }`,
-          timer: "3000",
-          confirmButtonText: "OK",
-          confirmButtonColor: "#C31162",
-        });
+
+  const MASTER_PROFILE_KEYS = [
+    "venue_master",
+    "caterer_master",
+    "photographer_master",
+    "makeup_artist_master",
+    "jewellery_master",
+    "jewellery_rental_master",
+    "bridal_outfit_master",
+    "rental_outfit_master",
+    "cocktail_gown_master",
+    "accessories_master",
+    "flower_jewellery_master",
+    "wedding_planner_master",
+    "decorator_master",
+    "trousseau_master",
+    "gift_master",
+    "favor_master",
+    "invitation_master",
+    "wedding_suit_master",
+    "sherwani_master",
+    "mehndi_artist_master",
+    "florist_master",
+    "pandit_master",
+    "dj_master",
+    "sangeet_choreographer_master",
+    "wedding_entertainer_master",
+    "pre_wedding_location_master",
+    "pre_wedding_photographer_master",
+  ];
+
+  const applyMasterProfilesToAttributes = (attrs, data) => {
+    const vendorName =
+      data.attributes?.businessName ||
+      data.attributes?.name ||
+      data.attributes?.Name ||
+      "";
+
+    const injectBrandName = (masterObj, fieldName) => {
+      if (!masterObj) return undefined;
+      const newObj = JSON.parse(JSON.stringify(masterObj));
+      if (!newObj.identity) newObj.identity = {};
+      newObj.identity[fieldName] = vendorName;
+      return newObj;
+    };
+
+    MASTER_PROFILE_KEYS.forEach((key) => {
+      let master = data?.[key] ?? data?.attributes?.[key];
+      if (master && typeof master === "object" && !Array.isArray(master) && Object.keys(master).length > 0) {
+        // Inject brand/company names for specific categories for backward compatibility/consistency
+        if (key === "venue_master") {
+          master = injectBrandName(master, "chain_brand_name");
+        } else if (key === "caterer_master" || key === "trousseau_master" || key === "gift_master" || key === "favor_master" || key === "invitation_master" || key === "wedding_suit_master" || key === "sherwani_master" || key === "mehndi_artist_master" || key === "florist_master" || key === "pandit_master") {
+          master = injectBrandName(master, "brand_name");
+        } else if (key === "makeup_artist_master") {
+          master = injectBrandName(master, "brand_artist_name");
+        } else if (key === "wedding_planner_master") {
+          master = injectBrandName(master, "company_name");
+        } else if (key === "decorator_master") {
+          master = injectBrandName(master, "brand_company_name");
+        }
+        
+        attrs[key] = master;
       }
+    });
+    return attrs;
+  };
+
+  /** Merge vendor account + jewellery identity so API required fields are present on any tab save */
+  const enrichSaveData = useCallback(
+    (data) => {
+      const base = isFormSavePayload(data)
+        ? data
+        : formDataRef.current || formData;
+
+      const jm = base?.jewellery_master || base?.attributes?.jewellery_master;
+      const ji = jm?.identity || {};
+      
+      const bo = base?.bridal_outfit_master || base?.attributes?.bridal_outfit_master;
+      const boi = bo?.identity || {};
+
+      const ro = base?.rental_outfit_master || base?.attributes?.rental_outfit_master;
+      const roi = ro?.identity || {};
+
+      const cg = base?.cocktail_gown_master || base?.attributes?.cocktail_gown_master;
+      const cgi = cg?.identity || {};
+
+      const am = base?.accessories_master || base?.attributes?.accessories_master;
+      const ami = am?.identity || {};
+      
+      const fjm = base?.flower_jewellery_master || base?.attributes?.flower_jewellery_master;
+      const fjmi = fjm?.identity || {};
+
+      const jrm = base?.jewellery_rental_master || base?.attributes?.jewellery_rental_master;
+      const jrmi = jrm?.identity || {};
+
+      const jCities = Array.isArray(ji.cities)
+        ? ji.cities.filter(Boolean)
+        : ji.cities
+          ? [ji.cities]
+          : [];
+
+      const businessName =
+        base?.attributes?.businessName ||
+        base?.attributes?.name ||
+        base?.attributes?.Name ||
+        ji.brand_store_name ||
+        jrmi.brand_name ||
+        boi.brand_name ||
+        roi.brand_name ||
+        cgi.brand_name ||
+        ami.brand_name ||
+        fjmi.brand_name ||
+        vendor?.businessName ||
+        "";
+
+      const city =
+        base?.location?.city ||
+        base?.attributes?.city ||
+        base?.city ||
+        fjmi.city ||
+        jrmi.city ||
+        jCities[0] ||
+        vendor?.city ||
+        "";
+
+      const phone =
+        base?.contact?.phone || vendor?.phone || base?.attributes?.phone || "";
+
+      const email =
+        base?.contact?.email ||
+        vendor?.email ||
+        base?.attributes?.email ||
+        "";
+
+      const slugBase = businessName
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+
+      return {
+        ...base,
+        vendor_subcategory_id:
+          base?.vendor_subcategory_id || vendor?.vendor_subcategory_id || "",
+        vendor_subcategory_ids:
+          Array.isArray(base?.vendor_subcategory_ids) &&
+            base.vendor_subcategory_ids.length
+            ? base.vendor_subcategory_ids
+            : [
+              base?.vendor_subcategory_id || vendor?.vendor_subcategory_id,
+            ].filter(Boolean),
+        vendor_type_id: base?.vendor_type_id || vendor?.vendor_type_id,
+        status: normalizeServiceStatus(base?.status) || "hide",
+        contact: {
+          ...(base?.contact || {}),
+          contactName:
+            base?.contact?.contactName ||
+            businessName ||
+            vendor?.businessName ||
+            "",
+          phone,
+          email,
+        },
+        location: {
+          ...(base?.location || {}),
+          city,
+          country: base?.location?.country || "India",
+        },
+        attributes: {
+          ...(base?.attributes || {}),
+          businessName,
+          name: businessName,
+          Name: businessName,
+          vendor_name: businessName,
+          slug: base?.attributes?.slug || slugBase || "",
+          city,
+          email,
+          phone,
+        },
+      };
+    },
+    [vendor]
+  );
+
+  const getMissingRequiredStorefrontFields = (data) => {
+    const missing = [];
+    const name =
+      data?.attributes?.businessName ||
+      data?.attributes?.name ||
+      data?.attributes?.Name;
+    if (!name || !String(name).trim()) missing.push("Business / store name");
+    if (!data?.location?.city && !data?.attributes?.city) {
+      missing.push("City");
     }
-    setShowModal(true);
+    if (!data?.vendor_subcategory_id) {
+      missing.push("Subcategory (Store Info → Basic Info)");
+    }
+    const phone =
+      data?.contact?.phone || data?.attributes?.phone || vendor?.phone;
+    if (!phone || !String(phone).trim()) missing.push("Phone number");
+    return missing;
+  };
+
+  const resolveServiceId = async () => {
+    if (!vendor?.id || !token) return null;
+
+    try {
+      const serviceData = await vendorServicesApi.getVendorServiceByVendorId(
+        vendor.id,
+        token
+      );
+      const actual = Array.isArray(serviceData)
+        ? serviceData[0]
+        : serviceData;
+      if (actual?.id) {
+        localStorage.setItem("vendorServiceId", actual.id.toString());
+        return actual.id;
+      }
+    } catch (error) {
+      console.error("Failed to resolve vendor service id:", error);
+    }
+
+    return null;
+  };
+
+  const handleSave = async (saveData) => {
+    // Stop here rather than firing a request the server will refuse with a 403. The
+    // vendor gets the reason and the way out instead of a generic failure toast.
+    if (!isTabEditable(active)) {
+      const result = await Swal.fire({
+        icon: "info",
+        title: access.stage === "active" ? "Not in your plan" : "Editing is locked",
+        text:
+          access.stage === "active"
+            ? `${access.tabLabels?.[active] || "This section"} needs a higher plan.`
+            : access.message || "Complete your setup to edit your storefront.",
+        showCancelButton: true,
+        confirmButtonText:
+          access.stage === "kyc_required" || access.stage === "kyc_rejected"
+            ? "Complete business details"
+            : "View plans",
+        cancelButtonText: "Close",
+        confirmButtonColor: "#c2185b",
+      });
+
+      if (result.isConfirmed) {
+        if (access.stage === "kyc_required" || access.stage === "kyc_rejected") {
+          handleSetActive("business");
+        } else {
+          window.location.assign("/vendor-dashboard/upgrade/vendor-plan");
+        }
+      }
+      return;
+    }
+
+    const isPayload = isFormSavePayload(saveData);
+    const raw = isPayload
+      ? { ...(formDataRef.current || formData), ...saveData }
+      : formDataRef.current || formData;
+
+    const data = enrichSaveData(raw);
+    localStorage.setItem("vendorFormData", safeStringifyFormData(data));
+
+    const missingRequired = getMissingRequiredStorefrontFields(data);
+    if (missingRequired.length > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Required storefront fields missing",
+        html: `The server needs these before Facilities can be saved:<br/><br/><b>${missingRequired.join("<br/>")}</b><br/><br/>Add them under <b>Store Info → Basic Info</b> (or Jewellery Section 1: Brand name & City), then save again.`,
+        confirmButtonColor: "#C31162",
+      });
+      return;
+    }
+
+    let serviceId = await resolveServiceId();
+
+    try {
+      const fd = buildFormData({ ...data, id: serviceId || data.id });
+
+      if (!serviceId) {
+        // First save: create vendor-services listing (POST), same as Pricing → Submit All Details
+        const created = await vendorServicesApi.createOrUpdateService(fd, token);
+        // The create endpoint wraps the new record, so check the wrappers too.
+        serviceId =
+          created?.id || created?.service?.id || created?.data?.[0]?.id || null;
+        if (!serviceId) {
+          Swal.fire({
+            icon: "warning",
+            title: "Could not create listing",
+            text: "Please fill Store Info → Basic Info (business name, city) and try again, or use Pricing → Submit All Details once.",
+            confirmButtonColor: "#C31162",
+          });
+          return;
+        }
+        localStorage.setItem("vendorServiceId", serviceId.toString());
+        setFormData((prev) => ({ ...prev, id: serviceId }));
+      } else {
+        await vendorServicesApi.createOrUpdateService(fd, token, serviceId);
+        setFormData((prev) => ({ ...prev, id: serviceId }));
+      }
+
+      await fetchServiceData();
+      setShowModal(true);
+    } catch (e) {
+      const status = e?.status;
+      let message =
+        typeof e === "string"
+          ? e
+          : e?.message || e?.error || "Unknown error";
+
+      if (status === 403) {
+        message =
+          "You do not have permission to update this listing. Please log out, log in again, and retry. If the issue continues, contact support.";
+        localStorage.removeItem("vendorServiceId");
+      }
+
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: `Failed to update. ${message}`,
+        timer: "3000",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ed1173",
+      });
+      return; // Do not show success modal on failure
+    }
   };
 
   // Expose show success modal to subcomponents
@@ -501,43 +902,91 @@ const Storefront = ({ setCompletion }) => {
     localStorage.setItem("videoDraftsMeta", JSON.stringify(meta));
   }, [videoDrafts]);
 
-  const buildAttributes = () => {
+  const buildAttributes = (sourceData) => {
+    const data = enrichSaveData(
+      sourceData || formDataRef.current || formData
+    );
+    const jm = data.jewellery_master || data.attributes?.jewellery_master;
+    const ji = jm?.identity || {};
+    const jCities = Array.isArray(ji.cities) ? ji.cities : [];
+    
+    const bo = data.bridal_outfit_master || data.attributes?.bridal_outfit_master;
+    const boi = bo?.identity || {};
+
+    const ro = data.rental_outfit_master || data.attributes?.rental_outfit_master;
+    const roi = ro?.identity || {};
+
+    const cg = data.cocktail_gown_master || data.attributes?.cocktail_gown_master;
+    const cgi = cg?.identity || {};
+
+    const am = data.accessories_master || data.attributes?.accessories_master;
+    const ami = am?.identity || {};
+
+    const fjm = data.flower_jewellery_master || data.attributes?.flower_jewellery_master;
+    const fjmi = fjm?.identity || {};
+
     const attrs = {
       // tnc: formData.tnc,
       name:
-        formData.attributes?.businessName ||
-        formData.attributes?.name ||
-        formData.attributes?.Name ||
+        data.attributes?.businessName ||
+        data.attributes?.name ||
+        data.attributes?.Name ||
+        ji.brand_store_name ||
+        boi?.brand_name ||
+        roi?.brand_name ||
+        cgi?.brand_name ||
+        ami?.brand_name ||
+        fjmi?.brand_name ||
+        vendor?.businessName ||
         "",
-      slug: formData.attributes?.slug || "",
-      // tags: formData.tags || [],
-      deals: formData.deals || [],
-      email: formData.contact?.email || "",
-      rooms: formData.rooms ? Number(formData.rooms) : undefined,
-      // badges: formData.badges || {},
-      rating: formData.rating ? Number(formData.rating) : undefined,
+      vendor_name:
+        data.attributes?.vendor_name ||
+        data.attributes?.businessName ||
+        data.attributes?.name ||
+        data.attributes?.Name ||
+        ji.brand_store_name ||
+        boi?.brand_name ||
+        roi?.brand_name ||
+        cgi?.brand_name ||
+        ami?.brand_name ||
+        fjmi?.brand_name ||
+        vendor?.businessName ||
+        "",
+      slug: data.attributes?.slug || "",
+      // tags: data.tags || [],
+      deals: data.deals || [],
+      email: data.contact?.email || "",
+      rooms: data.rooms ? Number(data.rooms) : undefined,
+      // badges: data.badges || {},
+      rating: data.rating ? Number(data.rating) : undefined,
       contact: {
-        name: formData.contact?.contactName || "",
-        phone: formData.contact?.phone || "",
-        // website: formData.contact?.website || "",
-        whatsapp: formData.contact?.whatsappNumber || "",
-        altPhone: formData.contact?.altPhone || "",
-        email: formData.contact?.email || "",
+        name: data.contact?.contactName || "",
+        phone: data.contact?.phone || "",
+        // website: data.contact?.website || "",
+        whatsapp: data.contact?.whatsappNumber || "",
+        altPhone: data.contact?.altPhone || "",
+        email: data.contact?.email || "",
         // contactName: formData.contact?.contactName || "",
       },
       // cta_url: formData.ctaUrl || "",
       // tagline: formData.attributes?.tagline || "",
       // currency: formData.currency || "INR",
-      city: formData.location?.city || "",
-      latitude: formData.location?.latitude || "",
-      longitude: formData.location?.longitude || "",
-      address: formData.location?.address || "",
+      city:
+        data.location?.city ||
+        data.attributes?.city ||
+        fjmi?.city ||
+        jCities[0] ||
+        vendor?.city ||
+        "",
+      latitude: data.location?.latitude || "",
+      longitude: data.location?.longitude || "",
+      address: data.location?.address || "",
 
       location: {
-        state: formData.location?.state || "",
-        // address: formData.location?.addressLine1 || "",
-        country: formData.location?.country || "India",
-        pincode: formData.location?.pincode || "",
+        state: data.location?.state || "",
+        // address: data.location?.addressLine1 || "",
+        country: data.location?.country || "India",
+        pincode: data.location?.pincode || "",
       },
       // packages: formData.packages || [],
       // subtitle: formData.attributes?.subtitle || "",
@@ -545,53 +994,56 @@ const Storefront = ({ setCompletion }) => {
       // dj_policy: formData.djPolicy || "",
       // auto_reply: formData.autoReply || "",
       // price_unit: formData.priceUnit || "",
-      parking: formData.parking || "",
-      // deco_policy: formData.decoPolicy || "",
-      about_us: formData.attributes?.about_us || "",
-      is_featured: !!formData.isFeatured,
-      price_range: formData.priceRange || { min: "", max: "" },
+      parking: data.parking || "",
+      // deco_policy: data.decoPolicy || "",
+      about_us: data.attributes?.about_us || "",
+      is_featured: !!data.isFeatured,
+      price_range: data.priceRange || { min: "", max: "" },
       PriceRange:
-        formData.priceRange?.min && formData.priceRange?.max
-          ? `${formData.priceRange.min} - ${formData.priceRange.max}`
-          : formData.PriceRange || "",
+        data.priceRange?.min && data.priceRange?.max
+          ? `${data.priceRange.min} - ${data.priceRange.max}`
+          : data.PriceRange || "",
       // primary_cta: formData.primaryCTA || "enquire",
       // sort_weight: formData.sortWeight
       //   ? Number(formData.sortWeight)
       //   : undefined,
       // timing_open: formData.timing?.open || "",
-      capacity_max: formData.capacity?.max
-        ? Number(formData.capacity?.max)
+      capacity_max: data.capacity?.max
+        ? Number(data.capacity?.max)
         : undefined,
-      capacity_min: formData.capacity?.min
-        ? Number(formData.capacity?.min)
+      capacity_min: data.capacity?.min
+        ? Number(data.capacity?.min)
         : undefined,
       // timing_close: formData.timing?.close || "",
 
-      payment_terms: formData.payment_terms || "",
+      payment_terms: data.payment_terms || "",
 
-      refund_policy: formData.refundPolicy || "",
-      reviews_count: formData.reviewsCount
-        ? Number(formData.reviewsCount)
+      refund_policy: data.refundPolicy || "",
+      reviews_count: data.reviewsCount
+        ? Number(data.reviewsCount)
         : undefined,
-      alcohol_policy: formData.alcoholPolicy || "",
-      outside_alcohol: formData.outside_alcohol || "",
-      // blackout_dates: formData.blackoutDates || [],
-      indoor_outdoor: formData.indoorOutdoor || "",
-      starting_price: formData.startingPrice
-        ? Number(formData.startingPrice)
+      alcohol_policy: data.alcoholPolicy || "",
+      outside_alcohol: data.outside_alcohol || "",
+      // blackout_dates: data.blackoutDates || [],
+      indoor_outdoor: data.indoorOutdoor || "",
+      starting_price: data.startingPrice
+        ? Number(data.startingPrice)
         : undefined,
-      available_slots: Array.isArray(formData.availableSlots)
-        ? formData.availableSlots.map((s) => ({
-            date: s.date,
-            // slots:
-            //   s.slots ||
-            //   (s.timeFrom && s.timeTo ? [`${s.timeFrom}-${s.timeTo}`] : []),
-          }))
+      pricing_description: data.pricingDescription || undefined,
+      pricing_brochure_base64: data.pricingBrochureBase64 || undefined,
+      pricing_brochure_name: data.pricingFileName || undefined,
+      available_slots: Array.isArray(data.availableSlots)
+        ? data.availableSlots.map((s) => ({
+          date: s.date,
+          // slots:
+          //   s.slots ||
+          //   (s.timeFrom && s.timeTo ? [`${s.timeFrom}-${s.timeTo}`] : []),
+        }))
         : [],
-      catering_policy: formData.cateringPolicy || "",
-      // hall_types_note: formData.hallTypesNote || "",
-      // timing_last_entry: formData.timing?.lastEntry || "",
-      cancellation_policy: formData.cancellationPolicy || "",
+      catering_policy: data.cateringPolicy || "",
+      // hall_types_note: data.hallTypesNote || "",
+      // timing_last_entry: data.timing?.lastEntry || "",
+      cancellation_policy: data.cancellationPolicy || "",
       // is_feature_available:
       //   (formData.isFeatureAvailable || "No").toString().toLowerCase() ===
       //   "yes",
@@ -599,58 +1051,95 @@ const Storefront = ({ setCompletion }) => {
       //   (formData.within24HrAvailable || "No").toString().toLowerCase() ===
       //   "yes",
       // New attributes from Detailed.jsx
-      // vendor_name:
-      //   formData.attributes?.vendor_name ||
-      //   formData.attributes?.Name ||
-      //   formData.attributes?.businessName ||
-      //   "",
-      // vendor_type: formData.vendorTypeName || vendorTypeName || "",
-      veg_price: formData.veg_price || "",
-      non_veg_price: formData.non_veg_price || "",
-      photo_package_price: formData.photo_package_price || "",
-      photo_video_package_price: formData.photo_video_package_price || "",
-      happywedz_since: formData.happywedz_since || "",
-      // HappyWedz: formData.HappyWedz || formData.happywedz_since || "",
-      travel_info: formData.travel_info || "",
-      offerings: formData.offerings || "",
-      delivery_time: formData.delivery_time || "",
-      decor_policy: formData.decorPolicy || "",
-      area: formData.area || "",
+      vendor_type: data.vendorTypeName || vendorTypeName || "",
+      veg_price: data.veg_price || "",
+      non_veg_price: data.non_veg_price || "",
+      veg_description:
+        data.veg_description ||
+        data.attributes?.veg_description ||
+        "",
+      non_veg_description:
+        data.non_veg_description ||
+        data.attributes?.non_veg_description ||
+        "",
+      menu_description:
+        data.menu_description ||
+        data.attributes?.menu_description ||
+        "",
+      photo_package_price: data.photo_package_price || "",
+      photo_video_package_price: data.photo_video_package_price || "",
+      happywedz_since: data.happywedz_since || "",
+      travel_info: data.travel_info || "",
+      offerings: data.offerings || "",
+      delivery_time: data.delivery_time || "",
+      decor_policy: data.decorPolicy || "",
+      area: data.area || "",
       // Social links
-      facebook_link: formData.attributes?.facebook_link || "",
-      instagram_link: formData.attributes?.instagram_link || "",
-      twitter_link: formData.attributes?.twitter_link || "",
-      pinterest_link: formData.attributes?.pinterest_link || "",
-      website: formData.attributes?.website || "",
+      facebook_link: data.attributes?.facebook_link || "",
+      instagram_link: data.attributes?.instagram_link || "",
+      twitter_link: data.attributes?.twitter_link || "",
+      pinterest_link: data.attributes?.pinterest_link || "",
+      website: data.attributes?.website || "",
       // Always include menus if present in attributes
-      ...(Array.isArray(formData.attributes?.menus)
-        ? { menus: formData.attributes.menus }
+      ...(Array.isArray(data.attributes?.menus)
+        ? { menus: data.attributes.menus }
         : {}),
 
       video: Array.isArray(videoDrafts)
         ? videoDrafts
-            .map((v) => v.url || v.preview || "")
-            .filter(
-              (url) =>
-                url &&
-                typeof url === "string" &&
-                !url.startsWith("blob:") &&
-                !url.startsWith("data:")
-            )
-            .map((url) =>
-              url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
-            )
-        : formData.attributes?.video || [],
+          .map((v) => v.url || v.preview || "")
+          .filter(
+            (url) =>
+              url &&
+              typeof url === "string" &&
+              !url.startsWith("blob:") &&
+              !url.startsWith("data:")
+          )
+          .map((url) =>
+            url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
+          )
+        : data.attributes?.video || [],
+      view360_images: Array.isArray(view360Images)
+        ? view360Images
+          .map((v) => v.url || v.preview || "")
+          .filter(
+            (url) =>
+              url &&
+              typeof url === "string" &&
+              !url.startsWith("blob:") &&
+              !url.startsWith("data:")
+          )
+          .map((url) =>
+            url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
+          )
+        : [],
+      view360_video: Array.isArray(view360Videos)
+        ? view360Videos
+          .map((v) => v.url || v.preview || "")
+          .filter(
+            (url) =>
+              url &&
+              typeof url === "string" &&
+              !url.startsWith("blob:") &&
+              !url.startsWith("data:")
+          )
+          .map((url) =>
+            url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
+          )
+        : [],
       // Preferred vendors selection
       preferred_vendors:
-        formData.attributes?.preferred_vendors ||
-        formData.preferredVendors ||
-        formData.preferred_vendor_ids ||
+        data.attributes?.preferred_vendors ||
+        data.preferredVendors ||
+        data.preferred_vendor_ids ||
         [],
-      start_venue: formData.start_venue || "",
-      space: formData.space || "",
-      dJ_policy: formData.dJ_policy || "",
+      start_venue: data.start_venue || "",
+      space: data.space || "",
+      dJ_policy: data.dJ_policy || "",
+      availability_active: data.availabilityActive !== false,
     };
+
+    applyMasterProfilesToAttributes(attrs, data);
 
     // Remove undefined keys
     Object.keys(attrs).forEach(
@@ -662,18 +1151,18 @@ const Storefront = ({ setCompletion }) => {
   const buildMedia = () => {
     const gallery = Array.isArray(photoDrafts)
       ? photoDrafts
-          .map((p) => {
-            const preview = p.preview || p.url || p.path || "";
-            return preview || null;
-          })
-          .filter(Boolean)
+        .map((p) => {
+          const preview = p.preview || p.url || p.path || "";
+          return preview || null;
+        })
+        .filter(Boolean)
       : Array.isArray(formData.media?.gallery)
-      ? formData.media.gallery
+        ? formData.media.gallery
           .map((g) => (typeof g === "string" ? g : g.url || g.path || null))
           .filter(Boolean)
-      : Array.isArray(formData.gallery)
-      ? formData.gallery.filter((g) => typeof g === "string")
-      : [];
+        : Array.isArray(formData.gallery)
+          ? formData.gallery.filter((g) => typeof g === "string")
+          : [];
     const media = {
       gallery,
       coverImage: formData.media?.coverImage || formData.coverImage || "",
@@ -702,15 +1191,30 @@ const Storefront = ({ setCompletion }) => {
     return gallery;
   };
 
-  const buildFormData = () => {
+  const buildFormData = (sourceData) => {
+    const data = enrichSaveData(
+      sourceData || formDataRef.current || formData
+    );
     const fd = new FormData();
-    const vendorId = vendor?.id || formData.vendor_id;
+    const vendorId = vendor?.id || data.vendor_id;
     if (vendorId) fd.append("vendor_id", `${vendorId}`);
-    if (formData.vendor_subcategory_id)
-      fd.append("vendor_subcategory_id", `${formData.vendor_subcategory_id}`);
-    if (formData.status) fd.append("status", formData.status);
+    // Multi-select: send the whole set as a comma list. The backend takes the
+    // first as the primary and mirrors all of them into the join table.
+    const subcategoryIds = (
+      Array.isArray(data.vendor_subcategory_ids) &&
+        data.vendor_subcategory_ids.length
+        ? data.vendor_subcategory_ids
+        : [data.vendor_subcategory_id || vendor?.vendor_subcategory_id]
+    ).filter(Boolean);
 
-    const attrs = buildAttributes();
+    if (subcategoryIds.length) {
+      fd.append("vendor_subcategory_id", subcategoryIds.join(","));
+    }
+    const normalizedStatus =
+      normalizeServiceStatus(data.status) || "hide";
+    fd.append("status", normalizedStatus);
+
+    const attrs = buildAttributes(data);
     // Ensure attributes do not accidentally include a media key
     if (attrs && Object.prototype.hasOwnProperty.call(attrs, "media")) {
       delete attrs.media;
@@ -737,6 +1241,19 @@ const Storefront = ({ setCompletion }) => {
         fd.append(field, attrs[field]);
       }
     });
+
+    if (attrs.contact?.phone) {
+      fd.append("phone", attrs.contact.phone);
+    }
+    if (attrs.contact?.email) {
+      fd.append("email", attrs.contact.email);
+    }
+    if (attrs.name) {
+      fd.append("name", attrs.name);
+    }
+    if (attrs.city) {
+      fd.append("city", attrs.city);
+    }
 
     // Send `media` as a flat array of URL strings as requested by the frontend contract
     fd.append("media", JSON.stringify(safeMedia));
@@ -782,25 +1299,25 @@ const Storefront = ({ setCompletion }) => {
     // Preserve existing 360 assets outside attributes as URL lists
     const existingPanoImages = Array.isArray(view360Images)
       ? view360Images
-          .map((i) => i.preview)
-          .filter(
-            (u) =>
-              typeof u === "string" &&
-              u.trim() &&
-              !u.startsWith("blob:") &&
-              !u.startsWith("data:")
-          )
+        .map((i) => i.preview)
+        .filter(
+          (u) =>
+            typeof u === "string" &&
+            u.trim() &&
+            !u.startsWith("blob:") &&
+            !u.startsWith("data:")
+        )
       : [];
     const existingPanoVideos = Array.isArray(view360Videos)
       ? view360Videos
-          .map((v) => v.preview)
-          .filter(
-            (u) =>
-              typeof u === "string" &&
-              u.trim() &&
-              !u.startsWith("blob:") &&
-              !u.startsWith("data:")
-          )
+        .map((v) => v.preview)
+        .filter(
+          (u) =>
+            typeof u === "string" &&
+            u.trim() &&
+            !u.startsWith("blob:") &&
+            !u.startsWith("data:")
+        )
       : [];
 
     fd.append("view360_images_urls", JSON.stringify(existingPanoImages));
@@ -823,8 +1340,11 @@ const Storefront = ({ setCompletion }) => {
       } else {
         created = await vendorServicesApi.createOrUpdateService(fd, token);
         // If POST succeeded and response has id, update formData with new id for future PUTs
-        if (created?.id) {
-          setFormData((prev) => ({ ...prev, id: created.id }));
+        // The create endpoint wraps the record, so check the wrappers too.
+        const createdId =
+          created?.id || created?.service?.id || created?.data?.[0]?.id;
+        if (createdId) {
+          setFormData((prev) => ({ ...prev, id: createdId }));
         }
       }
       // On success, persist and show modal
@@ -885,9 +1405,8 @@ const Storefront = ({ setCompletion }) => {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: `Failed to submit. ${
-          typeof e === "string" ? e : e?.message || "Unknown error"
-        }`,
+        text: `Failed to submit. ${typeof e === "string" ? e : e?.message || "Unknown error"
+          }`,
         timer: "3000",
         confirmButtonText: "OK",
         confirmButtonColor: "#C31162",
@@ -896,7 +1415,35 @@ const Storefront = ({ setCompletion }) => {
   };
 
   // Only show Menus sidebar for vendorTypeName 'Venues' or 'Caterers' (case-insensitive)
+  const isCatererType = useMemo(() => {
+    const typeLower = (vendorTypeName || "").toLowerCase();
+    return (
+      typeLower.includes("cater") ||
+      typeLower.includes("food") ||
+      typeLower.includes("tiffin") ||
+      typeLower.includes("kitchen") ||
+      typeLower.includes("meal") ||
+      typeLower.includes("cake") ||
+      typeLower.includes("bakery")
+    );
+  }, [vendorTypeName]);
+
+  const isVenueType = useMemo(() => {
+    const typeLower = (vendorTypeName || "").toLowerCase();
+    return (
+      typeLower.includes("venue") ||
+      typeLower.includes("marriage garden") ||
+      typeLower.includes("banquet") ||
+      typeLower.includes("resort") ||
+      typeLower.includes("hotel") ||
+      typeLower.includes("lawn") ||
+      typeLower.includes("palace") ||
+      typeLower.includes("fort")
+    );
+  }, [vendorTypeName]);
+
   const allowedMenuTypes = React.useMemo(() => ["venues", "caterers"], []);
+  const showMenusTab = isVenueType || isCatererType;
   const normalizedVendorTypeName = (vendorTypeName || "").trim().toLowerCase();
 
   // Calculate completion percentage
@@ -923,7 +1470,7 @@ const Storefront = ({ setCompletion }) => {
         id: "vendor-pricing",
         fields: ["startingPrice", "priceRange.min", "priceRange.max"],
       },
-      { id: "vendor-facilities", fields: ["capacity.min", "capacity.max"] },
+      { id: "vendor-facilities", fields: [] },
       { id: "promotions", fields: ["deals"] },
       {
         id: "vendor-policies",
@@ -934,14 +1481,88 @@ const Storefront = ({ setCompletion }) => {
       { id: "vendor-marketing", fields: ["primaryCTA"] },
     ];
 
-    if (allowedMenuTypes.includes(normalizedVendorTypeName)) {
-      sections.push({ id: "vendor-menus", fields: ["attributes.menus"] });
+    if (showMenusTab) {
+      sections.push({
+        id: "vendor-menus",
+        fields: [
+          "attributes.menus",
+          "veg_price",
+          "non_veg_price",
+          "menu_description",
+        ],
+      });
     }
+
+    const venueMasterHasData = (vm) => {
+      if (!vm || typeof vm !== "object") return false;
+      const walk = (obj) => {
+        for (const v of Object.values(obj)) {
+          if (v == null) continue;
+          if (typeof v === "string" && v.trim()) return true;
+          if (typeof v === "number" && !Number.isNaN(v)) return true;
+          if (Array.isArray(v)) {
+            for (const item of v) {
+              if (item == null) continue;
+              if (typeof item === "object" && walk(item)) return true;
+              if (typeof item === "string" && item.trim()) return true;
+              if (typeof item === "number" && !Number.isNaN(item)) return true;
+            }
+          } else if (typeof v === "object" && walk(v)) return true;
+        }
+        return false;
+      };
+      return walk(vm);
+    };
 
     let completed = 0;
     sections.forEach((section) => {
       let hasData = false;
-      if (section.id === "faq") {
+      if (section.id === "vendor-facilities") {
+        if (isVenueType) {
+          const vm =
+            formData.venue_master || formData.attributes?.venue_master;
+          hasData = venueMasterHasData(vm);
+        } else if (isCatererType) {
+          const cm =
+            formData.caterer_master || formData.attributes?.caterer_master;
+          hasData = venueMasterHasData(cm);
+        } else if (normalizedVendorTypeName.includes("photograph")) {
+          const pm =
+            formData.photographer_master ||
+            formData.attributes?.photographer_master;
+          hasData = venueMasterHasData(pm);
+        } else if (
+          normalizedVendorTypeName.includes("makeup") ||
+          (normalizedVendorTypeName.includes("bridal") &&
+            normalizedVendorTypeName.includes("artist")) ||
+          normalizedVendorTypeName.includes("mua")
+        ) {
+          const mum =
+            formData.makeup_artist_master ||
+            formData.attributes?.makeup_artist_master;
+          hasData = venueMasterHasData(mum);
+        } else if (
+          normalizedVendorTypeName.includes("jewell") ||
+          normalizedVendorTypeName.includes("jewelry") ||
+          normalizedVendorTypeName.includes("accessor")
+        ) {
+          const jm =
+            formData.jewellery_master ||
+            formData.accessories_master ||
+            formData.flower_jewellery_master ||
+            formData.attributes?.jewellery_master ||
+            formData.attributes?.accessories_master ||
+            formData.attributes?.flower_jewellery_master;
+          hasData = venueMasterHasData(jm);
+        } else {
+          hasData = !!(
+            formData.happywedz_since ||
+            formData.offerings ||
+            formData.travel_info ||
+            formData.delivery_time
+          );
+        }
+      } else if (section.id === "faq") {
         // Count FAQ completed only if at least one non-empty answer exists
         const faqs = formData?.faqs;
         if (faqs && typeof faqs === "object") {
@@ -1013,18 +1634,13 @@ const Storefront = ({ setCompletion }) => {
       setActive(id);
       try {
         localStorage.setItem(storageKey, id);
-      } catch (_) {}
-      try {
-        const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
-        if (vw <= 992 && contentRef.current) {
-          setTimeout(() => {
-            contentRef.current.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }, 50);
-        }
-      } catch (_) {}
+      } catch (_) { }
+      // Always scroll to top when any left section is clicked
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+      });
     },
     [storageKey]
   );
@@ -1052,21 +1668,21 @@ const Storefront = ({ setCompletion }) => {
       icon: <CiLocationOn size={20} />,
     },
     { id: "photos", label: "Photos", icon: <IoCameraOutline size={20} /> },
-    ...(normalizedVendorTypeName.includes("venue")
+    ...(isVenueType
       ? [
-          {
-            id: "vendor-360-view",
-            label: (
-              <div className="d-flex align-items-center">
-                <span>360° View</span>
-                <span className="ms-2">
-                  <NewTag />
-                </span>
-              </div>
-            ),
-            icon: <TbView360Number size={20} />,
-          },
-        ]
+        {
+          id: "vendor-360-view",
+          label: (
+            <div className="d-flex align-items-center">
+              <span>360° View</span>
+              <span className="ms-2">
+                <NewTag />
+              </span>
+            </div>
+          ),
+          icon: <TbView360Number size={20} />,
+        },
+      ]
       : []),
     { id: "videos", label: "Videos", icon: <IoVideocamOutline size={20} /> },
 
@@ -1086,14 +1702,14 @@ const Storefront = ({ setCompletion }) => {
       label: "Facilities & Features",
       icon: <IoCheckmarkCircleOutline size={20} />,
     },
-    ...(allowedMenuTypes.includes(normalizedVendorTypeName)
+    ...(showMenusTab
       ? [
-          {
-            id: "vendor-menus",
-            label: "Menus",
-            icon: <PiForkKnife size={20} />,
-          },
-        ]
+        {
+          id: "vendor-menus",
+          label: "Menus",
+          icon: <PiForkKnife size={20} />,
+        },
+      ]
       : []),
 
     { id: "promotions", label: "Promotions", icon: <CiBullhorn size={20} /> },
@@ -1126,10 +1742,24 @@ const Storefront = ({ setCompletion }) => {
     },
   ];
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
+
   // Restore stored active tab once menu items are known/updated
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(storageKey);
+      let stored = localStorage.getItem(storageKey);
+      const legacyMasterTabs = new Set([
+        "venue-master",
+        "caterer-master",
+        "photographer-master",
+      ]);
+      if (stored && legacyMasterTabs.has(stored)) {
+        stored = "vendor-facilities";
+        localStorage.setItem(storageKey, stored);
+      }
       const ids = new Set(menuItems.map((m) => m.id));
       if (stored && ids.has(stored)) {
         if (active !== stored) setActive(stored);
@@ -1168,6 +1798,7 @@ const Storefront = ({ setCompletion }) => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onSaveSuccess={fetchServiceData}
             onShowSuccess={showSuccessModal}
           />
         );
@@ -1187,6 +1818,7 @@ const Storefront = ({ setCompletion }) => {
             setFormData={setFormData}
             onSave={handleSave}
             onShowSuccess={showSuccessModal}
+            vendorTypeName={vendorTypeName}
           />
         );
       case "photos":
@@ -1260,7 +1892,6 @@ const Storefront = ({ setCompletion }) => {
           />
         );
       case "vendor-facilities": {
-        const isVenue = (vendorTypeName || "").toLowerCase().includes("venue");
         return (
           <VendorFacilities
             formData={formData}
@@ -1268,7 +1899,8 @@ const Storefront = ({ setCompletion }) => {
             onSave={handleSave}
             onShowSuccess={showSuccessModal}
             vendorTypeName={vendorTypeName}
-            isVenue={isVenue}
+            isVenue={isVenueType}
+            isCaterer={isCatererType}
           />
         );
       }
@@ -1349,28 +1981,51 @@ const Storefront = ({ setCompletion }) => {
 
   return (
     <div className="container py-3 store-front-navbar">
-      <div className="row">
-        <div className="col-md-3 border-end">
-          <Nav className="flex-column custom-sidebar">
-            {menuItems.map((item) => (
-              <Nav.Link
-                key={item.id}
-                onClick={() => handleSetActive(item.id)}
-                className={`d-flex align-items-center gap-2 sidebar-nav-item ${
-                  active === item.id
-                    ? "active fs-16 fw-bold"
-                    : "fs-14 fw-normal"
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Nav.Link>
-            ))}
-          </Nav>
+      <div className="row g-4">
+        <div
+          className="col-lg-3 col-md-4"
+          style={{ alignSelf: "flex-start", position: "sticky", top: "70px", zIndex: 10 }}
+        >
+          <div className="storefront-sidebar-card" style={{ position: "relative", top: "unset", maxHeight: "calc(100vh - 90px)" }}>
+            <Nav className="flex-column custom-sidebar">
+              {menuItems.map((item) => {
+                // Locked tabs still open — the vendor can look around, they just
+                // cannot edit. The glyph sets that expectation before they click.
+                const locked = !isTabEditable(item.id);
+                return (
+                  <Nav.Link
+                    key={item.id}
+                    onClick={() => handleSetActive(item.id)}
+                    className={`sidebar-nav-item ${
+                      active === item.id ? "active" : ""
+                    }`}
+                    title={locked ? "View only" : undefined}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                    {locked && (
+                      <FiLock
+                        size={13}
+                        className="ms-auto flex-shrink-0"
+                        style={{ opacity: 0.55 }}
+                        aria-label="View only"
+                      />
+                    )}
+                  </Nav.Link>
+                );
+              })}
+            </Nav>
+          </div>
         </div>
 
-        <div className="col-md-9" ref={contentRef}>
-          {renderContent()}
+        <div className="col-lg-9 col-md-8 storefront-content-area" ref={contentRef}>
+          <LockedTabOverlay
+            access={access}
+            tabId={active}
+            showBanner={active !== "business"}
+          >
+            {renderContent()}
+          </LockedTabOverlay>
         </div>
       </div>
 

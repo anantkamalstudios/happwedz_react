@@ -21,7 +21,10 @@ import {
   FiEye,
   FiSave,
   FiEdit3,
+  FiLink,
 } from "react-icons/fi";
+import InstagramConnect from "./subVendors/InstagramConnect";
+import SubscriptionSettings from "./subscription/SubscriptionSettings";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("notifications");
@@ -110,6 +113,24 @@ const Settings = () => {
                       Notifications
                     </Nav.Link>
                   </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link
+                      active={activeTab === "billing"}
+                      onClick={() => setActiveTab("billing")}
+                    >
+                      <FiCreditCard className="me-2" />
+                      Payments &amp; Subscription
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link
+                      active={activeTab === "integrations"}
+                      onClick={() => setActiveTab("integrations")}
+                    >
+                      <FiLink className="me-2" />
+                      Integrations
+                    </Nav.Link>
+                  </Nav.Item>
                   {/* <Nav.Item>
                     <Nav.Link
                       active={activeTab === "security"}
@@ -126,15 +147,6 @@ const Settings = () => {
                     >
                       <FiClock className="me-2" />
                       Business Hours
-                    </Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link
-                      active={activeTab === "billing"}
-                      onClick={() => setActiveTab("billing")}
-                    >
-                      <FiCreditCard className="me-2" />
-                      Billing & Plans
                     </Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
@@ -269,6 +281,9 @@ const Settings = () => {
               </Card>
             )}
 
+            {/* Payments & Subscription */}
+            {activeTab === "billing" && <SubscriptionSettings />}
+
             {/* Notifications */}
             {activeTab === "notifications" && (
               <Card className="settings-card">
@@ -370,6 +385,30 @@ const Settings = () => {
                       Save Preferences
                     </Button> */}
                   </div>
+                </Card.Body>
+              </Card>
+            )}
+
+            {/* Integrations */}
+            {activeTab === "integrations" && (
+              <Card className="settings-card">
+                <Card.Header>
+                  <div className="d-flex align-items-center">
+                    <div className="setting-icon-wrapper">
+                      <FiLink size={20} />
+                    </div>
+                    <h5 className="card-title mb-0 text-black">
+                      Integrations
+                    </h5>
+                  </div>
+                </Card.Header>
+                <Card.Body className="p-4">
+                  <h6 className="mb-3">Instagram</h6>
+                  <p className="text-muted small mb-3">
+                    Connect your Instagram Business account to enable direct
+                    messages, comments, and publishing from your dashboard.
+                  </p>
+                  <InstagramConnect />
                 </Card.Body>
               </Card>
             )}
@@ -517,59 +556,10 @@ const Settings = () => {
               </Card>
             )}
 
-            {/* Billing & Plans */}
-            {activeTab === "billing" && (
-              <Card className="settings-card">
-                <Card.Header>
-                  <div className="d-flex align-items-center">
-                    <div className="setting-icon-wrapper">
-                      <FiCreditCard size={20} />
-                    </div>
-                    <h5 className="card-title mb-0 text-black">
-                      Billing & Plans
-                    </h5>
-                  </div>
-                </Card.Header>
-                <Card.Body className="p-4">
-                  <div className="alert alert-info">
-                    <strong>Current Plan:</strong> Premium Vendor Plan -
-                    $29/month
-                  </div>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Payment Method</Form.Label>
-                        <Form.Select defaultValue="card">
-                          <option value="card">•••• •••• •••• 1234</option>
-                          <option value="paypal">PayPal</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Billing Cycle</Form.Label>
-                        <Form.Select defaultValue="monthly">
-                          <option value="monthly">Monthly</option>
-                          <option value="yearly">Yearly (Save 20%)</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <Button
-                      variant="outline-light"
-                      className="folder-item text-black border"
-                    >
-                      <FiEdit3 className="me-2" />
-                      Update Payment Method
-                    </Button>
-                    <Button variant="primary" className="folder-item">
-                      Upgrade Plan
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            )}
+            {/* The template shipped a hardcoded billing panel here — a fake "Premium
+                Vendor Plan - $29/month", a masked card ending 1234 and an Upgrade
+                button that did nothing. It rendered on this same tab alongside the real
+                one above, showing every vendor an invented plan they had not bought. */}
 
             {/* Privacy */}
             {activeTab === "privacy" && (

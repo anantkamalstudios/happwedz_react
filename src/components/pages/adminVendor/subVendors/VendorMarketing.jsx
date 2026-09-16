@@ -93,7 +93,11 @@ const VendorMarketing = ({ formData, setFormData, onSave, onSubmit }) => {
           </div>
         </div>
         <div className="d-flex gap-2 mt-2">
-          <button className="btn btn-outline-primary" onClick={onSave}>
+          <button
+            type="button"
+            className="btn btn-outline-primary"
+            onClick={() => onSave?.()}
+          >
             Save Draft
           </button>
           <button className="btn btn-primary" onClick={onSubmit}>

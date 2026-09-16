@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { TEMPLATE_LIST } from "../../templates";
+import NoIndex from "../common/NoIndex";
 
 export default function TemplateCustomizePage() {
     const { id } = useParams();
@@ -27,6 +28,7 @@ export default function TemplateCustomizePage() {
 
     return (
         <div className="">
+            <NoIndex />
             <div className="border rounded-md overflow-hidden">
                 <Component />
             </div>

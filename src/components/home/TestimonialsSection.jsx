@@ -91,7 +91,7 @@ const TestimonialsSection = () => {
                 <div className="testimonial-card p-4">
                   <div className="d-flex align-items-center mb-3">
                     <div className="position-relative">
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={testimonial.image}
                         alt={testimonial.name}
                         className="rounded-circle me-3"

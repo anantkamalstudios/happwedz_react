@@ -6,6 +6,7 @@ import messagesApi from "../../../../services/api/messagesApi";
 import { vendorsApi } from "../../../../services/api/vendorAuthApi";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import EmojiPicker from "emoji-picker-react";
+import { formatDate, formatDateTime } from "../../../../utils/dateFormat";
 
 const ONLINE_WINDOW_MS = 60 * 1000;
 function isOnline(lastActiveAtIso) {
@@ -75,13 +76,7 @@ const normalizeMessage = (m, selfUserId) => {
 };
 
 function formatTime(iso) {
-  const d = new Date(iso);
-  return d.toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return formatDateTime(iso);
 }
 
 const Avatar = ({ name, size = 36, imageUrl }) => {
@@ -463,7 +458,7 @@ const Messages = () => {
                 </div>
               </div>
               <div className="text-muted d-none d-md-block fs-14 inter">
-                <FiClock className="me-1" /> {new Date().toLocaleDateString()}
+                <FiClock className="me-1" /> {formatDate(new Date())}
               </div>
             </div>
 

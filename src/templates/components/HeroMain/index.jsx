@@ -71,6 +71,7 @@ import Slider from "react-slick";
 import { Animated } from "react-animated-css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { formatDate } from "../../../utils/dateFormat";
 
 class HeroMain extends Component {
   render() {
@@ -90,11 +91,7 @@ class HeroMain extends Component {
       : [];
 
     const weddingDate = this.props.weddingDate;
-    const formatted = new Date(weddingDate).toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
+    const formatted = formatDate(weddingDate);
 
     return (
       <Slider {...settings}>

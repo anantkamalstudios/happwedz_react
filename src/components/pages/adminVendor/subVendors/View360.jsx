@@ -151,7 +151,7 @@ const View360 = ({
           variant="primary"
           className="fs-16 w-100 w-md-auto"
           style={{ maxWidth: 250 }}
-          onClick={onSave}
+          onClick={() => onSave?.()}
         >
           Save 360° Assets
         </Button>

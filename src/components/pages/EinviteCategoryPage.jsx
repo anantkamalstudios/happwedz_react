@@ -384,6 +384,7 @@ const EinviteCategoryPage = () => {
                   showActions={true}
                   showEditButton={true}
                   showShareButton={false}
+                  onCardClickEdit={true}
                 />
               </div>
             )}

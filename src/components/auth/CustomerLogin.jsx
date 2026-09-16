@@ -1,16 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { isInternalPath } from "../../utils/bookingDraft";
 import { Form, Button } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../redux/authSlice";
 import { GoogleLogin } from "@react-oauth/google";
+import GoogleAuthProvider from "./GoogleAuthProvider";
 import { toast, ToastContainer } from "react-toastify";
 import { useLoader } from "../context/LoaderContext";
 import userApi from "../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { API_BASE_URL } from "../../config/constants";
 
-const CustomerLogin = () => {
+// Reasons a flow can hand to /customer-login?reason=... so the page can say why.
+const LOGIN_REASON_MESSAGES = {
+  booking: "Log in to complete your hotel booking. Your details have been saved.",
+  hold: "Log in to hold this room. Your details have been saved.",
+  cab: "Log in to complete your cab booking.",
+};
+
+const CustomerLoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -26,7 +36,36 @@ const CustomerLogin = () => {
   // Check if user is already authenticated
   const { isAuthenticated } = useSelector((state) => state.auth);
 
-  const from = location.state?.from || "/";
+  // Where to go after signing in. `state.from` is the whole location object,
+  // so forwarding its `state` below carries history state — the hotel search
+  // payload and response live there — back to the page. The `redirect` query
+  // param is the fallback for when that state is gone: a hard reload here, or
+  // the login page opened in a new tab.
+  const returnTarget = useMemo(() => {
+    const raw = location.state?.from;
+
+    if (raw && typeof raw === "object" && raw.pathname) {
+      return {
+        to: {
+          pathname: raw.pathname,
+          search: raw.search || "",
+          hash: raw.hash || "",
+        },
+        state: raw.state,
+      };
+    }
+
+    if (isInternalPath(raw)) return { to: raw, state: undefined };
+
+    const redirect = new URLSearchParams(location.search).get("redirect");
+    if (isInternalPath(redirect)) return { to: redirect, state: undefined };
+
+    return { to: "/", state: undefined };
+  }, [location.state, location.search]);
+
+  const goToReturnTarget = useCallback(() => {
+    navigate(returnTarget.to, { replace: true, state: returnTarget.state });
+  }, [navigate, returnTarget]);
   const [loginCms, setLoginCms] = useState(null);
   const normalizeUrl = (u) =>
     typeof u === "string" ? u.replace(/`/g, "").trim() : null;
@@ -34,9 +73,9 @@ const CustomerLogin = () => {
   // Redirect authenticated users away from login page
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(from, { replace: true });
+      goToReturnTarget();
     }
-  }, [isAuthenticated, navigate, from]);
+  }, [isAuthenticated, goToReturnTarget]);
 
   const persistUserSession = (user, token) => {
     localStorage.setItem("user", JSON.stringify(user));
@@ -47,7 +86,7 @@ const CustomerLogin = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("https://happywedz.com/api/login-cms");
+        const res = await fetch(`${API_BASE_URL}/login-cms`);
         const data = await res.json();
         setLoginCms(data?.data || data || null);
       } catch (err) {
@@ -63,6 +102,11 @@ const CustomerLogin = () => {
     const params = new URLSearchParams(location.search);
     if (params.get("session") === "expired") {
       setSessionMessage("Your session expired. Please log in again.");
+      return;
+    }
+    const reason = params.get("reason");
+    if (reason && LOGIN_REASON_MESSAGES[reason]) {
+      setSessionMessage(LOGIN_REASON_MESSAGES[reason]);
     }
   }, [location.search]);
 
@@ -84,10 +128,14 @@ const CustomerLogin = () => {
       ) {
         persistUserSession(authResponse.user, authResponse.token);
         dispatch(
-          loginUser({ user: authResponse.user, token: authResponse.token }),
+          loginUser({
+            user: authResponse.user,
+            token: authResponse.token,
+            storeSession: authResponse.storeSession,
+          }),
         );
         toast.success("Login successful!");
-        navigate(from, { replace: true });
+        goToReturnTarget();
         return;
       }
 
@@ -122,9 +170,15 @@ const CustomerLogin = () => {
 
       if (response.success) {
         persistUserSession(response.user, response.token);
-        dispatch(loginUser({ user: response.user, token: response.token }));
+        dispatch(
+          loginUser({
+            user: response.user,
+            token: response.token,
+            storeSession: response.storeSession,
+          }),
+        );
         toast.success("Login successful!");
-        navigate(from, { replace: true });
+        goToReturnTarget();
       } else {
         const msg = response.message || "Login failed";
 
@@ -341,5 +395,13 @@ const CustomerLogin = () => {
     </div>
   );
 };
+
+// The Google Identity script is pulled in here rather than at the app root, so
+// visitors who never open a login screen never download or execute it.
+const CustomerLogin = () => (
+  <GoogleAuthProvider>
+    <CustomerLoginForm />
+  </GoogleAuthProvider>
+);
 
 export default CustomerLogin;

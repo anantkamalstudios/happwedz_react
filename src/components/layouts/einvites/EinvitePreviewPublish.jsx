@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl, handleImageError } from "../../../utils/imageUtils";
+import { formatDate } from "../../../utils/dateFormat";
 import Swal from "sweetalert2";
 
 const EinvitePreviewPublish = ({ card, onPublish, onSaveDraft }) => {
@@ -161,7 +162,7 @@ const EinvitePreviewPublish = ({ card, onPublish, onSaveDraft }) => {
                 </div>
                 <div className="mb-2">
                   <strong>Created:</strong>{" "}
-                  {new Date(card.created_at).toLocaleDateString()}
+                  {formatDate(card.created_at)}
                 </div>
                 <div className="mb-2">
                   <strong>Status:</strong>{" "}

@@ -9,6 +9,11 @@ import {
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { formatDate as fmtDate } from "../../utils/dateFormat";
+import {
+  API_BASE_URL,
+  IMAGE_BASE_URL as IMAGE_BASE_URL_RAW,
+} from "../../config/constants";
 
 const BlogLists = ({ onPostClick }) => {
   const [blogs, setBlogs] = useState([]);
@@ -27,7 +32,7 @@ const BlogLists = ({ onPostClick }) => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await fetch("https://happywedz.com/api/blogs/all");
+        const response = await fetch(`${API_BASE_URL}/blogs/all`);
         const data = await response.json();
 
         let apiBlogs = [];
@@ -72,7 +77,7 @@ const BlogLists = ({ onPostClick }) => {
       try {
         const params = new URLSearchParams({ q, limit: "10", offset: "0" });
         const res = await fetch(
-          `https://happywedz.com/api/blogs/search?${params.toString()}`,
+          `${API_BASE_URL}/blogs/search?${params.toString()}`,
           { signal: controller.signal }
         );
         const json = await res.json();
@@ -129,18 +134,10 @@ const BlogLists = ({ onPostClick }) => {
   const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
   const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
+  const formatDate = (dateString) => fmtDate(dateString);
 
   const getImageUrl = (imageData, useFallback = false) => {
-    const baseUrl = "https://happywedzbackend.happywedz.com/";
+    const baseUrl = IMAGE_BASE_URL_RAW;
     const replacePrefix = (url, shouldFallback) => {
       if (typeof url === "string") {
         url = url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl);
@@ -208,7 +205,7 @@ const BlogLists = ({ onPostClick }) => {
     if (Number.isNaN(blogId)) return;
     try {
       await fetch(
-        `https://happywedz.com/api/blogs/${blogId}/increment-search`,
+        `${API_BASE_URL}/blogs/${blogId}/increment-search`,
         {
           method: "POST",
         }
@@ -514,6 +511,7 @@ const BlogLists = ({ onPostClick }) => {
                 <DatePicker
                   className="form-control"
                   placeholderText="Select Date"
+                  dateFormat="dd/MM/yyyy"
                   selected={selectedDate}
                   onChange={(date) => setSelectedDate(date)}
                   style={{ padding: "12px", fontSize: "15px" }}

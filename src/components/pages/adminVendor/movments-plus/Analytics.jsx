@@ -29,6 +29,7 @@ import {
 import axiosInstance from "../../../../services/api/axiosInstance";
 import { toast } from "react-toastify";
 import "./analytics.css";
+import { formatDate, formatDateTime } from "../../../../utils/dateFormat";
 
 const COLORS = [
   "#FF6384",
@@ -218,10 +219,30 @@ const Analytics = () => {
   const { package: pkg, media, tokens, reach, activity } = data;
 
   // Prepare data for Recharts
-  const mediaCollectionData = media.byCollection.map((item) => ({
-    name: item.collection,
-    value: parseInt(item.count),
-  }));
+  // A vendor can accumulate dozens of collections, and one slice each turned the donut
+  // into a sliver with a legend twenty rows tall. The biggest few are the useful ones;
+  // the rest are rolled into a single "Other" slice.
+  const COLLECTION_SLICE_LIMIT = 6;
+
+  const allCollections = media.byCollection
+    .map((item) => ({ name: item.collection, value: parseInt(item.count, 10) || 0 }))
+    .filter((item) => item.value > 0)
+    .sort((a, b) => b.value - a.value);
+
+  const topCollections = allCollections.slice(0, COLLECTION_SLICE_LIMIT);
+  const remainingCollections = allCollections.slice(COLLECTION_SLICE_LIMIT);
+  const remainingTotal = remainingCollections.reduce((sum, item) => sum + item.value, 0);
+
+  const mediaCollectionData = remainingTotal
+    ? [
+        ...topCollections,
+        {
+          name: `Other (${remainingCollections.length})`,
+          value: remainingTotal,
+          isOther: true,
+        },
+      ]
+    : topCollections;
 
   const mediaVisibilityData = media.visibility.map((item) => ({
     name: item.visibility,
@@ -235,9 +256,19 @@ const Analytics = () => {
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
+      const slice = payload[0];
       return (
         <div className="custom-tooltip bg-white p-2 border shadow-sm rounded">
-          <p className="mb-0 fw-bold">{`${payload[0].name} : ${payload[0].value}`}</p>
+          <p className="mb-0 fw-bold">{`${slice.name} : ${slice.value}`}</p>
+          {slice.payload?.isOther ? (
+            <p className="mb-0 small text-muted">
+              {remainingCollections
+                .slice(0, 5)
+                .map((item) => `${item.name} (${item.value})`)
+                .join(", ")}
+              {remainingCollections.length > 5 ? ", …" : ""}
+            </p>
+          ) : null}
         </div>
       );
     }
@@ -272,7 +303,7 @@ const Analytics = () => {
             style={{ height: "20px" }}
           />
           <small className="text-muted inter">
-            Started at: {new Date(pkg.startedAt).toLocaleDateString()}
+            Started at: {formatDate(pkg.startedAt)}
           </small>
         </Card.Body>
       </Card>
@@ -338,16 +369,18 @@ const Analytics = () => {
                     <Pie
                       data={mediaCollectionData}
                       cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
+                      cy="45%"
+                      innerRadius={52}
+                      outerRadius={74}
+                      paddingAngle={3}
                       dataKey="value"
                     >
                       {mediaCollectionData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
+                          // "Other" is deliberately grey so it reads as a roll-up
+                          // rather than as another collection.
+                          fill={entry.isOther ? "#B9BFCC" : COLORS[index % COLORS.length]}
                         />
                       ))}
                     </Pie>
@@ -356,6 +389,15 @@ const Analytics = () => {
                       layout="horizontal"
                       verticalAlign="bottom"
                       align="center"
+                      // Capped height so a long label list scrolls instead of
+                      // squeezing the donut, as it did with every collection listed.
+                      wrapperStyle={{
+                        fontSize: 12,
+                        lineHeight: "18px",
+                        maxHeight: 76,
+                        overflowY: "auto",
+                        paddingTop: 4,
+                      }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -450,9 +492,7 @@ const Analytics = () => {
                     <strong className="inter">Last Upload</strong>
                     <br />
                     <span className="text-muted inter">
-                      {activity.lastUploadAt
-                        ? new Date(activity.lastUploadAt).toLocaleString()
-                        : "Never"}
+                      {formatDateTime(activity.lastUploadAt) || "Never"}
                     </span>
                   </div>
                 </div>
@@ -462,9 +502,7 @@ const Analytics = () => {
                     <strong className="inter">Last Token Created</strong>
                     <br />
                     <span className="text-muted inter">
-                      {activity.lastTokenCreatedAt
-                        ? new Date(activity.lastTokenCreatedAt).toLocaleString()
-                        : "Never"}
+                      {formatDateTime(activity.lastTokenCreatedAt) || "Never"}
                     </span>
                   </div>
                 </div>

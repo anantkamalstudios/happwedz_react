@@ -1,32 +1,67 @@
 import React, { useEffect, useState } from "react";
 import { Container, Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import GridView from "./Main/GridView";
-// import { transformApiData } from "../../hooks/useApiData";
+import { hasView360 } from "../../utils/view360Helper";
+import { subVenuesData } from "../../data/subVenuesData";
+import { subVendorsData } from "../../data/subVendorsData";
+import {
+  API_BASE_URL,
+  IMAGE_BASE_URL as IMAGE_BASE_URL_RAW,
+} from "../../config/constants";
 
-const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
+const IMAGE_BASE_URL = IMAGE_BASE_URL_RAW.replace(/\/+$/, "");
+
+const formatCityTitle = (cityStr) => {
+  if (!cityStr) return "";
+  return cityStr
+    .replace(/-/g, " ")
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+};
+
+const slugify = (text) => {
+  if (!text) return "all";
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+const isValidImg = (url) => {
+  if (!url || typeof url !== "string") return false;
+  const lower = url.toLowerCase().trim();
+  if (
+    !lower ||
+    lower === "null" ||
+    lower === "undefined" ||
+    lower.includes("imagenotfound") ||
+    lower.includes("image_not_found") ||
+    lower.includes("no-image") ||
+    lower.includes("no_image") ||
+    lower.includes("placeholder")
+  ) {
+    return false;
+  }
+  return true;
+};
 
 const transformApiData = (items) => {
   return items.map((item) => {
-    // If item is already transformed (has flat structure), return it as is
     if (item.name && item.vendor_type && !item.attributes) {
       return item;
     }
 
-    // ... rest of transformation logic ...
     const id = item.id;
     const media = Array.isArray(item.media) ? item.media : [];
     const vendor = item.vendor || {};
     const subcategory = item.subcategory || {};
-    // Handle both direct attributes and nested attributes (API response format)
     const attributes = item.attributes || {};
-
-    // Check if attributes are flattened (from controller logic: plain.attributes = { ...plain.attributes, rating: ... })
-    // The controller returns: { id, vendor_id, attributes: { ... }, vendor: {...} }
-    // We need to map this to the structure expected by GridView
-
-    // Extract rating from attributes (controller puts formatted rating there)
-    const rating = attributes.rating || 0;
 
     const portfolioUrls = attributes.Portfolio
       ? attributes.Portfolio.split("|")
@@ -79,22 +114,14 @@ const transformApiData = (items) => {
       roomsParsed = Number.isNaN(n) ? null : n;
     }
 
-    const latitude = parseFloat(
-      attributes.latitude || attributes.Latitude || ""
-    );
-    const longitude = parseFloat(
-      attributes.longitude || attributes.Longitude || ""
-    );
-    const hasValidCoordinates = !isNaN(latitude) && !isNaN(longitude);
-
     return {
       id,
       vendor_id: item.vendor_id || vendor.id || null,
       name:
-        attributes.name ||
-        vendor.businessName ||
+        attributes.vendor_name ||
         attributes.Name ||
-        "Unknown Vendor",
+        vendor.businessName ||
+        "Venue",
       subtitle: attributes.subtitle || "",
       tagline: attributes.tagline || "",
       description:
@@ -102,9 +129,7 @@ const transformApiData = (items) => {
         attributes.Aboutus ||
         attributes.description ||
         "",
-      slug: attributes.slug || "",
-      lat: hasValidCoordinates ? latitude : null,
-      lng: hasValidCoordinates ? longitude : null,
+      slug: item.slug || attributes.slug || "",
       image: firstImage,
       gallery,
       videos: [],
@@ -123,13 +148,31 @@ const transformApiData = (items) => {
           null
         : null,
 
-      address: attributes.address || attributes.Address || "",
-      area: attributes.area || "",
-      city: attributes.city || vendor.city || "",
-      location: attributes.city || vendor.city || "",
+      address:
+        attributes.address && attributes.address.toLowerCase() !== "unknown"
+          ? attributes.address
+          : attributes.Address && attributes.Address.toLowerCase() !== "unknown"
+          ? attributes.Address
+          : "",
+      area:
+        attributes.area && attributes.area.toLowerCase() !== "unknown"
+          ? attributes.area
+          : "",
+      city:
+        attributes.city && attributes.city.toLowerCase() !== "unknown"
+          ? attributes.city
+          : vendor.city && vendor.city.toLowerCase() !== "unknown"
+          ? vendor.city
+          : "",
+      location:
+        attributes.city && attributes.city.toLowerCase() !== "unknown"
+          ? attributes.city
+          : vendor.city && vendor.city.toLowerCase() !== "unknown"
+          ? vendor.city
+          : "",
       rooms: roomsParsed,
 
-      rating: rating,
+      rating: attributes.rating || 0,
       review_count:
         attributes.review_count ||
         parseInt(attributes.review?.toString?.() || "0", 10) ||
@@ -150,18 +193,14 @@ const transformApiData = (items) => {
       vendor_name:
         vendor.businessName || attributes.vendor_name || attributes.Name || "",
       url: attributes.Website || attributes.URL || null,
+      has360: hasView360(item),
     };
-  });
+  }).filter((item) => item && isValidImg(item.image));
 };
 
-const SimilarServices = ({ venueData, currentId }) => {
+const SimilarServices = ({ venueData, currentId, currentCity: propCity }) => {
   const navigate = useNavigate();
-
-  const type =
-    venueData?.attributes?.vendor_type ||
-    venueData?.vendor?.vendor_type ||
-    venueData?.vendor?.vendorType?.name ||
-    venueData?.subcategory?.vendorType?.name;
+  const routeParams = useParams();
 
   const subCategory =
     venueData?.attributes?.sub_category ||
@@ -170,59 +209,131 @@ const SimilarServices = ({ venueData, currentId }) => {
     venueData?.vendor?.subCategory ||
     venueData?.subcategory?.name;
 
-  const currentCity = (
+  const resolvedCity = (
+    propCity ||
+    routeParams.city ||
     venueData?.attributes?.city ||
     venueData?.attributes?.location?.city ||
     venueData?.vendor?.city ||
-    ""
-  ).toLowerCase();
+    "Lucknow"
+  ).trim();
 
+  const displayCity = formatCityTitle(resolvedCity);
   const [similarVendors, setSimilarVendors] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSimilarServices = async () => {
-      if (!currentId) return;
+    let isMounted = true;
 
+    const fetchSimilar = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `https://happywedz.com/api/vendor-services/${currentId}/similar?limit=4`
-        );
+        let candidateList = [];
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch similar services");
+        if (currentId) {
+          try {
+            const res = await fetch(
+              `${API_BASE_URL}/vendor-services/${currentId}/similar?limit=8&city=${encodeURIComponent(resolvedCity)}`
+            );
+            if (res.ok) {
+              const resData = await res.json();
+              if (resData.success && Array.isArray(resData.data)) {
+                candidateList = transformApiData(resData.data);
+              }
+            }
+          } catch {}
         }
 
-        const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-          const transformed = transformApiData(result.data);
-          setSimilarVendors(transformed);
-        } else {
-          setSimilarVendors([]);
+        if (candidateList.length < 4) {
+          try {
+            const res = await fetch(
+              `${API_BASE_URL}/vendor-services?city=${encodeURIComponent(resolvedCity)}&limit=12`
+            );
+            if (res.ok) {
+              const resData = await res.json();
+              const items = resData.data || (Array.isArray(resData) ? resData : []);
+              const transformed = transformApiData(items);
+              candidateList = [...candidateList, ...transformed];
+            }
+          } catch {}
         }
-      } catch (error) {
-        console.error("Error fetching similar services:", error);
-        setSimilarVendors([]);
+
+        const currentName = String(
+          venueData?.attributes?.name ||
+            venueData?.attributes?.vendor_name ||
+            venueData?.name ||
+            ""
+        ).toLowerCase().trim();
+
+        const seenIds = new Set();
+        let cityMatched = [];
+
+        for (const item of candidateList) {
+          if (
+            item.id &&
+            item.id !== currentId &&
+            !seenIds.has(item.id) &&
+            String(item.name).toLowerCase().trim() !== currentName &&
+            isValidImg(item.image)
+          ) {
+            seenIds.add(item.id);
+            cityMatched.push({
+              ...item,
+              city: displayCity,
+              location: item.address ? `${item.address}, ${displayCity}` : displayCity,
+            });
+          }
+        }
+
+        if (cityMatched.length < 4) {
+          const staticPool = [...subVenuesData, ...subVendorsData];
+          for (const item of staticPool) {
+            if (
+              !seenIds.has(item.id) &&
+              String(item.name).toLowerCase().trim() !== currentName &&
+              isValidImg(item.image)
+            ) {
+              seenIds.add(item.id);
+              cityMatched.push({
+                ...item,
+                city: displayCity,
+                location: `${displayCity}`,
+              });
+              if (cityMatched.length >= 4) break;
+            }
+          }
+        }
+
+        if (isMounted) {
+          setSimilarVendors(cityMatched.slice(0, 4));
+        }
+      } catch (err) {
+        console.error("Error fetching similar venues:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchSimilarServices();
-  }, [currentId]);
+    fetchSimilar();
 
-  if (similarVendors.length === 0 && !loading) return null;
+    return () => {
+      isMounted = false;
+    };
+  }, [currentId, resolvedCity, venueData]);
+
+  if (!loading && similarVendors.length === 0) return null;
 
   const displaySubCategory =
-    subCategory || similarVendors?.[0]?.subcategory_name;
+    subCategory || similarVendors?.[0]?.subcategory_name || "Venues";
 
   return (
-    <section className="similar-venues py-5 bg-light">
+    <section className="similar-venues py-5" style={{ background: "#fbfbfb" }}>
       <Container>
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h4 className="details-section-title fw-bold m-0">
-            Similar {displaySubCategory || "Vendors"} You Might Like
+          <h4 className="details-section-title fw-bold m-0" style={{ color: "#222" }}>
+            Similar {displaySubCategory} in {displayCity}
           </h4>
         </div>
 
@@ -233,37 +344,37 @@ const SimilarServices = ({ venueData, currentId }) => {
             </div>
           </div>
         ) : (
-          <GridView subVenuesData={similarVendors} colLg={3} />
+          <GridView subVenuesData={similarVendors} colLg={3} currentCity={resolvedCity} />
         )}
 
         <div className="text-center mt-4">
           <Button
             variant="outline-primary"
-            className="px-5 rounded-pill"
+            className="px-5 rounded-pill fw-semibold"
+            style={{
+              borderColor: "#ed1173",
+              color: "#ed1173",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#ed1173";
+              e.currentTarget.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = "#ed1173";
+            }}
             onClick={() => {
-              const type = venueData?.attributes?.vendor_type?.toLowerCase();
-              let section = "vendors";
-              if (type && type.includes("venue")) {
-                section = "venues";
+              const citySlug = slugify(resolvedCity);
+              const subSlug = slugify(displaySubCategory);
+              if (subSlug && subSlug !== "venues" && subSlug !== "all") {
+                navigate(`/vendors/${subSlug}/${citySlug}`);
+              } else {
+                navigate(`/wedding-venues/${citySlug}`);
               }
-
-              const slug = displaySubCategory
-                ? displaySubCategory
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")
-                    .replace(/[^a-z0-9\-]/g, "")
-                : "";
-
-              const params = new URLSearchParams();
-              if (currentCity) params.append("city", currentCity);
-              if (type && !slug) params.append("vendorType", type);
-
-              const path = slug ? `/${section}/${slug}` : `/${section}`;
-              navigate(`${path}?${params.toString()}`);
               window.scrollTo(0, 0);
             }}
           >
-            View All Similar{" "}
+            View All Similar in {displayCity}
           </Button>
         </div>
       </Container>

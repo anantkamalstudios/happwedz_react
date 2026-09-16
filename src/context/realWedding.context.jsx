@@ -52,14 +52,15 @@ export const FilterProvider = ({ children }) => {
   useEffect(() => {
     const fetchCultures = async () => {
       try {
-        const res = await axios.get(
-          `${API_BASE_URL}/real-wedding-culture/public`
-        );
-        if (res.data?.cultures) {
+        const cleanBaseUrl = API_BASE_URL.replace(/\/api$/, "");
+        const res = await axios
+          .get(`${API_BASE_URL}/real-wedding-culture/public`)
+          .catch(() => axios.get(`${cleanBaseUrl}/real-wedding-culture/public`));
+        if (res?.data?.cultures) {
           setCultures(res.data.cultures);
         }
       } catch (err) {
-        console.error("Error fetching cultures:", err);
+        console.warn("Notice: wedding cultures data not available:", err.message);
       }
     };
     fetchCultures();

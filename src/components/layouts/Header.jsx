@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import LocationModalWithCategories from "./LocationModalWithCategories";
 import { RiMenuFill } from "react-icons/ri";
@@ -7,10 +7,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/authSlice";
 import { vendorLogout } from "../../redux/vendorAuthSlice";
 import { setLocation } from "../../redux/locationSlice";
-import { FaArrowRightLong, FaChevronDown, FaChevronUp } from "react-icons/fa6";
+import { FiMail, FiPhone, FiMapPin, FiSearch, FiEdit3, FiSmartphone, FiUser, FiLogOut, FiGrid } from "react-icons/fi";
+import { FaArrowRightLong, FaChevronDown, FaChevronUp, FaCaretDown } from "react-icons/fa6";
 import usePhotography from "../../hooks/usePhotography";
 import { useFilter } from "../../context/realWedding.context";
 import axiosInstance from "../../services/api/axiosInstance";
+import { fetchVendorTypesWithSubcategoriesApi } from "../../services/api/vendorTypesWithSubcategoriesApi";
+import { API_BASE_URL, STORE_ORIGIN } from "../../config/constants";
 
 const Header = () => {
   // Add state to track window width for responsive UI
@@ -27,8 +30,36 @@ const Header = () => {
   const [activeTab, setActiveTab] = useState("");
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const [openMenu, setOpenMenu] = useState(null);
+  const megaMenuTimeoutRef = useRef(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSubmenu, setMobileSubmenu] = useState(null);
+
+  // Small delay before closing a mega-dropdown so moving the mouse across the
+  // gap between the nav tab and the dropdown panel doesn't close it early.
+  const handleMegaMenuEnter = (name) => {
+    if (megaMenuTimeoutRef.current) {
+      clearTimeout(megaMenuTimeoutRef.current);
+      megaMenuTimeoutRef.current = null;
+    }
+    setOpenMenu(name);
+  };
+
+  const handleMegaMenuLeave = () => {
+    if (megaMenuTimeoutRef.current) {
+      clearTimeout(megaMenuTimeoutRef.current);
+    }
+    megaMenuTimeoutRef.current = setTimeout(() => {
+      setOpenMenu(null);
+    }, 280);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (megaMenuTimeoutRef.current) {
+        clearTimeout(megaMenuTimeoutRef.current);
+      }
+    };
+  }, []);
   const navigate = useNavigate();
   const {
     setSelectCity,
@@ -48,7 +79,7 @@ const Header = () => {
     const fetchCategories = async (type, setter) => {
       try {
         const res = await fetch(
-          `https://happywedz.com/api/blog-categories/all?type=${type}&status=active`,
+          `${API_BASE_URL}/blog-categories/all?type=${type}&status=active`,
         );
         const json = await res.json();
         const arr = Array.isArray(json.data) ? json.data : [];
@@ -86,6 +117,10 @@ const Header = () => {
     setMobileMenuOpen(false);
   };
 
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuTimeoutRef = useRef(null);
+  const profileMenuContainerRef = useRef(null);
+
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { vendor, token: vendorToken } = useSelector(
     (state) => state.vendorAuth,
@@ -94,6 +129,70 @@ const Header = () => {
   const isUserLoggedIn = !!user && !!isAuthenticated;
   const isVendorLoggedIn = !!vendorToken && !!vendor;
   const isLoggedIn = isUserLoggedIn || isVendorLoggedIn;
+
+  const handleProfileMouseEnter = () => {
+    if (profileMenuTimeoutRef.current) {
+      clearTimeout(profileMenuTimeoutRef.current);
+      profileMenuTimeoutRef.current = null;
+    }
+    if (isLoggedIn) {
+      setProfileMenuOpen(true);
+    }
+  };
+
+  const handleProfileMouseLeave = () => {
+    if (profileMenuTimeoutRef.current) {
+      clearTimeout(profileMenuTimeoutRef.current);
+    }
+    profileMenuTimeoutRef.current = setTimeout(() => {
+      setProfileMenuOpen(false);
+    }, 280);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        profileMenuContainerRef.current &&
+        !profileMenuContainerRef.current.contains(e.target)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      if (profileMenuTimeoutRef.current) {
+        clearTimeout(profileMenuTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const profileName =
+    user?.name ||
+    user?.userName ||
+    user?.username ||
+    user?.data?.name ||
+    vendor?.businessName ||
+    vendor?.name ||
+    vendor?.vendor?.businessName ||
+    "";
+  const profileInitial = profileName ? profileName.trim().charAt(0).toUpperCase() : "";
+  const profileAvatar =
+    user?.profileImage ||
+    user?.profile_picture ||
+    user?.profilePic ||
+    user?.avatar ||
+    vendor?.profileImage ||
+    vendor?.logo ||
+    null;
+  const profileEmail =
+    user?.email ||
+    user?.userEmail ||
+    user?.mail ||
+    user?.data?.email ||
+    vendor?.email ||
+    vendor?.vendor?.email ||
+    "";
 
   const toSlug = (text) =>
     text
@@ -180,28 +279,6 @@ const Header = () => {
   ];
 
   const [venueSubcategories, setVenueSubcategories] = useState([]);
-  useEffect(() => {
-    const fetchSubcategories = async () => {
-      try {
-        const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all",
-        );
-        const data = await response.json();
-        const venues = data.find(
-          (vendor) => vendor.name && vendor.name.toLowerCase() === "venues",
-        );
-        if (venues && Array.isArray(venues.subcategories)) {
-          setVenueSubcategories(venues.subcategories);
-        } else {
-          setVenueSubcategories([]);
-        }
-      } catch (error) {
-        console.error("Error fetching subcategories:", error);
-      }
-    };
-    fetchSubcategories();
-  }, []);
-
   const [vendorCategories, setVendorCategories] = useState([]);
   const [einviteCategories, setEinviteCategories] = useState([
     {
@@ -217,20 +294,23 @@ const Header = () => {
     },
   ]);
 
+  // One shared, deduped request feeds both the vendor menu and the venues submenu.
+  // These were two separate fetches of the same endpoint.
   useEffect(() => {
-    const fetchVendorCategories = async () => {
-      try {
-        const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all",
-        );
-        const data = await response.json();
-        setVendorCategories(Array.isArray(data) ? data : []);
-      } catch (error) {
-        setVendorCategories([]);
-        console.error("Error fetching vendor categories:", error);
-      }
+    let cancelled = false;
+    fetchVendorTypesWithSubcategoriesApi().then((data) => {
+      if (cancelled) return;
+      setVendorCategories(data);
+      const venues = data.find(
+        (vendor) => vendor.name && vendor.name.toLowerCase() === "venues",
+      );
+      setVenueSubcategories(
+        venues && Array.isArray(venues.subcategories) ? venues.subcategories : [],
+      );
+    });
+    return () => {
+      cancelled = true;
     };
-    fetchVendorCategories();
   }, []);
 
   const {
@@ -290,7 +370,7 @@ const Header = () => {
               to="/"
               onClick={handleMobileLinkClick}
             >
-              <img src="/images/logo.webp" alt="HappyWedz" height="30" />
+              <img src="/images/logo-sm-300.webp" alt="HappyWedz" width="120" height="30" />
             </Link>
 
             {windowWidth <= 1299 && (
@@ -322,7 +402,7 @@ const Header = () => {
             {/* Drawer Header */}
             <div className="d-flex justify-content-between align-items-center p-3 primary-bg">
               <Link to="/" onClick={handleMobileLinkClick}>
-                <img src="/images/logo.webp" alt="HappyWedz" height="30" />
+                <img src="/images/logo-sm-300.webp" alt="HappyWedz" width="120" height="30" />
               </Link>
               <button
                 className="btn border-0 p-0"
@@ -339,6 +419,8 @@ const Header = () => {
               {/* Location Selector */}
               <div className="mb-3 d-flex align-items-center justify-content-between">
                 <LocationModalWithCategories />
+                {/* Design Studio (virtual try-on) entry point — disabled.
+
                 <div>
                   <Link
                     to="/try"
@@ -348,11 +430,21 @@ const Header = () => {
                     <img
                       src="/images/header/tryimg.png"
                       alt="Design Studio"
+                      width="40"
+                      height="40"
                       className="img-fluid"
-                      style={{ maxHeight: "40px", cursor: "pointer" }}
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        height: "40px",
+                        width: "40px",
+                        objectFit: "contain",
+                        cursor: "pointer",
+                      }}
                     />
                   </Link>
                 </div>
+                */}
               </div>
 
               {/* Menu Items */}
@@ -450,12 +542,14 @@ const Header = () => {
                           ]
                       ).map((item, i) => {
                         const isShowMore = item === "View All Venues";
-                        const path = isShowMore
-                          ? "/venues"
-                          : `/venues/${item
-                              .toLowerCase()
-                              .replace(/\s+/g, "-")
-                              .replace(/[^a-z0-9\-]/g, "")}`;
+                        const cleanSlug = item
+                          .toLowerCase()
+                          .replace(/&/g, "and")
+                          .replace(/[^a-z0-9\s-]/g, "")
+                          .replace(/\s+/g, "-")
+                          .replace(/-+/g, "-")
+                          .replace(/^-+|-+$/g, "");
+                        const path = isShowMore ? "/venues" : `/venues/${cleanSlug}`;
                         return (
                           <Link
                             key={i}
@@ -484,7 +578,7 @@ const Header = () => {
                         const isMore = city === "More";
                         const path = isMore
                           ? "/venues"
-                          : `/venues?city=${encodeURIComponent(city)}`;
+                          : `/wedding-venues/${city.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")}`;
                         return (
                           <Link
                             key={i}
@@ -545,12 +639,10 @@ const Header = () => {
                                   {cat.subcategories.map((sub, j) => (
                                     <Link
                                       key={sub.id || j}
-                                      to={`/vendors/${toSlug(sub.name)}${
+                                      to={`/vendors/${toSlug(sub.name)}/${
                                         reduxLocation
-                                          ? `?city=${encodeURIComponent(
-                                              reduxLocation,
-                                            )}`
-                                          : ""
+                                          ? reduxLocation.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")
+                                          : "all"
                                       }`}
                                       className="d-block py-2 text-decoration-none text-dark small"
                                       onClick={handleMobileLinkClick}
@@ -566,7 +658,7 @@ const Header = () => {
                   )}
                 </li>
 
-                {/* Photography */}
+                {/* Wedding Inspiration */}
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
@@ -577,7 +669,7 @@ const Header = () => {
                       role="button"
                       onClick={() => navigate("/photography")}
                     >
-                      Photography
+                      Wedding Inspiration
                     </span>
                     {mobileSubmenu === "photography" ? (
                       <FaChevronUp
@@ -606,7 +698,11 @@ const Header = () => {
                                   {cat.categories.map((sub, j) => (
                                     <Link
                                       key={sub.id || j}
-                                      to={`/photography/${toSlug(sub.name)}`}
+                                      to={`/photography/${toSlug(sub.name)}/${
+                                        reduxLocation
+                                          ? reduxLocation.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")
+                                          : "all"
+                                      }`}
                                       className="d-block py-2 text-decoration-none text-dark small"
                                       onClick={handleMobileLinkClick}
                                     >
@@ -619,6 +715,22 @@ const Header = () => {
                         ))}
                     </div>
                   )}
+                </li>
+
+                {/* Photography */}
+                <li className="mb-2">
+                  <Link
+                    to="/movment-plus/home"
+                    className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
+                    onClick={(e) => {
+                      handleMobileLinkClick(e);
+                      window.dispatchEvent(
+                        new CustomEvent("open-movment-sidebar")
+                      );
+                    }}
+                  >
+                    Photography
+                  </Link>
                 </li>
 
                 {/* E-Invites */}
@@ -660,7 +772,23 @@ const Header = () => {
                   )}
                 </li>
 
-                {/* Blog */}
+                {/* Shop */}
+                <li className="mb-2">
+                  <a
+                    href={`${STORE_ORIGIN}/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
+                    onClick={handleMobileLinkClick}
+                  >
+                    Shop
+                  </a>
+                </li>
+
+                {/* Blog is hidden on mobile so the drawer carries the same
+                    sections as the desktop bar, where this entry is also commented
+                    out. Restore here and in the desktop nav together. */}
+                {/*
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
@@ -732,6 +860,7 @@ const Header = () => {
                     </div>
                   )}
                 </li>
+                */}
 
                 {/* Genie */}
                 <li className="mb-2">
@@ -744,7 +873,21 @@ const Header = () => {
                   </Link>
                 </li>
 
-                {/* Real Wedding */}
+                {/* Honeymoon */}
+                <li className="mb-2">
+                  <Link
+                    to="/honeymoon"
+                    className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
+                    onClick={handleMobileLinkClick}
+                  >
+                    Honeymoon
+                  </Link>
+                </li>
+
+                {/* Real Wedding is hidden on mobile so the drawer carries the same
+                    sections as the desktop bar, where this entry is also commented
+                    out. Restore here and in the desktop nav together. */}
+                {/*
                 <li className="mb-2">
                   <button className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light">
                     <span
@@ -828,6 +971,7 @@ const Header = () => {
                     </div>
                   )}
                 </li>
+                */}
 
                 {/* Auth Links */}
                 <li className="mb-2">
@@ -870,22 +1014,60 @@ const Header = () => {
                 )}
               </ul>
 
-              {/* App Download Section */}
+              {/* App Download Section - Mobile */}
               <div className="mt-4 pt-3 border-top">
-                <h6 className="fw-semibold mb-3">Get the App</h6>
-                <div className="d-flex gap-2 mb-3">
-                  <img
-                    src="/images/header/playstore.png"
-                    alt="Play Store"
-                    className="img-fluid"
-                    style={{ maxHeight: "35px", cursor: "pointer" }}
-                  />
-                  <img
-                    src="/images/header/appstore.png"
-                    alt="App Store"
-                    className="img-fluid"
-                    style={{ maxHeight: "35px", cursor: "pointer" }}
-                  />
+                <div
+                  style={{
+                    background: "#e83581",
+                    borderRadius: "8px",
+                    padding: "10px 16px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "14px",
+                  }}
+                >
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.happy.happy_wedz&pcampaignid=web_share"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "7px",
+                      color: "#fff",
+                      textDecoration: "none",
+                      fontWeight: "600",
+                      fontSize: "13px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M3 20.5v-17c0-.83.94-1.3 1.6-.8l14 8.5c.67.4.67 1.4 0 1.8l-14 8.5c-.66.5-1.6.03-1.6-.8z"/>
+                    </svg>
+                    Play Store
+                  </a>
+                  <div style={{ width: "1px", height: "18px", backgroundColor: "rgba(255,255,255,0.4)" }} />
+                  <a
+                    href="https://apps.apple.com/in/app/happy-wedz/id6756042192"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "7px",
+                      color: "#fff",
+                      textDecoration: "none",
+                      fontWeight: "600",
+                      fontSize: "13px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.32c.62-.75 1.04-1.8 0.93-2.85-.9.04-2 .61-2.65 1.37-.58.67-1.09 1.75-.95 2.78 1.01.08 2.05-.55 2.67-1.3"/>
+                    </svg>
+                    Apple Store
+                  </a>
                 </div>
               </div>
             </div>
@@ -894,93 +1076,170 @@ const Header = () => {
           {/* DESKTOP VIEW */}
           <div className="d-none d-lg-block w-100">
             <div className="row w-100" style={{ margin: 0, padding: 0 }}>
-              <div className="col-12 bg-white p-2">
-                <div className="container w-100 p-0">
-                  <div className="row align-items-center gy-2">
-                    {/* Left: Tagline */}
-                    <div className="col-12 col-sm-4 col-lg-4 d-flex align-items-center justify-content-center justify-content-sm-start">
-                      <a
-                        className="nav-link fw-bold top-header-heading fs-18"
-                        href="#"
-                        style={{ color: "#C31162" }}
+              {/* TIER 1: Top Bar (White) */}
+              <div className="col-12 p-0 header-topbar d-flex align-items-center" style={{ backgroundColor: "#ffffff", borderBottom: "1px solid #eaeaea", height: "42px", minHeight: "42px" }}>
+                <div className="container-fluid w-100 px-4 h-100">
+                  <div className="d-flex align-items-center justify-content-between flex-nowrap h-100">
+                    {/* Left: Tagline + Location Modal */}
+                    <div className="d-flex align-items-center gap-3">
+                      <span
+                        className="fw-bold text-nowrap m-0 p-0 fs-14"
+                        style={{ color: "#c2185b" }}
                       >
-                        India's Favourite Wedding Planning Platform
-                      </a>
-                    </div>
-
-                    {/* Middle: Location Selector */}
-                    <div className="col-12 col-sm-6 col-lg-3 d-flex justify-content-center justify-content-sm-start">
+                        India's Most Loved Wedding Planning Platform
+                      </span>
                       <LocationModalWithCategories />
                     </div>
 
-                    {/* Right: Store Icons */}
-                    <div className="col-12 col-lg-5 d-flex align-items-center justify-content-center justify-content-lg-end gap-4">
-                      <img
-                        src="/images/header/playstore.png"
-                        alt="Play Store"
-                        title="Download on Play Store"
-                        className="img-fluid"
+                    {/* Right: Play Store & App Store Vector Badges */}
+                    <div className="d-flex align-items-center gap-2">
+                      {/* Google Play Badge */}
+                      <a
+                        href="https://play.google.com/store/apps/details?id=com.happy.happy_wedz&pcampaignid=web_share"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Google Play"
                         style={{
-                          maxHeight: "28px",
-                          width: "auto",
-                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          backgroundColor: "#000000",
+                          color: "#ffffff",
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          textDecoration: "none",
+                          height: "30px",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          transition: "transform 0.2s"
                         }}
-                      />
-
-                      <img
-                        src="/images/header/appstore.png"
-                        alt="App Store"
-                        title="Download on App Store"
-                        className="img-fluid"
-                        style={{
-                          maxHeight: "28px",
-                          width: "auto",
-                          cursor: "pointer",
-                        }}
-                      />
-
-                      <Link
-                        to="/try"
-                        state={{ title: "Try" }}
-                        title="Try Design Studio"
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
                       >
-                        <img
-                          src="/images/header/tryimg.png"
-                          alt="Design Studio"
-                          className="img-fluid"
-                          style={{
-                            maxHeight: "50px",
-                            width: "auto",
-                            cursor: "pointer",
-                          }}
-                        />
-                      </Link>
+                        <svg width="15" height="15" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M3 20.5v-17c0-.83.94-1.3 1.6-.8l14 8.5c.67.4.67 1.4 0 1.8l-14 8.5c-.66.5-1.6.03-1.6-.8z"/>
+                          <path fill="#34A853" d="M3 3.5l10.5 10.5L3 20.5V3.5z"/>
+                          <path fill="#EA4335" d="M13.5 14L3 20.5c.66.5 1.6.03 1.6-.8l8.9-5.7z"/>
+                          <path fill="#FBBC04" d="M13.5 10L4.6 4.3C3.94 3.8 3 4.27 3 5.1v.4l10.5 4.5z"/>
+                        </svg>
+                        <div style={{ display: "flex", flexDirection: "column", textAlign: "left" }}>
+                          <span style={{ fontSize: "7px", textTransform: "uppercase", letterSpacing: "0.5px", opacity: 0.85, lineHeight: "1" }}>GET IT ON</span>
+                          <span style={{ fontSize: "11px", fontWeight: "700", lineHeight: "1.1", fontFamily: "Roboto, sans-serif" }}>Google Play</span>
+                        </div>
+                      </a>
+
+                      {/* App Store Badge */}
+                      <a
+                        href="https://apps.apple.com/in/app/happy-wedz/id6756042192"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="App Store"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          backgroundColor: "#000000",
+                          color: "#ffffff",
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          textDecoration: "none",
+                          height: "30px",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          transition: "transform 0.2s"
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="#ffffff">
+                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.32c.62-.75 1.04-1.8 0.93-2.85-.9.04-2 .61-2.65 1.37-.58.67-1.09 1.75-.95 2.78 1.01.08 2.05-.55 2.67-1.3"/>
+                        </svg>
+                        <div style={{ display: "flex", flexDirection: "column", textAlign: "left" }}>
+                          <span style={{ fontSize: "7px", opacity: 0.85, lineHeight: "1" }}>Download on the</span>
+                          <span style={{ fontSize: "11px", fontWeight: "700", lineHeight: "1.1", fontFamily: "-apple-system, sans-serif" }}>App Store</span>
+                        </div>
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Bottom */}
-              <div className="col-12 py-0">
-                <div className="container" style={{ maxWidth: "1400px" }}>
-                  <div className="d-flex w-100 justify-content-center">
-                    <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-between flex-nowrap">
-                      <div className="text-center">
-                        <Link className="navbar-brand-logo" to="/">
-                          <img
-                            src="/images/logo.webp"
-                            alt="HappyWedz"
-                            height="40"
-                            className="mx-auto d-block"
-                          />
-                        </Link>
-                      </div>
-                      <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-2">
+              {/* TIER 2: Main Navbar Bar (Vibrant Pink) */}
+              <div className="col-12 p-0 primary-bg d-flex align-items-center" style={{ backgroundColor: "#ed1173", height: "50px", minHeight: "50px" }}>
+                <style>{`
+                  .header-mainnav {
+                    display: flex !important;
+                    flex-direction: row !important;
+                    /* Stretch, not center. Centred, each tab was only as tall as its
+                       link, leaving about 10px of dead space between the tab and the
+                       dropdown below it. Moving the cursor down crossed that strip,
+                       hover ended, and the dropdown closed. Stretched, the tab reaches
+                       the bottom of the bar, which is exactly where the dropdown starts.
+                       Each .nav-item still centres its own link, so nothing moves. */
+                    align-items: stretch !important;
+                    gap: 6px !important;
+                    margin: 0 0 0 14px !important;
+                    padding: 0 !important;
+                    list-style: none !important;
+                  }
+                  @media (min-width: 1400px) {
+                    .header-mainnav {
+                      gap: 12px !important;
+                      margin-left: 22px !important;
+                    }
+                  }
+                  .header-mainnav .nav-item {
+                    display: flex !important;
+                    align-items: center !important;
+                    padding-top: 0 !important;
+                    padding-bottom: 0 !important;
+                  }
+                  .header-mainnav .nav-link {
+                    font-size: 15.5px !important;
+                    padding: 6px 7px !important;
+                    color: #ffffff !important;
+                    white-space: nowrap !important;
+                    font-weight: 500 !important;
+                    line-height: 1.2 !important;
+                    text-decoration: none !important;
+                    border-radius: 4px !important;
+                    transition: background-color 0.15s ease, opacity 0.15s ease !important;
+                    transform: none !important;
+                  }
+                  @media (min-width: 1400px) {
+                    .header-mainnav .nav-link {
+                      font-size: 16px !important;
+                      padding: 6px 10px !important;
+                    }
+                  }
+                  .header-mainnav .nav-link:hover {
+                    background-color: rgba(255, 255, 255, 0.18) !important;
+                    color: #ffffff !important;
+                    transform: none !important;
+                  }
+                  .header-mainnav .dropdown-toggle::after {
+                    margin-left: 4px !important;
+                    vertical-align: 1px !important;
+                  }
+                `}</style>
+                <div className="container-fluid px-2 px-xl-3 w-100" style={{ height: "50px" }}>
+                  <div className="d-flex w-100 align-items-center flex-nowrap" style={{ height: "50px" }}>
+                    <div className="d-flex align-items-center flex-shrink-0">
+                      <Link className="navbar-brand-logo me-1 me-xl-2 d-flex align-items-center" to="/">
+                        <img
+                          src="/images/logo-sm-300.webp"
+                          alt="HappyWedz"
+                          width="135"
+                          height="30"
+                          className="d-block"
+                          style={{ filter: "brightness(0) invert(1)", height: "30px", objectFit: "contain" }}
+                        />
+                      </Link>
+                    </div>
+                    <ul className="navbar-nav header-mainnav d-flex flex-row justify-content-start m-0 p-0" style={{ height: "50px", minHeight: "50px" }}>
                         {/* Planning Tools Dropdown */}
                         <li
-                          className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("planning")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          className="py-0 nav-item dropdown mega-dropdown-wrapper position-static"
+                          onMouseEnter={() => handleMegaMenuEnter("planning")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <div className="dropdown-wrapper">
                             <button
@@ -1083,7 +1342,7 @@ const Header = () => {
                                           desc: "Plan your wedding on the go with the HappyWedz app.",
                                           image: "/images/header/playstore.png",
                                           route:
-                                            "https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors",
+                                            "https://play.google.com/store/apps/details?id=com.happy.happy_wedz&pcampaignid=web_share",
                                         },
                                         {
                                           title: "Happywedz Website",
@@ -1104,42 +1363,80 @@ const Header = () => {
                                             (e.currentTarget.style.boxShadow =
                                               "0 4px 12px rgba(0,0,0,0.08)")
                                           }
-                                          onMouseLeave={(e) =>
+                          onMouseLeave={(e) =>
                                             (e.currentTarget.style.boxShadow =
                                               "0 2px 4px rgba(0,0,0,0.04)")
                                           }
                                         >
-                                          <Link
-                                            to={item.route}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-decoration-none d-flex justify-content-between align-items-center"
-                                          >
-                                            <div className="me-3">
-                                              <p className="fw-semibold mb-1 text-dark fs-16">
-                                                {item.title}
-                                              </p>
-                                              <p
-                                                className="mb-0 text-muted fs-14"
-                                                style={{
-                                                  fontSize: "13px",
-                                                  lineHeight: "1.4",
-                                                }}
-                                              >
-                                                {item.desc}
-                                              </p>
-                                            </div>
-                                            <img
-                                              src={item.image}
-                                              alt={item.title}
-                                              style={{
-                                                width: "38px",
-                                                height: "38px",
-                                                borderRadius: "8px",
-                                                objectFit: "cover",
-                                              }}
-                                            />
-                                          </Link>
+                                          {item.route.startsWith("http") ? (
+                                            <a
+                                              href={item.route}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              aria-label={item.title}
+                                              className="text-decoration-none d-flex justify-content-between align-items-center"
+                                            >
+                                              <div className="me-3">
+                                                <p className="fw-semibold mb-1 text-dark fs-16">
+                                                  {item.title}
+                                                </p>
+                                                <p
+                                                  className="mb-0 text-muted fs-14"
+                                                  style={{
+                                                    fontSize: "13px",
+                                                    lineHeight: "1.4",
+                                                  }}
+                                                >
+                                                  {item.desc}
+                                                </p>
+                                              </div>
+                                              <div>
+                                                <img
+                                                  src={item.image}
+                                                  alt={item.title}
+                                                  style={{
+                                                    width: "38px",
+                                                    height: "38px",
+                                                    borderRadius: "8px",
+                                                    objectFit: "cover",
+                                                  }}
+                                                />
+                                              </div>
+                                            </a>
+                                          ) : (
+                                            <Link
+                                              to={item.route}
+                                              aria-label={item.title}
+                                              className="text-decoration-none d-flex justify-content-between align-items-center"
+                                            >
+                                              <div className="me-3">
+                                                <p className="fw-semibold mb-1 text-dark fs-16">
+                                                  {item.title}
+                                                </p>
+                                                <p
+                                                  className="mb-0 text-muted fs-14"
+                                                  style={{
+                                                    fontSize: "13px",
+                                                    lineHeight: "1.4",
+                                                  }}
+                                                >
+                                                  {item.desc}
+                                                </p>
+                                              </div>
+                                              <div>
+                                                <img
+                                                  src={item.image}
+                                                  alt={item.title}
+                                                  style={{
+                                                    width: "38px",
+                                                    height: "38px",
+                                                    borderRadius: "8px",
+                                                    objectFit: "cover",
+                                                  }}
+                                                />
+                                              </div>
+                                            </Link>
+                                          )}
                                         </div>
                                       ))}
                                     </div>
@@ -1153,8 +1450,8 @@ const Header = () => {
                         {/* Venues Dropdown */}
                         <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("venues")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("venues")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <Link
                             to="/venues"
@@ -1233,12 +1530,16 @@ const Header = () => {
                                     ).map((item, i) => {
                                       const isShowMore =
                                         item === "View All Venues";
+                                      const cleanSlug = item
+                                        .toLowerCase()
+                                        .replace(/&/g, "and")
+                                        .replace(/[^a-z0-9\s-]/g, "")
+                                        .replace(/\s+/g, "-")
+                                        .replace(/-+/g, "-")
+                                        .replace(/^-+|-+$/g, "");
                                       const path = isShowMore
                                         ? "/venues"
-                                        : `/venues/${item
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`;
+                                        : `/venues/${cleanSlug}`;
                                       return (
                                         <div className="col-12 mb-2" key={i}>
                                           <Link
@@ -1273,18 +1574,18 @@ const Header = () => {
                                       "Jaipur",
                                       "Lucknow",
                                       "Hyderabad",
-                                      "More",
+                                      "More Cities",
                                     ].map((city, i) => {
-                                      const isMore = city === "More";
-                                      const path = isMore
-                                        ? "/venues"
-                                        : `/venues?city=${encodeURIComponent(
-                                            city,
-                                          )}`;
+                                       const isMore = city === "More Cities" || city === "More";
+                                       const cityName = isMore ? "More Cities" : city;
+                                       const path = isMore
+                                         ? "/venues"
+                                         : `/wedding-venues/${city.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")}`;
                                       return (
                                         <div className="col-12 mb-2" key={i}>
                                           <Link
                                             to={path}
+                                            aria-label={isMore ? "Explore Wedding Venues in More Cities" : `Wedding Venues in ${city}`}
                                             onClick={() => {
                                               if (!isMore) {
                                                 dispatch(setLocation(city));
@@ -1298,7 +1599,7 @@ const Header = () => {
                                           >
                                             <i className="bi bi-geo-alt text-primary"></i>
                                             <span className="fs-14">
-                                              {city}
+                                              {cityName}
                                             </span>
                                           </Link>
                                         </div>
@@ -1314,8 +1615,8 @@ const Header = () => {
                         {/* Vendors Dropdown */}
                         <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("vendors")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("vendors")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <div className="dropdown-wrapper">
                             <Link
@@ -1360,14 +1661,10 @@ const Header = () => {
                                                     className="mb-1"
                                                   >
                                                     <Link
-                                                      to={`/vendors/${toSlug(
-                                                        sub.name,
-                                                      )}${
+                                                      to={`/vendors/${toSlug(sub.name)}/${
                                                         reduxLocation
-                                                          ? `?city=${encodeURIComponent(
-                                                              reduxLocation,
-                                                            )}`
-                                                          : ""
+                                                          ? reduxLocation.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")
+                                                          : "all"
                                                       }`}
                                                       className="dropdown-link fs-14 d-block"
                                                     >
@@ -1386,11 +1683,11 @@ const Header = () => {
                           </div>
                         </li>
 
-                        {/* Photography Dropdown */}
+                        {/* Wedding Inspiration Dropdown */}
                         <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("photography")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("photography")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <div className="dropdown-wrapper">
                             <Link
@@ -1400,7 +1697,7 @@ const Header = () => {
                               role="button"
                               onClick={() => setOpenMenu(null)}
                             >
-                              Photography
+                              Wedding Inspiration
                             </Link>
                             <div
                               className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0"
@@ -1439,9 +1736,11 @@ const Header = () => {
                                                         className="mb-1"
                                                       >
                                                         <Link
-                                                          to={`/photography/${toSlug(
-                                                            sub.name,
-                                                          )}`}
+                                                          to={`/photography/${toSlug(sub.name)}/${
+                                                            reduxLocation
+                                                              ? reduxLocation.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")
+                                                              : "all"
+                                                          }`}
                                                           className="dropdown-link fs-14 d-block"
                                                         >
                                                           {formatName(sub.name)}
@@ -1459,11 +1758,16 @@ const Header = () => {
                                     <Link
                                       to="/movment-plus/home"
                                       className="text-decoration-none"
+                                      onClick={() => {
+                                        window.dispatchEvent(
+                                          new CustomEvent("open-movment-sidebar")
+                                        );
+                                      }}
                                     >
                                       <div className="h-100 d-flex flex-column justify-content-center align-items-center text-center p-1 rounded">
                                         <img
                                           src="https://img.freepik.com/free-photo/bride-groom-having-their-wedding-beach_23-2149043965.jpg?semt=ais_hybrid&w=740&q=80"
-                                          alt="Movments Plus"
+                                          alt="Moments Plus"
                                           className="mb-3 rounded"
                                           style={{
                                             width: "100%",
@@ -1472,11 +1776,11 @@ const Header = () => {
                                           }}
                                         />
                                         <div className="fw-bold primary-text text-uppercase fs-16">
-                                          Movments Plus
+                                          Moments Plus
                                         </div>
                                         <div className="small mt-2 fs-14 text-black">
                                           All-new gallery experience for
-                                          photographers with Movments+.
+                                          photographers with Moments+.
                                         </div>
                                       </div>
                                     </Link>
@@ -1487,11 +1791,30 @@ const Header = () => {
                           </div>
                         </li>
 
+                        {/* Photography */}
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <Link
+                              className="nav-link text-white fs-16"
+                              to="/movment-plus/home"
+                              id="photographyLink"
+                              role="button"
+                              onClick={() => {
+                                window.dispatchEvent(
+                                  new CustomEvent("open-movment-sidebar")
+                                );
+                              }}
+                            >
+                              Photography
+                            </Link>
+                          </div>
+                        </li>
+
                         {/* E-Invites Dropdown */}
                         {/* <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("einvites")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("einvites")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <div className="dropdown-wrapper">
                             <Link
@@ -1543,8 +1866,8 @@ const Header = () => {
                         </li> */}
                         <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
-                          onMouseEnter={() => setOpenMenu("einvites")}
-                          onMouseLeave={() => setOpenMenu(null)}
+                          onMouseEnter={() => handleMegaMenuEnter("einvites")}
+                          onMouseLeave={handleMegaMenuLeave}
                         >
                           <div className="dropdown-wrapper">
                             <Link
@@ -1633,7 +1956,7 @@ const Header = () => {
                           <div className="dropdown-wrapper">
                             <a
                               className="nav-link text-white fs-16"
-                              href="https://store.happywedz.com/"
+                              href={`${STORE_ORIGIN}/`}
                               id="shopLink"
                               role="button"
                               target="_blank"
@@ -1954,64 +2277,321 @@ const Header = () => {
                           </div>
                         </li> */}
 
-                        {/* Auth Links */}
-                        {isUserLoggedIn ? (
-                          <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
-                            <div className="dropdown-wrapper">
-                              <Link
-                                to="/user-dashboard"
-                                className="nav-link text-white fs-16"
-                              >
-                                User Dashboard
-                              </Link>
+                      </ul>
+                      {/* Right Actions: Circular Profile Avatar (Only shows dropdown when logged in) */}
+                      <div
+                        ref={profileMenuContainerRef}
+                        className="position-relative d-inline-flex align-items-center ms-auto me-1 flex-shrink-0"
+                        onMouseEnter={handleProfileMouseEnter}
+                        onMouseLeave={handleProfileMouseLeave}
+                        style={{ height: "100%", zIndex: 1050 }}
+                      >
+                        {isLoggedIn ? (
+                          /* Logged-in Profile Avatar Button with Dropdown Triangle */
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (profileMenuTimeoutRef.current) {
+                                clearTimeout(profileMenuTimeoutRef.current);
+                                profileMenuTimeoutRef.current = null;
+                              }
+                              setProfileMenuOpen((prev) => !prev);
+                            }}
+                            aria-label="User profile and menu"
+                            aria-expanded={profileMenuOpen}
+                            style={{
+                              backgroundColor: "transparent",
+                              border: "none",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "5px",
+                              cursor: "pointer",
+                              padding: "2px 0",
+                              transition: "all 0.2s ease",
+                            }}
+                            title={profileName || "Profile Menu"}
+                          >
+                            <div
+                              style={{
+                                width: "36px",
+                                height: "36px",
+                                borderRadius: "50%",
+                                backgroundColor: "#ffffff",
+                                border: "2px solid rgba(255, 255, 255, 0.9)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                boxShadow: profileMenuOpen
+                                  ? "0 0 0 3px rgba(255, 255, 255, 0.45)"
+                                  : "0 2px 6px rgba(0, 0, 0, 0.16)",
+                                transition: "all 0.2s ease",
+                                transform: profileMenuOpen ? "scale(1.05)" : "scale(1)",
+                              }}
+                            >
+                              <FiUser
+                                style={{
+                                  color: isVendorLoggedIn ? "#7c3aed" : "#ed1173",
+                                  fontSize: "19px",
+                                }}
+                              />
                             </div>
-                          </li>
-                        ) : isVendorLoggedIn ? (
-                          <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
-                            <div className="dropdown-wrapper">
-                              <Link
-                                to="/vendor-dashboard"
-                                className="nav-link text-white fs-16"
-                              >
-                                Vendor Dashboard
-                              </Link>
-                            </div>
-                          </li>
+                            <FaCaretDown
+                              style={{
+                                color: "#ffffff",
+                                fontSize: "13px",
+                                transition: "transform 0.2s ease",
+                                transform: profileMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                                filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25))",
+                              }}
+                            />
+                          </button>
                         ) : (
-                          <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
-                            <div className="dropdown-wrapper">
-                              <Link
-                                to="/customer-login"
-                                className="nav-link text-white fs-16"
-                              >
-                                Login
-                              </Link>
-                            </div>
-                          </li>
+                          /* Guest: Direct link to Customer Login without any popup dropdown */
+                          <Link
+                            to="/customer-login"
+                            aria-label="Customer Log In"
+                            title="Log In"
+                            style={{
+                              width: "36px",
+                              height: "36px",
+                              borderRadius: "50%",
+                              backgroundColor: "#ffffff",
+                              border: "2px solid rgba(255, 255, 255, 0.9)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              cursor: "pointer",
+                              padding: 0,
+                              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.16)",
+                              transition: "all 0.2s ease",
+                              textDecoration: "none",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = "scale(1.05)";
+                              e.currentTarget.style.boxShadow =
+                                "0 0 0 3px rgba(255, 255, 255, 0.45)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = "scale(1)";
+                              e.currentTarget.style.boxShadow =
+                                "0 2px 6px rgba(0, 0, 0, 0.16)";
+                            }}
+                          >
+                            <FiUser
+                              style={{
+                                color: "#ed1173",
+                                fontSize: "19px",
+                              }}
+                            />
+                          </Link>
                         )}
 
-                        {isLoggedIn && (
-                          <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
-                            <div className="dropdown-wrapper">
-                              <button
-                                onClick={handleLogout}
-                                className="nav-link text-white btn fs-16"
-                                style={{ textDecoration: "none" }}
+                        {/* Dropdown Menu (ONLY rendered when logged in) */}
+                        {isLoggedIn && profileMenuOpen && (
+                          <div
+                            onMouseEnter={handleProfileMouseEnter}
+                            onMouseLeave={handleProfileMouseLeave}
+                            style={{
+                              position: "absolute",
+                              top: "100%",
+                              right: 0,
+                              paddingTop: "6px",
+                              zIndex: 1050,
+                              minWidth: "230px",
+                            }}
+                          >
+                            {/* Invisible hover bridge connecting button to card */}
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: "-15px",
+                                left: "-50px",
+                                right: 0,
+                                height: "20px",
+                                backgroundColor: "transparent",
+                                pointerEvents: "auto",
+                              }}
+                            />
+                            <div
+                              style={{
+                                backgroundColor: "#ffffff",
+                                borderRadius: "14px",
+                                boxShadow:
+                                  "0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06)",
+                                border: "1px solid #eaeaea",
+                                overflow: "hidden",
+                                textAlign: "left",
+                                position: "relative",
+                              }}
+                            >
+                              {/* Logged-In User/Vendor Header */}
+                              <div
+                                style={{
+                                  padding: "12px 16px",
+                                  background:
+                                    "linear-gradient(135deg, #fff2f6 0%, #ffffff 100%)",
+                                  borderBottom: "1px solid #f0f0f0",
+                                }}
                               >
-                                Logout
-                              </button>
+                                <div
+                                  style={{
+                                    fontWeight: "700",
+                                    fontSize: "14px",
+                                    color: "#1f2937",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                >
+                                  {profileName ||
+                                    (isVendorLoggedIn ? "Vendor Partner" : "My Account")}
+                                </div>
+                                {profileEmail && (
+                                  <div
+                                    style={{
+                                      fontSize: "12px",
+                                      color: "#6b7280",
+                                      marginTop: "2px",
+                                      whiteSpace: "nowrap",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                    }}
+                                  >
+                                    {profileEmail}
+                                  </div>
+                                )}
+                                <span
+                                  style={{
+                                    display: "inline-block",
+                                    fontSize: "10px",
+                                    fontWeight: "700",
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.5px",
+                                    padding: "2px 8px",
+                                    borderRadius: "10px",
+                                    backgroundColor: isVendorLoggedIn
+                                      ? "#7c3aed"
+                                      : "#e72e76",
+                                    color: "#ffffff",
+                                    marginTop: "6px",
+                                  }}
+                                >
+                                  {isVendorLoggedIn ? "Vendor" : "Customer"}
+                                </span>
+                              </div>
+
+                              {/* Menu Options */}
+                              <div style={{ padding: "6px 0" }}>
+                                {isUserLoggedIn && (
+                                  <Link
+                                    to="/user-dashboard"
+                                    onClick={() => setProfileMenuOpen(false)}
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "10px",
+                                      padding: "10px 16px",
+                                      color: "#374151",
+                                      textDecoration: "none",
+                                      fontSize: "13px",
+                                      fontWeight: "600",
+                                      transition: "background-color 0.15s",
+                                    }}
+                                    onMouseEnter={(e) =>
+                                      (e.currentTarget.style.backgroundColor =
+                                        "#fff0f5")
+                                    }
+                                    onMouseLeave={(e) =>
+                                      (e.currentTarget.style.backgroundColor =
+                                        "transparent")
+                                    }
+                                  >
+                                    <FiGrid size={16} color="#e72e76" />
+                                    <span>User Dashboard</span>
+                                  </Link>
+                                )}
+
+                                {isVendorLoggedIn && (
+                                  <Link
+                                    to="/vendor-dashboard"
+                                    onClick={() => setProfileMenuOpen(false)}
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "10px",
+                                      padding: "10px 16px",
+                                      color: "#374151",
+                                      textDecoration: "none",
+                                      fontSize: "13px",
+                                      fontWeight: "600",
+                                      transition: "background-color 0.15s",
+                                    }}
+                                    onMouseEnter={(e) =>
+                                      (e.currentTarget.style.backgroundColor =
+                                        "#f5f3ff")
+                                    }
+                                    onMouseLeave={(e) =>
+                                      (e.currentTarget.style.backgroundColor =
+                                        "transparent")
+                                    }
+                                  >
+                                    <FiGrid size={16} color="#7c3aed" />
+                                    <span>Vendor Dashboard</span>
+                                  </Link>
+                                )}
+
+                                <div
+                                  style={{
+                                    height: "1px",
+                                    backgroundColor: "#f0f0f0",
+                                    margin: "4px 0",
+                                  }}
+                                />
+
+                                <button
+                                  onClick={() => {
+                                    setProfileMenuOpen(false);
+                                    handleLogout();
+                                  }}
+                                  style={{
+                                    width: "100%",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                    padding: "10px 16px",
+                                    color: "#dc2626",
+                                    backgroundColor: "transparent",
+                                    border: "none",
+                                    fontSize: "13px",
+                                    fontWeight: "600",
+                                    cursor: "pointer",
+                                    transition: "background-color 0.15s",
+                                    textAlign: "left",
+                                  }}
+                                  onMouseEnter={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                      "#fef2f2")
+                                  }
+                                  onMouseLeave={(e) =>
+                                    (e.currentTarget.style.backgroundColor =
+                                      "transparent")
+                                  }
+                                >
+                                  <FiLogOut size={16} color="#dc2626" />
+                                  <span>Logout</span>
+                                </button>
+                              </div>
                             </div>
-                          </li>
+                          </div>
                         )}
-                      </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </nav>
+        </nav>
     </>
   );
 };

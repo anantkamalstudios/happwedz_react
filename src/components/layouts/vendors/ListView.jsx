@@ -5,10 +5,14 @@ import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import Asideview from "./Asideview";
+import QuickInquiryModal from "../QuickInquiryModal";
 
 const ListView = ({ subVendorsData }) => {
   const [favorites, setFavorites] = useState({});
   const [filter, setFilter] = useState("all");
+  const [showQuickInquiry, setShowQuickInquiry] = useState(false);
+  const [selectedVendorId, setSelectedVendorId] = useState(null);
+  const [selectedVendorName, setSelectedVendorName] = useState("");
 
   const toggleFavorite = (id) => {
     setFavorites((prev) => ({
@@ -105,8 +109,15 @@ const ListView = ({ subVendorsData }) => {
                   </div>
 
                   <div className="mt-2">
-                    <button className="w-100 details-btn">
-                      Request Pricing
+                    <button 
+                      className="w-100 details-btn"
+                      onClick={() => {
+                        setSelectedVendorId(v.vendor_id || v.id);
+                        setSelectedVendorName(v.name || "");
+                        setShowQuickInquiry(true);
+                      }}
+                    >
+                      ⚡ Quick Inquiry
                     </button>
                   </div>
                 </Col>
@@ -115,6 +126,12 @@ const ListView = ({ subVendorsData }) => {
           </Card>
         </Col>
       </Row>
+      <QuickInquiryModal
+        show={showQuickInquiry}
+        handleClose={() => setShowQuickInquiry(false)}
+        vendorId={selectedVendorId}
+        vendorName={selectedVendorName}
+      />
     </>
   );
 };

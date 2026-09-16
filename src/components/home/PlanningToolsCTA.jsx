@@ -28,7 +28,7 @@ const PlanningToolsCTA = () => {
                   <div className="decorative-border"></div>
 
                   <div className="tool-card-icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle mb-4">
-                    <img
+                    <img decoding="async"
                       loading="lazy"
                       src={tool.icon}
                       alt={tool.title}

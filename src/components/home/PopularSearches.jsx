@@ -68,7 +68,7 @@
 //               key={index}
 //             >
 //               <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
-//                 <img
+//                 <img loading="lazy" decoding="async"
 //                   src={popularSearch.image}
 //                   className="card-img-top rounded-4 popular-search-swiper-img hover-animate-img"
 //                   alt={popularSearch.name}

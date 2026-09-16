@@ -1,0 +1,78 @@
+/* Moments+ expiry / over-quota notice.
+   Amber rather than red: nothing has broken and nothing was lost — the vendor just
+   cannot add more until they upgrade. Red would read as data loss. */
+
+.moments-quota-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  margin-bottom: 24px;
+  background: #fffaf0;
+  border: 1px solid #f5d59a;
+  border-left: 4px solid #e8a33d;
+  border-radius: 10px;
+}
+
+.moments-quota-banner__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fdefd6;
+  color: #b8791b;
+}
+
+.moments-quota-banner__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.moments-quota-banner__title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #7a5210;
+}
+
+.moments-quota-banner__text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #6b5a3c;
+}
+
+.moments-quota-banner__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  align-self: center;
+  padding: 9px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  background: #e91e63;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.moments-quota-banner__cta:hover {
+  background: #c2185b;
+}
+
+@media (max-width: 640px) {
+  .moments-quota-banner {
+    flex-wrap: wrap;
+  }
+  .moments-quota-banner__cta {
+    width: 100%;
+    justify-content: center;
+  }
+}

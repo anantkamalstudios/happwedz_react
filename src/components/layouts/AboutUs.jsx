@@ -169,7 +169,9 @@ const AboutUs = () => {
             </h4>
 
             <div className="row gy-4">
-              {/* Design Studio */}
+              {/* Design Studio — hidden while the virtual try-on is disabled, so
+                  About Us does not advertise a feature with no way to reach it.
+
               <div className="col-md-6">
                 <div className="p-4 border rounded shadow-sm bg-white h-100">
                   <p className="fw-bold mb-2 text-dark fs-16">
@@ -183,6 +185,7 @@ Create your perfect bridal look effortlessly.
                   </p>
                 </div>
               </div>
+              */}
 
               {/* Mobile Apps */}
               <div className="col-md-6">

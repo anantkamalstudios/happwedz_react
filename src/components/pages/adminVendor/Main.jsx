@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../../layouts/vendors/Navbar";
 import HomeAdmin from "./HomeAdmin";
 import Storefront from "./Storefront";
@@ -13,6 +13,7 @@ import Reviews from "./subVendors/Reviews";
 import VendorMessages from "./messages/VendorMessages";
 import VendorLeadsPage from "./VendorLeadsPage";
 import MovmentsPlus from "./movments-plus/MovmentsPlus";
+import { VendorAccessProvider } from "../../../context/VendorAccessContext";
 
 const Main = () => {
   const { slug } = useParams();
@@ -20,6 +21,10 @@ const Main = () => {
     const stored = localStorage.getItem("storefrontCompletion");
     return stored ? parseInt(stored, 10) : 0;
   });
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [slug]);
 
   const renderContent = () => {
     switch (slug) {
@@ -45,10 +50,14 @@ const Main = () => {
   };
 
   return (
-    <div>
-      <Navbar storefrontCompletion={storefrontCompletion} />
-      {renderContent()}
-    </div>
+    // Fetched once here and shared by the navbar, the storefront and the settings tab,
+    // so the dashboard does not ask the server the same question three times per load.
+    <VendorAccessProvider>
+      <div>
+        <Navbar storefrontCompletion={storefrontCompletion} />
+        {renderContent()}
+      </div>
+    </VendorAccessProvider>
   );
 };
 

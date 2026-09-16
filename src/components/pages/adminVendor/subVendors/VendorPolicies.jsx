@@ -77,7 +77,11 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
           </div>
         </div>
 
-        <button className="btn btn-primary mt-2 fs-14" onClick={onSave}>
+        <button
+          className="btn btn-primary mt-2 fs-14"
+          type="button"
+          onClick={() => onSave?.()}
+        >
           Save Policies & Terms
         </button>
       </div>

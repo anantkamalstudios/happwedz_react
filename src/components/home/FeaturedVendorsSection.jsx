@@ -130,7 +130,7 @@ const FeaturedVendorsSection = () => {
                 <div key={index} className="swiper-slide">
                   <div className="vendor-card">
                     <div className="vendor-image-container">
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={vendor.image}
                         alt={vendor.name}
                         className="vendor-image"

@@ -2,13 +2,14 @@ import { IMAGE_BASE_URL } from "../config/constants";
 
 export const getImageUrl = (imagePath) => {
     if (!imagePath) return "";
+    
+    // Extract everything from /uploads/ onwards if it exists, to fix corrupted DB URLs
+    const uploadsMatch = imagePath.match(/\/uploads\/.*/);
+    if (uploadsMatch) {
+        return `${IMAGE_BASE_URL.replace(/\/+$/, "")}${uploadsMatch[0]}`;
+    }
+
     if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-        if (imagePath.includes("happywedz.com/uploads")) {
-            return imagePath.replace(
-                /https?:\/\/happywedz\.com/,
-                IMAGE_BASE_URL.replace(/\/$/, "")
-            );
-        }
         return imagePath;
     }
     const cleanPath = imagePath.replace(/^\/+/, "");

@@ -8,6 +8,7 @@ import axiosInstance from "../../services/api/axiosInstance";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { API_BASE_URL } from "../../config/constants";
 
 const CustomerRegister = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +30,7 @@ const CustomerRegister = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
+  const [countriesData, setCountriesData] = useState([]);
   const navigate = useNavigate();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const auth = useSelector((state) => state.auth);
@@ -51,7 +53,7 @@ const CustomerRegister = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("https://happywedz.com/api/sign-in-cms");
+        const res = await fetch(`${API_BASE_URL}/sign-in-cms`);
         const data = await res.json();
         setSignInCms(data?.data || data || null);
       } catch (err) {
@@ -65,33 +67,27 @@ const CustomerRegister = () => {
 
   useEffect(() => {
     axios
-      .get("https://restcountries.com/v3.1/all?fields=name,cca2")
+      .get("https://countriesnow.space/api/v0.1/countries/")
       .then((res) => {
-        const sorted = res.data
-          .map((c) => ({
-            name: c.name.common,
-            code: c.cca2,
-          }))
+        const data = Array.isArray(res.data?.data) ? res.data.data : [];
+        setCountriesData(data);
+        const sorted = data
+          .map((c) => ({ name: c.country, code: c.iso2 }))
+          .filter((c) => c.name)
           .sort((a, b) => a.name.localeCompare(b.name));
         setCountries(sorted);
-      });
+      })
+      .catch(() => setCountries([]));
   }, []);
 
   useEffect(() => {
-    if (!formData.country) return;
-    axios
-      .post("https://countriesnow.space/api/v0.1/countries/cities", {
-        country: formData.country,
-      })
-      .then((res) => {
-        if (res.data && res.data.data) {
-          setCities(res.data.data);
-        } else {
-          setCities([]);
-        }
-      })
-      .catch(() => setCities([]));
-  }, [formData.country]);
+    if (!formData.country) {
+      setCities([]);
+      return;
+    }
+    const match = countriesData.find((c) => c.country === formData.country);
+    setCities(Array.isArray(match?.cities) ? match.cities : []);
+  }, [formData.country, countriesData]);
 
   const validateField = (name, value) => {
     let error = "";
@@ -260,7 +256,13 @@ const CustomerRegister = () => {
 
         if (data?.success && data.user && data.token) {
           persistUserSession(data.user, data.token);
-          dispatch(setCredentials({ user: data.user, token: data.token }));
+          dispatch(
+            setCredentials({
+              user: data.user,
+              token: data.token,
+              storeSession: data.storeSession,
+            })
+          );
 
           setFormData({
             name: "",
@@ -497,11 +499,11 @@ const CustomerRegister = () => {
                     className={`form-control fs-14 ${
                       errors.weddingVenue ? "is-invalid" : ""
                     }`}
-                    placeholder="Wedding Venue"
+                    placeholder="Wedding Location"
                     value={formData.weddingVenue}
                     onChange={handleChange}
                   />
-                  <label className="fs-16">Wedding Venue</label>
+                  <label className="fs-16">Wedding Location</label>
                   {errors.weddingVenue && (
                     <div className="invalid-feedback">
                       {errors.weddingVenue}

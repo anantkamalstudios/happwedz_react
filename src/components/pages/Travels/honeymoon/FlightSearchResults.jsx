@@ -1,929 +1,1374 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Plane, MapPin, Clock, ArrowRight, Luggage, Filter, SlidersHorizontal } from 'lucide-react';
-import { searchFlights, verifyOffer, createFlightPaymentOrder, verifyAndBookFlight } from '../../../../services/api/flightApi';
-import FlightFiltersSidebar from './FlightFiltersSidebar';
-import BookingForm from './BookingForm';
+import { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FiEdit2, FiBriefcase } from "react-icons/fi";
+import { MdFlight } from "react-icons/md";
+import "./tripjack-styles.css";
+import "./roundtrip-results.css";
+import FlightFiltersSidebar from "./FlightFiltersSidebar";
+import FlightSearchForm from "./components/FlightSearchForm";
+import FlightSearchHeader from "./components/FlightSearchHeader";
+import FareDateStrip from "./components/FareDateStrip";
+import ShareBy from "./components/ShareBy";
+import FareCompare from "./components/FareCompare";
+import FlightDetailsPanel from "./components/FlightDetailsPanel";
+import { reviewFlight, searchFlights } from "../../../../services/api/flightApi";
+import { formatDate } from "../../../../utils/dateFormat";
+import {
+  getTripDurationMinutes,
+  buildTripJackSearchQuery,
+} from "../../../../utils/flightSearchUtils";
+import {
+  isNdcFare,
+  deriveFacets,
+  filterTrips,
+  applyFilterChange,
+  clearFilterKey,
+  removeFilterChip,
+  reconcileFilters,
+  countActiveFilters,
+  paxFromSearch,
+  farePrice,
+  deriveSpecialReturn,
+  EMPTY_FILTERS,
+} from "../../../../utils/flightFilters";
+import { airlineLogo } from '../../../../utils/airlineLogo';
 
-const FlightSearchResults = () => {
+const useVirtualList = (items, pageSize = 15) => {
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+  const loaderRef = useRef(null);
+  useEffect(() => {
+    setVisibleCount(pageSize);
+  }, [items, pageSize]);
+  useEffect(() => {
+    if (!loaderRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting)
+          setVisibleCount((prev) => Math.min(prev + pageSize, items.length));
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [items.length, pageSize]);
+  return {
+    visibleItems: items.slice(0, visibleCount),
+    loaderRef,
+    hasMore: visibleCount < items.length,
+  };
+};
+
+const getPrice = (trip, pax) => farePrice(trip?.totalPriceList?.[0], pax);
+const formatPrice = (p) =>
+  `₹${Number(p).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const getTime = (dtStr) => {
+  if (!dtStr) return "--:--";
+  const d = new Date(dtStr);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+};
+// "Aug 27" — the compact form the portal uses on cards.
+const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const getDateLabel = (dtStr) => {
+  const d = new Date(dtStr);
+  return Number.isNaN(d.getTime())
+    ? formatDate(dtStr)
+    : `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}`;
+};
+const formatDuration = (mins) =>
+  mins ? `${Math.floor(mins / 60)}h ${mins % 60}m` : "";
+const getTripDuration = (trip) => formatDuration(getTripDurationMinutes(trip));
+const getStopsText = (trip) => {
+  const stops = (trip.sI?.length || 1) - 1;
+  if (stops === 0) return "Non-Stop";
+  if (stops === 1) return "1 Stop";
+  return `${stops} Stops`;
+};
+// TripJack ships ~74 distinct fareIdentifiers. NDC fares are prefixed "NDC_"
+// (e.g. "NDC_Value", "NDC_Economy Flex Plus"); everything else is a plain name.
+const titleCaseFare = (s) =>
+  s
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+const getFareLabel = (fareIdentifier) => {
+  if (!fareIdentifier) return "Published";
+  // Keep the NDC marker in the text — "NDC_Value" and the separate "VALUE"
+  // fare would otherwise both render as "Value".
+  if (isNdcFare(fareIdentifier)) {
+    return `NDC ${titleCaseFare(fareIdentifier.replace(/^NDC_/i, ""))}`;
+  }
+  // Short all-caps acronyms (SME, FLX) read better left alone.
+  if (/^[A-Z]{2,4}$/.test(fareIdentifier)) return fareIdentifier;
+  return titleCaseFare(fareIdentifier);
+};
+const getFareBadgeClass = (fareIdentifier) => {
+  if (isNdcFare(fareIdentifier)) return "fare-badge badge-ndc";
+  const map = {
+    PUBLISHED: "badge-published",
+    SPECIAL_RETURN: "badge-special",
+    SME: "badge-sme",
+    PROMO: "badge-promo",
+    CORPORATE: "badge-corporate",
+    FLEXI: "badge-flexi",
+  };
+  return `fare-badge ${map[fareIdentifier] || "badge-published"}`;
+};
+const getFarePrice = (fareOption, pax) => farePrice(fareOption, pax);
+const isFareRefundable = (fareOption) =>
+  fareOption?.fd?.ADULT?.rT === 1 ? "Refundable" : "Non-Refundable";
+const getFareCabin = (fareOption) => fareOption?.fd?.ADULT?.cc || "Economy";
+// mI = meal included with this fare (TripJack sets it on ~1 in 3 fares).
+const isMealIncluded = (fareOption) => fareOption?.fd?.ADULT?.mI === true;
+// bI.iB = checked-in baggage allowance, bI.cB = cabin baggage.
+const getCheckinBaggage = (fareOption) => fareOption?.fd?.ADULT?.bI?.iB || "";
+const getCabinBaggage = (fareOption) => fareOption?.fd?.ADULT?.bI?.cB || "";
+// Everything before the refundability word, which is rendered separately so
+// "Non-Refundable" can be called out in red the way TripJack does.
+const getFarePrefixText = (fareOption) =>
+  [getFareCabin(fareOption), isMealIncluded(fareOption) && "Free Meal"]
+    .filter(Boolean)
+    .join(", ");
+// fC.NF is the net (post-commission) fare; the incentive is what the agency
+// earns on top of it. On an account with no commission configured NF === TF and
+// the incentive reads 0.00 — which is exactly what the TripJack portal shows.
+const getFareNet = (fareOption, pax) =>
+  Object.entries(pax || {}).reduce((total, [type, count]) => {
+    if (!count) return total;
+    const fc = fareOption?.fd?.[type]?.fC;
+    return total + Number(fc?.NF ?? fc?.TF ?? 0) * count;
+  }, 0) || getFarePrice(fareOption, pax);
+const getFareIncentive = (fareOption, pax) =>
+  Math.max(0, getFarePrice(fareOption, pax) - getFareNet(fareOption, pax));
+// iand = "is arrival next day" on a segment. Report how many calendar days the
+// journey lands past its departure date so the traveller isn't caught out.
+//
+// Only valid for a single continuous journey. A COMBO/multi-city tripInfo holds
+// legs that can sit weeks apart, where first-departure → last-arrival is not an
+// overnight arrival at all — those return 0 and show nothing.
+const getArrivalDayOffset = (trip) => {
+  const segs = trip?.sI || [];
+  if (!segs.length || !segs.some((s) => s.iand)) return 0;
+  for (let i = 1; i < segs.length; i += 1) {
+    const gapMs = new Date(segs[i].dt) - new Date(segs[i - 1].at);
+    if (!Number.isFinite(gapMs) || gapMs > 86400000) return 0; // stopover, not a layover
+  }
+  const day = (v) => new Date(String(v).split("T")[0]).getTime();
+  const diff = Math.round((day(segs[segs.length - 1].at) - day(segs[0].dt)) / 86400000);
+  return Number.isFinite(diff) && diff > 0 ? diff : 0;
+};
+
+// "Thu, Sep 17th 2026" — the route title above each round-trip column.
+const WEEKDAYS_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const getLongDate = (dtStr) => {
+  const d = new Date(dtStr);
+  if (Number.isNaN(d.getTime())) return "";
+  const n = d.getDate();
+  const ord =
+    n % 10 === 1 && n !== 11 ? "st" : n % 10 === 2 && n !== 12 ? "nd" : n % 10 === 3 && n !== 13 ? "rd" : "th";
+  return `${WEEKDAYS_SHORT[d.getDay()]}, ${MONTHS_SHORT[d.getMonth()]} ${n}${ord} ${d.getFullYear()}`;
+};
+const getCityName = (airport) => airport?.city || airport?.name || airport?.code || "";
+// The portal shows three fares per card and folds the rest behind "+N more fares".
+const RT_VISIBLE_FARES = 3;
+
+const SORT_LABELS = {
+  duration: "Duration",
+  departure: "Departure",
+  arrival: "Arrival",
+  price: "Price",
+};
+
+const ShimmerCard = () => <div className="shimmer-card" />;
+
+
+export default function FlightSearchResults() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [flights, setFlights] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedFlight, setSelectedFlight] = useState(null);
-  const [sortBy, setSortBy] = useState('price'); // price, duration, departure
-  const [verifyingFlight, setVerifyingFlight] = useState(null);
-  const [verificationError, setVerificationError] = useState(null);
-  const [showBookingForm, setShowBookingForm] = useState(false);
-  const [verifiedFlightData, setVerifiedFlightData] = useState(null);
-  const [bookingLoading, setBookingLoading] = useState(false);
-  const [bookingError, setBookingError] = useState(null);
-  const [pendingBookingPayload, setPendingBookingPayload] = useState(null);
-  const [filters, setFilters] = useState({
-    stops: [],
-    airlines: [],
-    departure_time: [],
-    price_min: null,
-    price_max: null,
-    baggage_included: true,
-    refundable: true
-  });
+  const { searchParams, initialResults } = location.state || {};
+
+  const [outboundFlights, setOutboundFlights] = useState([]);
+  const [returnFlights, setReturnFlights] = useState([]);
+  const [filteredOutbound, setFilteredOutbound] = useState([]);
+  const [filteredReturn, setFilteredReturn] = useState([]);
+  const [selectedOutbound, setSelectedOutbound] = useState(null);
+  const [selectedReturn, setSelectedReturn] = useState(null);
+  const [sortOutbound, setSortOutbound] = useState("price");
+  const [sortReturn, setSortReturn] = useState("price");
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [filtersMeta, setFiltersMeta] = useState(null);
-  const [activeFilters, setActiveFilters] = useState({});
-  const [pagination, setPagination] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Get search parameters and any initial results from location state
-  const searchParams = location.state?.searchParams;
-  const initialResults = location.state?.initialResults;
+  const [expandedFares, setExpandedFares] = useState({});
+  const [selectedFareByFlight, setSelectedFareByFlight] = useState({});
+  const [modifyOpen, setModifyOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [staleNotice, setStaleNotice] = useState('');
+  const [showDetails, setShowDetails] = useState({});
+  const [logoLoadError, setLogoLoadError] = useState({});
+  const [compareOpen, setCompareOpen] = useState({});
+  // "Show Incv" / "Show Net" price toggles, mirroring the TripJack sidebar.
+  const [priceView, setPriceView] = useState({ incv: false, net: false });
+  // Date currently being re-searched from the strip.
+  const [pendingDate, setPendingDate] = useState(null);
+  // Agent markup per fare id. TripJack still receives its own session fare —
+  // the backend charges `price` via Razorpay and sends `paymentInfos.amount`
+  // to TripJack separately — so a markup never breaks fare validation.
+  const [markups, setMarkups] = useState({});
+  const [markupOpen, setMarkupOpen] = useState(null);
+  const [markupDraft, setMarkupDraft] = useState("");
+  // Round trip only: "Return Special" tiles and the « sidebar toggle.
+  const [specialReturns, setSpecialReturns] = useState([]);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Fare pair a Return Special tile asked for, applied once the filtered lists land.
+  const pendingPairRef = useRef(null);
 
   useEffect(() => {
-    // Load Razorpay Checkout script (required for window.Razorpay)
-    const existing = document.querySelector('script[data-razorpay="checkout"]');
-    if (existing) return;
-
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    script.dataset.razorpay = 'checkout';
-
-    script.onload = () => console.log('Razorpay checkout loaded');
-    script.onerror = () => console.error('Failed to load Razorpay checkout');
-
-    document.body.appendChild(script);
-  }, []);
-
-  useEffect(() => {
-    if (!searchParams) {
-      navigate('/honeymoon');
-      return;
-    }
-
-    // If hero page already fetched results, use them without re-calling API
-    if (initialResults && initialResults.status && initialResults.data) {
-      setFlights(initialResults.data);
-      setFiltersMeta(initialResults.filters_meta);
-      setActiveFilters(initialResults.active_filters);
-      setPagination(initialResults.pagination);
-      setCurrentPage(initialResults.pagination?.current_page || 1);
-      setLoading(false);
-    } else {
-      searchFlightsData();
-    }
-  }, [searchParams, initialResults]);
-
-  const searchFlightsData = async (page = 1, appliedFilters = filters) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const requestParams = {
-        ...searchParams,
-        page: page,
-        filters: appliedFilters
-      };
-
-      const response = await searchFlights(requestParams);
-
-      if (response.status && response.data) {
-        setFlights(response.data);
-        setFiltersMeta(response.filters_meta);
-        setActiveFilters(response.active_filters);
-        setPagination(response.pagination);
-        setCurrentPage(response.pagination?.current_page || 1);
-      } else {
-        setError('No flights found for your search criteria');
-      }
-    } catch (err) {
-      setError('Failed to search flights. Please try again.');
-      console.error('Flight search error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sortFlights = (flightsToSort) => {
-    const sorted = [...flightsToSort];
-
-    switch (sortBy) {
-      case 'price':
-        return sorted.sort((a, b) => a.price - b.price);
-      case 'duration':
-        return sorted.sort((a, b) => a.duration_minutes - b.duration_minutes);
-      case 'departure':
-        return sorted.sort((a, b) => new Date(a.departure) - new Date(b.departure));
-      default:
-        return sorted;
-    }
-  };
-
-  const formatTime = (dateString) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
+    if (!searchParams || !initialResults) return navigate("/honeymoon");
+    const directTrips = initialResults.direct?.searchResult?.tripInfos || {};
+    const connectingTrips =
+      initialResults.connecting?.searchResult?.tripInfos || {};
+    const onward = [
+      ...(directTrips.ONWARD || []),
+      ...(connectingTrips.ONWARD || []),
+    ];
+    const ret = [
+      ...(directTrips.RETURN || []),
+      ...(connectingTrips.RETURN || []),
+    ];
+    const stamp = (list, bucket) =>
+      list.map((trip, i) => ({ ...trip, _key: `${bucket}-${i}` }));
+    const onwardKeyed = stamp(onward, "ONWARD");
+    const returnKeyed = stamp(ret, "RETURN");
+    setOutboundFlights(onwardKeyed);
+    setReturnFlights(returnKeyed);
+    setFilteredOutbound(onwardKeyed);
+    setFilteredReturn(returnKeyed);
+    const facetPax = paxFromSearch(searchParams);
+    const outboundFacets = deriveFacets(onwardKeyed, facetPax);
+    const returnFacets = deriveFacets(returnKeyed, facetPax);
+    setFiltersMeta({ outbound: outboundFacets, return: returnFacets });
+    const specialOptions = deriveSpecialReturn(onwardKeyed, returnKeyed, facetPax);
+    setSpecialReturns(specialOptions);
+    // Filters persist across a date change, so drop any selection the new
+    // results can no longer satisfy — otherwise the list silently empties.
+    setFilters((prev) => {
+      const next = reconcileFilters(prev, outboundFacets, returnFacets).filters;
+      const offered = new Set(specialOptions.map((o) => o.code));
+      const special = (next.specialReturn || []).filter((code) => offered.has(code));
+      return special.length === (next.specialReturn || []).length
+        ? next
+        : { ...next, specialReturn: special };
     });
+  }, [searchParams, initialResults, navigate]);
+
+  // `_key` is stamped once on load, so a card keeps its identity (and the
+  // user's fare selection) across sorting and filtering.
+  const pax = paxFromSearch(searchParams);
+  const isRoundTrip = searchParams?.tripType === "round";
+  const markupOf = (fare) => Number(markups[fare?.id] || 0);
+  const displayFarePrice = (fare) => getFarePrice(fare, pax) + markupOf(fare);
+  const displayTripPrice = (trip) => {
+    const fare = trip?.totalPriceList?.[0];
+    return fare ? displayFarePrice(fare) : 0;
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
+  const openMarkup = (fare) => {
+    setMarkupOpen(fare.id);
+    setMarkupDraft(String(markupOf(fare) || 0));
   };
-
-  const handleFlightSelect = async (flight, fare) => {
-    const flightId = `${flight.flight_no}-${fare.offer_id}`;
-    setVerifyingFlight(flightId);
-    setVerificationError(null);
-    
-    try {
-      // Verify the flight offer first
-      const verification = await verifyOffer(fare.provider, fare.offer_id);
-      
-      if (verification.status) {
-        // Verification successful, show booking form
-        setSelectedFlight({ ...flight, selectedFare: fare });
-        setVerifiedFlightData(verification);
-        setShowBookingForm(true);
-      } else {
-        // Verification failed
-        setVerificationError(verification.message || 'Flight verification failed. Please try again.');
+  const closeMarkup = () => setMarkupOpen(null);
+  const applyMarkup = (fare) => {
+    setMarkups((p) => ({ ...p, [fare.id]: Number(markupDraft) || 0 }));
+    closeMarkup();
+  };
+  /** Same markup across every fare on screen, as the portal's "Update All" does. */
+  const applyMarkupToAll = () => {
+    const value = Number(markupDraft) || 0;
+    const next = {};
+    for (const trip of [...outboundFlights, ...returnFlights]) {
+      for (const fare of trip.totalPriceList || []) {
+        if (fare?.id) next[fare.id] = value;
       }
-    } catch (err) {
-      console.error('Flight verification error:', err);
-      setVerificationError(err.response?.data?.message || err.message || 'Failed to verify flight. Please try again.');
-    } finally {
-      setVerifyingFlight(null);
     }
+    setMarkups(next);
+    closeMarkup();
   };
 
-  const handleBookingSubmit = async (paymentData) => {
-    setBookingLoading(true);
-    setBookingError(null);
-    
-    try {
-      // Keep a copy so we can prefill Razorpay and verify+book on success
-      setPendingBookingPayload(paymentData);
-      const paymentResponse = await createFlightPaymentOrder(paymentData);
-      
-      if (paymentResponse.status) {
-        // Payment order created successfully
-        console.log('Payment order created:', paymentResponse);
-        
-        // Open Razorpay payment modal
-        if (paymentResponse.razorpay_order_id && paymentResponse.key_id) {
-          openRazorpayPayment(paymentResponse, paymentData);
-        } else {
-          alert('Payment order created! Please proceed with payment.');
-          setShowBookingForm(false);
-        }
-      } else {
-        setBookingError(paymentResponse.message || 'Payment order creation failed. Please try again.');
-      }
-    } catch (err) {
-      console.error('Payment order error:', err);
-      setBookingError(err.response?.data?.message || err.message || 'Failed to create payment order. Please try again.');
-    } finally {
-      setBookingLoading(false);
-    }
+  const getFlightKey = (flight) => {
+    if (flight?._key) return flight._key;
+    const first = flight.sI[0];
+    const last = flight.sI[flight.sI.length - 1];
+    return `${first.fD.aI.code}${first.fD.fN}-${first.da.code}-${last.aa.code}-${first.dt}`;
   };
-
-  const openRazorpayPayment = (orderData, bookingPayload) => {
-    // Check if Razorpay is loaded
-    if (!window.Razorpay) {
-      console.error('Razorpay not loaded yet');
-      alert('Payment gateway is loading. Please try again in a moment.');
-      return;
-    }
-
-    // Add a small delay to ensure Razorpay is fully initialized
-    setTimeout(() => {
-      const options = {
-        key: orderData.key_id,
-        amount: Math.round(orderData.amount * 100), // INR -> paise
-        currency: orderData.currency || 'INR',
-        name: 'Flight Booking',
-        description: bookingPayload
-          ? `Flight ${bookingPayload.from} to ${bookingPayload.to}`
-          : 'Flight booking payment',
-        order_id: orderData.razorpay_order_id,
-        prefill: bookingPayload?.contact ? {
-          email: bookingPayload.contact.email,
-          contact: bookingPayload.contact.phone,
-        } : undefined,
-        handler: async function (response) {
-          console.log('Razorpay payment success:', response);
-          
-          try {
-            if (!response?.razorpay_payment_id) {
-              alert('Payment failed. Please try again.');
-              return;
-            }
-
-            setBookingLoading(true);
-
-            const verifyPayload = {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            };
-
-            const verifyRes = await verifyAndBookFlight(verifyPayload);
-
-            if (verifyRes?.status) {
-              alert(`Payment successful! Flight booked. PNR: ${verifyRes.pnr || ''}`);
-              setShowBookingForm(false);
-              setPendingBookingPayload(null);
-            } else {
-              alert(verifyRes?.message || 'Payment verified but booking failed.');
-            }
-          } catch (err) {
-            console.error('verify_and_book error:', err);
-            alert(err.response?.data?.message || err.message || 'Payment verification failed.');
-          } finally {
-            setBookingLoading(false);
-          }
-        },
-        modal: {
-          ondismiss: function() {
-            console.log('Razorpay modal closed');
-          }
-        }
-      };
-
-      try {
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-      } catch (error) {
-        console.error('Razorpay initialization error:', error);
-        alert('Payment initialization failed. Please refresh and try again.');
-      }
-    }, 150); // small delay
-  };
-
-  const closeBookingForm = () => {
-    setShowBookingForm(false);
-    setSelectedFlight(null);
-    setVerifiedFlightData(null);
-    setBookingError(null);
-  };
-
-  const handleFilterChange = (filterType, value) => {
-    const newFilters = { ...filters };
-
-    if (filterType === 'stops' || filterType === 'airlines' || filterType === 'departure_time') {
-      if (newFilters[filterType].includes(value)) {
-        newFilters[filterType] = newFilters[filterType].filter(item => item !== value);
-      } else {
-        newFilters[filterType] = [...newFilters[filterType], value];
-      }
-    } else {
-      newFilters[filterType] = value;
-    }
-
-    setFilters(newFilters);
-    searchFlightsData(1, newFilters);
-  };
-
-  const handlePageChange = (page) => {
-    searchFlightsData(page, filters);
-  };
-
-  const clearFilters = () => {
-    const defaultFilters = {
-      stops: [],
-      airlines: [],
-      departure_time: [],
-      price_min: null,
-      price_max: null,
-      baggage_included: true,
-      refundable: true
-    };
-    setFilters(defaultFilters);
-    searchFlightsData(1, defaultFilters);
-  };
-
-  const handleBackToSearch = () => {
-    navigate('/honeymoon');
-  };
-
-  const sortedFlights = sortFlights(flights);
-
-  if (error) {
+  const getSelectedFareIndex = (flightId) =>
+    selectedFareByFlight[flightId] ?? 0;
+  const getSelectedFareOption = (flight) => {
+    if (!flight) return null;
+    const flightId = flight.id || getFlightKey(flight);
     return (
-      <div className="container py-5">
-        <div className="alert alert-danger text-center">
-          <h4>Error</h4>
-          <p>{error}</p>
-          <button className="btn btn-primary" onClick={handleBackToSearch}>
-            Back to Search
-          </button>
+      flight.totalPriceList?.[getSelectedFareIndex(flightId)] ||
+      flight.totalPriceList?.[0] ||
+      null
+    );
+  };
+
+  useEffect(() => {
+    const sortList = (list, sortBy) =>
+      [...list].sort((a, b) => {
+        if (sortBy === "price") return displayTripPrice(a) - displayTripPrice(b);
+        if (sortBy === "duration")
+          return getTripDurationMinutes(a) - getTripDurationMinutes(b);
+        if (sortBy === "departure")
+          return new Date(a.sI[0].dt) - new Date(b.sI[0].dt);
+        if (sortBy === "arrival")
+          return (
+            new Date(a.sI[a.sI.length - 1].at) -
+            new Date(b.sI[b.sI.length - 1].at)
+          );
+        return 0;
+      });
+    const from = searchParams?.from;
+    const to = searchParams?.to;
+    setFilteredOutbound(
+      sortList(
+        filterTrips(outboundFlights, filters, { searchFrom: from, searchTo: to, pax }),
+        sortOutbound,
+      ),
+    );
+    setFilteredReturn(
+      sortList(
+        filterTrips(returnFlights, filters, {
+          isReturn: true,
+          searchFrom: to,
+          searchTo: from,
+          pax,
+        }),
+        sortReturn,
+      ),
+    );
+  }, [outboundFlights, returnFlights, sortOutbound, sortReturn, filters, searchParams, markups]);
+
+  // Cheapest / fastest picks for the quick-select bar. Both read from the
+  // filtered list so they always describe what is actually on screen.
+  const pickBest = (list, score) =>
+    list.reduce(
+      (best, t) => (best === null || score(t) < score(best) ? t : best),
+      null,
+    );
+  const cheapestOutbound = pickBest(filteredOutbound, displayTripPrice);
+  const fastestOutbound = pickBest(filteredOutbound, getTripDurationMinutes);
+  const cheapestReturn = pickBest(filteredReturn, displayTripPrice);
+  const fastestReturn = pickBest(filteredReturn, getTripDurationMinutes);
+
+  // A round trip always has one flight picked per leg, as on the portal: the
+  // top card is chosen until the user picks another, and a pick that a filter
+  // removes falls back to the new top card so the bottom bar never goes stale.
+  //
+  // The kept pick is swapped for the trip object now on screen, because a fare
+  // filter can shorten its fare list: the stored fare index is re-pointed at
+  // the same fare, so the radio and the bottom bar never disagree.
+  useEffect(() => {
+    if (!isRoundTrip) return;
+    const pair = pendingPairRef.current;
+    pendingPairRef.current = null;
+    const fareIndexes = {};
+
+    const choose = (list, type, current, wantedFareId) => {
+      const idOf = (t) => `${type}-${getFlightKey(t)}`;
+      const fareIndexOf = (t, fareId) =>
+        fareId ? (t.totalPriceList || []).findIndex((f) => f.id === fareId) : -1;
+      let trip = wantedFareId
+        ? list.find((t) => fareIndexOf(t, wantedFareId) >= 0)
+        : null;
+      let fareIdx = trip ? fareIndexOf(trip, wantedFareId) : -1;
+      if (!trip && current) {
+        trip = list.find((t) => idOf(t) === current.id);
+        if (trip) fareIdx = fareIndexOf(trip, getSelectedFareOption(current)?.id);
+      }
+      if (!trip) trip = list[0];
+      if (!trip) return null;
+      if (current?.id === idOf(trip) && current.totalPriceList === trip.totalPriceList && !wantedFareId) {
+        return current;
+      }
+      fareIndexes[idOf(trip)] = Math.max(fareIdx, 0);
+      return { ...trip, id: idOf(trip) };
+    };
+
+    const nextOut = choose(filteredOutbound, "outbound", selectedOutbound, pair?.outFareId);
+    const nextRet = choose(filteredReturn, "return", selectedReturn, pair?.retFareId);
+    if (Object.keys(fareIndexes).length) {
+      setSelectedFareByFlight((p) => ({ ...p, ...fareIndexes }));
+    }
+    if (nextOut !== selectedOutbound) setSelectedOutbound(nextOut);
+    if (nextRet !== selectedReturn) setSelectedReturn(nextRet);
+  }, [isRoundTrip, filteredOutbound, filteredReturn, selectedOutbound, selectedReturn]);
+
+  /** Toggle a Return Special tile: one airline at a time, its cheapest valid pair picked. */
+  const handleSpecialReturnPick = (option) => {
+    const isOn = (filters.specialReturn || []).includes(option.code);
+    pendingPairRef.current = isOn ? null : option;
+    setFilters((p) => ({ ...p, specialReturn: isOn ? [] : [option.code] }));
+  };
+
+  // "Pune, India" under each code in the round-trip header.
+  const headerPlaces = (() => {
+    const segs = outboundFlights[0]?.sI || [];
+    const place = (a) => [a?.city, a?.country].filter(Boolean).join(", ");
+    return { from: place(segs[0]?.da), to: place(segs[segs.length - 1]?.aa) };
+  })();
+
+  const selectFlight = (flight, type) => {
+    if (type === "outbound") setSelectedOutbound(flight);
+    else setSelectedReturn(flight);
+  };
+
+  /**
+   * TripJack answers a review against a fare that has gone with errCode 1000,
+   * "Requested flight is no longer available". The prices in the list are then
+   * stale for the whole search, not just that fare, so the useful response is
+   * to re-search rather than to leave the traveller on a dead error.
+   */
+  const isStaleFare = (payload) => {
+    const errs = payload?.errors || payload?.status?.errors || [];
+    if (errs.some((e) => String(e?.errCode) === "1000")) return true;
+    const text = `${payload?.status?.message || ""} ${errs.map((e) => e?.message || "").join(" ")}`;
+    return /no longer available|not available|price.*chang|expired/i.test(text);
+  };
+
+  const refreshStaleResults = async () => {
+    setStaleNotice("These fares have expired. Refreshing prices…");
+    setSelectedOutbound(null);
+    setSelectedReturn(null);
+    try {
+      await rerunSearch({ ...searchParams });
+      setStaleNotice("Prices were out of date, so the list has been refreshed. Please pick your flight again.");
+    } catch {
+      setStaleNotice("These fares have expired and prices could not be refreshed. Please search again.");
+    }
+  };
+
+  // Review the chosen priceIds with TripJack, then hand off to the booking flow.
+  const reviewAndGo = async (outbound, ret) => {
+    const priceIds = [];
+    const outboundFare = getSelectedFareOption(outbound);
+    const returnFare = getSelectedFareOption(ret);
+    if (outboundFare?.id) priceIds.push(outboundFare.id);
+    if (returnFare?.id) priceIds.push(returnFare.id);
+    if (priceIds.length === 0)
+      return alert("Unable to get flight pricing information");
+    setLoading(true);
+    setStaleNotice("");
+    try {
+      const reviewResponse = await reviewFlight(priceIds);
+      if (!reviewResponse?.status?.success) {
+        if (isStaleFare(reviewResponse)) return refreshStaleResults();
+        return alert(
+          reviewResponse?.status?.message || "Failed to validate flight prices",
+        );
+      }
+      navigate("/honeymoon/flights/book", {
+        state: {
+          outbound,
+          return: ret,
+          searchParams,
+          reviewData: reviewResponse,
+          bookingId: reviewResponse?.bookingId,
+          priceIds,
+          markup: markupOf(outboundFare) + markupOf(returnFare),
+        },
+      });
+    } catch (e) {
+      // A gone fare can arrive as a non-2xx rather than a body with success:false.
+      if (isStaleFare(e?.response?.data)) return refreshStaleResults();
+      alert("Failed to proceed with booking. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Re-run the search and replace the results in place, keeping filters and
+   * scroll position. Used both by the date strip and by the stale-fare path,
+   * so there is one copy of the query-building rather than two that drift.
+   */
+  const rerunSearch = async (nextParams) => {
+    const base = buildTripJackSearchQuery(nextParams);
+    const directQuery = {
+      ...base,
+      searchModifiers: { ...base.searchModifiers, isDirectFlight: true, isConnectingFlight: false },
+    };
+    const connectingQuery = {
+      ...base,
+      searchModifiers: { ...base.searchModifiers, isDirectFlight: false, isConnectingFlight: true },
+    };
+    const [d, c] = await Promise.allSettled([
+      searchFlights(directQuery),
+      searchFlights(connectingQuery),
+    ]);
+    navigate("/honeymoon/flights", {
+      replace: true,
+      state: {
+        searchParams: nextParams,
+        initialResults: {
+          direct: d.status === "fulfilled" ? d.value : null,
+          connecting: c.status === "fulfilled" ? c.value : null,
+        },
+      },
+    });
+  };
+
+  // Picking a date on the strip re-runs the search for that day and replaces
+  // the results in place, so the user keeps their filters and scroll position.
+  const handlePickDate = async (dateKey) => {
+    if (!searchParams?.from || !searchParams?.to) return;
+    if (dateKey === searchParams.departureDate) return;
+    setPendingDate(dateKey);
+    setLoading(true);
+    try {
+      await rerunSearch({ ...searchParams, departureDate: dateKey });
+    } catch {
+      alert("Could not load fares for that date. Please try again.");
+    } finally {
+      setPendingDate(null);
+      setLoading(false);
+    }
+  };
+
+  const handleBook = async () => {
+    if (!selectedOutbound) return alert("Please select an outbound flight");
+    if (searchParams.tripType === "round" && !selectedReturn)
+      return alert("Please select a return flight");
+    return reviewAndGo(selectedOutbound, selectedReturn);
+  };
+
+  // BOOK straight from a card. On a one-way that goes to checkout immediately;
+  // on a round trip the other leg is still required, so this selects the flight
+  // and books only once both legs are chosen.
+  const handleCardBook = async (flight, type) => {
+    const picked = { ...flight };
+    selectFlight(picked, type);
+    if (searchParams.tripType !== "round") return reviewAndGo(picked, null);
+    const outbound = type === "outbound" ? picked : selectedOutbound;
+    const ret = type === "return" ? picked : selectedReturn;
+    if (!outbound || !ret) {
+      return alert(
+        type === "outbound"
+          ? "Outbound selected — now choose your return flight."
+          : "Return selected — now choose your outbound flight.",
+      );
+    }
+    return reviewAndGo(outbound, ret);
+  };
+
+  // Distinguish "nothing flies" from "your filters removed everything" — the
+  // second is actionable and the old copy actively misled.
+  const activeFilterCount = countActiveFilters(filters);
+  const renderEmpty = (sourceCount) =>
+    sourceCount > 0 && activeFilterCount > 0 ? (
+      <div className="no-results">
+        <div>No flights match your filters.</div>
+        <button className="no-results-reset" onClick={() => setFilters(EMPTY_FILTERS)}>
+          Clear {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""}
+        </button>
+      </div>
+    ) : (
+      <div className="no-results">No flights found</div>
+    );
+
+  const renderMarkupBox = (fare) => (
+    <div className="markup-box" onClick={(e) => e.stopPropagation()}>
+      <button type="button" className="markup-close" onClick={closeMarkup} aria-label="Close">
+        ×
+      </button>
+      <label className="markup-field">
+        <span>Markup Price</span>
+        <input
+          type="number"
+          autoFocus
+          value={markupDraft}
+          onChange={(e) => setMarkupDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") applyMarkup(fare);
+            if (e.key === "Escape") closeMarkup();
+          }}
+        />
+      </label>
+      <div className="markup-actions">
+        <button type="button" onClick={() => applyMarkup(fare)}>
+          Update
+        </button>
+        <button type="button" onClick={applyMarkupToAll}>
+          Update All
+        </button>
+      </div>
+    </div>
+  );
+
+  /**
+   * Round-trip card, laid out like the TripJack portal's half-width card:
+   * airline and route on the left, the fare list on the right. There is no
+   * per-card BOOK — picking a fare selects the flight for that leg and the
+   * bottom bar books the pair.
+   */
+  const renderRoundTripCard = (flight, type) => {
+    const first = flight.sI[0];
+    const last = flight.sI[flight.sI.length - 1];
+    const airline = first.fD.aI;
+    const flightId = `${type}-${getFlightKey(flight)}`;
+    const fares = flight.totalPriceList || [];
+    const expanded = expandedFares[flightId];
+    const visibleFares = expanded ? fares : fares.slice(0, RT_VISIBLE_FARES);
+    const selectedFareIndex = getSelectedFareIndex(flightId);
+    const selectedLeg = type === "outbound" ? selectedOutbound : selectedReturn;
+    const isSelected = selectedLeg?.id === flightId;
+    const isDetailsOpen = showDetails[flightId] || false;
+    const arrivalDayOffset = getArrivalDayOffset(flight);
+    const seatsLeft = fares[selectedFareIndex]?.fd?.ADULT?.sR ?? fares[0]?.fd?.ADULT?.sR ?? null;
+    const flightNumbers = flight.sI.map((s) => `${s.fD.aI.code}-${s.fD.fN}`).join(", ");
+
+    const pickFare = (fareIdx) => {
+      setSelectedFareByFlight((p) => ({ ...p, [flightId]: fareIdx }));
+      selectFlight({ ...flight, id: flightId }, type);
+    };
+
+    return (
+      <div key={flightId} className={`rt-card ${isSelected ? "is-selected" : ""}`}>
+        <div className="rt-card-body">
+          <div className="rt-card-info">
+            <div className="rt-card-top">
+              <div className="rt-airline">
+                {logoLoadError[flightId] ? (
+                  <div className="rt-airline-initials">{airline.code}</div>
+                ) : (
+                  <img
+                    src={airlineLogo(airline.code)}
+                    alt={airline.name}
+                    className="rt-airline-logo"
+                    onError={() => setLogoLoadError((p) => ({ ...p, [flightId]: true }))}
+                  />
+                )}
+                <div className="rt-airline-name">{airline.name}</div>
+                <div className="rt-airline-num" title={flightNumbers}>
+                  {flightNumbers}
+                </div>
+              </div>
+              <div className="rt-route">
+                <div className="rt-point">
+                  <div className="rt-iata">{first.da.code}</div>
+                  <div className="rt-time">{getTime(first.dt)}</div>
+                  <div className="rt-date">{getDateLabel(first.dt)}</div>
+                </div>
+                <div className="rt-middle">
+                  <div className="rt-stops">{getStopsText(flight)}</div>
+                  <div className="rt-arrow" />
+                  <div className="rt-duration">{getTripDuration(flight)}</div>
+                </div>
+                <div className="rt-point">
+                  <div className="rt-iata">{last.aa.code}</div>
+                  <div className="rt-time">{getTime(last.at)}</div>
+                  <div className="rt-date">{getDateLabel(last.at)}</div>
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="rt-details-btn"
+              onClick={() => setShowDetails((p) => ({ ...p, [flightId]: !p[flightId] }))}
+            >
+              {isDetailsOpen ? "Hide Details" : "View Details"}
+              <span className="rt-details-sign">{isDetailsOpen ? "−" : "+"}</span>
+            </button>
+            {arrivalDayOffset > 0 && (
+              <div className="rt-next-day">
+                <MdFlight size={14} className="rt-next-day-icon" />
+                Flight Arrives after {arrivalDayOffset} Day(s)
+              </div>
+            )}
+            {seatsLeft != null && (
+              <div className={`rt-seats ${seatsLeft <= 5 ? "is-low" : ""}`}>Seats left: {seatsLeft}</div>
+            )}
+          </div>
+
+          <div className="rt-fares">
+            {visibleFares.map((fare, idx) => {
+              const realIdx = fares.indexOf(fare);
+              const fareIdx = realIdx === -1 ? idx : realIdx;
+              const isPicked = isSelected && selectedFareIndex === fareIdx;
+              const refundable = isFareRefundable(fare);
+              return (
+                <div
+                  key={`${flightId}-${idx}`}
+                  className={`rt-fare ${isPicked ? "is-picked" : ""}`}
+                  onClick={() => pickFare(fareIdx)}
+                >
+                  <span className="rt-radio" aria-hidden="true" />
+                  <div className="rt-fare-text">
+                    <div className="rt-fare-top">
+                      <span className="rt-fare-price">{formatPrice(displayFarePrice(fare))}</span>
+                      <button
+                        type="button"
+                        className="rt-fare-edit"
+                        title="Edit markup"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markupOpen === fare.id ? closeMarkup() : openMarkup(fare);
+                        }}
+                      >
+                        <FiEdit2 size={12} />
+                      </button>
+                      {markupOf(fare) > 0 && (
+                        <span className="rt-fare-markup">+{formatPrice(markupOf(fare))}</span>
+                      )}
+                    </div>
+                    {(priceView.incv || priceView.net) && (
+                      <div className="rt-fare-extra">
+                        {priceView.incv && <span>INC {formatPrice(getFareIncentive(fare, pax))}</span>}
+                        {priceView.net && <span>NET {formatPrice(getFareNet(fare, pax))}</span>}
+                      </div>
+                    )}
+                    <div className="rt-fare-meta">
+                      <span className={`rt-badge ${getFareBadgeClass(fare?.fareIdentifier).replace("fare-badge ", "")}`}>
+                        {getFareLabel(fare?.fareIdentifier)}
+                      </span>
+                      <span className="rt-fare-cabin">
+                        {titleCaseFare(getFarePrefixText(fare))}
+                        {getFarePrefixText(fare) && ", "}
+                        <span className={refundable === "Refundable" ? "" : "rt-non-refundable"}>{refundable}</span>
+                      </span>
+                    </div>
+                  </div>
+                  {markupOpen === fare.id && renderMarkupBox(fare)}
+                </div>
+              );
+            })}
+            {fares.length > RT_VISIBLE_FARES && (
+              <button
+                type="button"
+                className="rt-more-fares"
+                onClick={() => setExpandedFares((p) => ({ ...p, [flightId]: !p[flightId] }))}
+              >
+                {expanded ? "Show less" : `+${fares.length - RT_VISIBLE_FARES} more fares`}
+                <span className={`rt-chevron ${expanded ? "is-up" : ""}`} />
+              </button>
+            )}
+          </div>
         </div>
+        {isDetailsOpen && (
+          <FlightDetailsPanel
+            flight={flight}
+            fare={fares[selectedFareIndex] || fares[0]}
+            searchParams={searchParams}
+            onClose={() => setShowDetails((p) => ({ ...p, [flightId]: false }))}
+          />
+        )}
       </div>
     );
-  }
+  };
 
-  return (
-    <div className="container py-4">
-      {/* Header */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <button
-            className="btn btn-outline-secondary mb-3"
-            onClick={handleBackToSearch}
-          >
-            ← Back to Search
-          </button>
+  const renderFlight = (flight, type, listIndex = 0) => {
+    const first = flight.sI[0];
+    const last = flight.sI[flight.sI.length - 1];
+    const airline = first.fD.aI;
+    const flightId = `${type}-${getFlightKey(flight)}`;
+    const fares = flight.totalPriceList || [];
+    const expanded = expandedFares[flightId];
+    const visibleFares = expanded ? fares : fares.slice(0, 2);
+    const selectedFareIndex = getSelectedFareIndex(flightId);
+    const isSelected =
+      type === "outbound"
+        ? selectedOutbound?.id === flight.id
+        : selectedReturn?.id === flight.id;
+    const isDetailsOpen = showDetails[flightId] || false;
+    const arrivalDayOffset = getArrivalDayOffset(flight);
+    const seatsLeft = fares[selectedFareIndex]?.fd?.ADULT?.sR ?? fares[0]?.fd?.ADULT?.sR ?? null;
 
-          <div className="d-flex justify-content-between align-items-center">
+    return (
+      <div
+        key={flightId}
+        className={`flight-card ${isSelected ? "flight-card-selected" : ""}`}
+      >
+        <div className="flight-card-main">
+          <div className="fc-airline-col">
+          <div className="fc-airline">
+            {!logoLoadError[flightId] && (
+              <img
+                src={airlineLogo(airline.code)}
+                alt={airline.name}
+                className="fc-airline-logo"
+                onError={() =>
+                  setLogoLoadError((p) => ({ ...p, [flightId]: true }))
+                }
+              />
+            )}
+            {logoLoadError[flightId] && (
+              <div className="fc-airline-initials">{airline.code}</div>
+            )}
             <div>
-              <h2 className="mb-2 d-flex align-items-center gap-2">
-                <Plane size={22} />
-                Flight Search Results
-              </h2>
-              {searchParams && (
-                <p className="text-muted">
-                  <MapPin size={14} className="me-1" />
-                  {searchParams.from} <ArrowRight size={14} className="mx-1" /> {searchParams.to} • {formatDate(searchParams.date)} •
-                  {searchParams.return_date ? ` Return: ${formatDate(searchParams.return_date)}` : ' One-way'} •
-                  {searchParams.adults} {searchParams.adults === 1 ? 'Adult' : 'Adults'}
-                  {searchParams.children > 0 && `, ${searchParams.children} ${searchParams.children === 1 ? 'Child' : 'Children'}`}
-                </p>
-              )}
+              <div className="fc-airline-name">{airline.name}</div>
+              <div className="fc-airline-num">
+                {flight.sI.map((s) => `${s.fD.aI.code}-${s.fD.fN}`).join(", ")}
+              </div>
             </div>
-
-            <div className="d-flex align-items-center gap-3">
-              {pagination && (
-                <span className="badge bg-success d-flex align-items-center gap-1">
-                  <SlidersHorizontal size={14} />
-                  {pagination.total} flights found
-                </span>
-              )}
-              <select
-                className="form-select form-select-sm"
-                style={{ width: 'auto' }}
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+          </div>
+          <div className="fc-airline-actions">
+            <button
+              className="view-details-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDetails((p) => ({ ...p, [flightId]: !p[flightId] }));
+              }}
+            >
+              {isDetailsOpen ? "Hide Details -" : "View Details +"}
+            </button>
+            {seatsLeft != null && (
+              <div className={`seats-left ${seatsLeft <= 5 ? "is-low" : ""}`}>
+                Seats left: {seatsLeft}
+              </div>
+            )}
+          </div>
+          </div>
+          <div className="fc-route">
+            <div className="fc-point">
+              <div className="fc-iata">{first.da.code}</div>
+              <div className="fc-time">{getTime(first.dt)}</div>
+              <div className="fc-date">{getDateLabel(first.dt)}</div>
+            </div>
+            <div className="fc-middle">
+              <div className="fc-stops-text">{getStopsText(flight)}</div>
+              <div className="fc-arrow" />
+              <div className="fc-duration">{getTripDuration(flight)}</div>
+            </div>
+            <div className="fc-point">
+              <div className="fc-iata">{last.aa.code}</div>
+              <div className="fc-time">{getTime(last.at)}</div>
+              <div className="fc-date">{getDateLabel(last.at)}</div>
+            </div>
+          </div>
+          <div className="fc-fares-row">
+            <div className="fc-fares">
+            {visibleFares.map((fare, idx) => {
+              const realIdx = fares.findIndex((f) => f === fare);
+              const fareIdx = realIdx === -1 ? idx : realIdx;
+              return (
+                <div
+                  key={`${flightId}-${idx}`}
+                  className={`fc-fare-option ${selectedFareIndex === fareIdx ? "fc-fare-option-selected" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedFareByFlight((p) => ({
+                      ...p,
+                      [flightId]: fareIdx,
+                    }));
+                  }}
+                >
+                  <div className="fc-fare-option-top">
+                    <span className="fare-bullet">
+                      {selectedFareIndex === fareIdx ? "●" : "○"}
+                    </span>
+                    <span className="fare-price">
+                      {formatPrice(displayFarePrice(fare))}
+                    </span>
+                    {priceView.incv && (
+                      <span className="fare-incv">
+                        INC {formatPrice(getFareIncentive(fare, pax))}
+                      </span>
+                    )}
+                    {priceView.net && (
+                      <span className="fare-net">
+                        NET {formatPrice(getFareNet(fare, pax))}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className="fare-edit-btn"
+                      title="Edit markup"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        markupOpen === fare.id ? closeMarkup() : openMarkup(fare);
+                      }}
+                    >
+                      <FiEdit2 size={11} />
+                    </button>
+                    {markupOf(fare) > 0 && (
+                      <span className="fare-markup-tag">
+                        +{formatPrice(markupOf(fare))}
+                      </span>
+                    )}
+                    {markupOpen === fare.id && renderMarkupBox(fare)}
+                  </div>
+                  <div className="fc-fare-option-meta">
+                    <span className={getFareBadgeClass(fare?.fareIdentifier)}>
+                      {getFareLabel(fare?.fareIdentifier)}
+                    </span>
+                    {getCheckinBaggage(fare) && (
+                      <span
+                        className="fare-baggage-chip"
+                        title={`Check-in ${getCheckinBaggage(fare)}${getCabinBaggage(fare) ? ` · Cabin ${getCabinBaggage(fare)}` : ""}`}
+                      >
+                        <FiBriefcase size={10} />
+                        {getCheckinBaggage(fare)}
+                      </span>
+                    )}
+                    <span className="fare-cabin-text">
+                      {getFarePrefixText(fare)}
+                      {getFarePrefixText(fare) && ", "}
+                      <span
+                        className={
+                          isFareRefundable(fare) === "Refundable"
+                            ? "fare-refundable"
+                            : "fare-non-refundable"
+                        }
+                      >
+                        {isFareRefundable(fare)}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+            {fares.length > 2 && (
+              <button
+                className="more-fares-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandedFares((p) => ({ ...p, [flightId]: !p[flightId] }));
+                }}
               >
-                <option value="price">Sort by Price</option>
-                <option value="duration">Sort by Duration</option>
-                <option value="departure">Sort by Departure</option>
-              </select>
+                {expanded ? "Show less ▲" : `+${fares.length - 2} more fares ▼`}
+              </button>
+            )}
+          </div>
+            <div className="fc-actions">
+            <button
+              className="fc-book-btn"
+              disabled={loading}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCardBook({ ...flight, id: flightId }, type);
+              }}
+            >
+              {loading ? "…" : "BOOK"}
+            </button>
+            {fares.length > 1 && (
+              <button
+                className="fc-compare-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCompareOpen((p) => ({ ...p, [flightId]: !p[flightId] }));
+                }}
+              >
+                Compare {compareOpen[flightId] ? "▲" : "▼"}
+              </button>
+            )}
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="row">
-        {/* Filters Sidebar */}
-        <div className="col-lg-3 mb-4">
-          <FlightFiltersSidebar
-            filtersMeta={filtersMeta}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={clearFilters}
+        {compareOpen[flightId] && (
+          <FareCompare
+            pax={pax}
+            fares={fares}
+            selectedIndex={selectedFareIndex}
+            onPick={(i) =>
+              setSelectedFareByFlight((p) => ({ ...p, [flightId]: i }))
+            }
+            onBook={() => handleCardBook({ ...flight, id: flightId }, type)}
           />
+        )}
+        {arrivalDayOffset > 0 && (
+          <div className="fc-next-day-notice">
+            <MdFlight size={13} />
+            Flight Arrives after {arrivalDayOffset} Day{arrivalDayOffset > 1 ? "s" : ""}
+          </div>
+        )}
+        {isDetailsOpen && (
+          <FlightDetailsPanel
+            flight={flight}
+            fare={fares[selectedFareIndex] || fares[0]}
+            searchParams={searchParams}
+            onClose={() => setShowDetails((p) => ({ ...p, [flightId]: false }))}
+          />
+        )}
+      </div>
+    );
+  };
+
+  const {
+    visibleItems: visibleOut,
+    loaderRef: loaderOutRef,
+    hasMore: hasMoreOut,
+  } = useVirtualList(filteredOutbound, 15);
+  const {
+    visibleItems: visibleRet,
+    loaderRef: loaderRetRef,
+    hasMore: hasMoreRet,
+  } = useVirtualList(filteredReturn, 15);
+  // Without `pax` this falls back to farePrice's single-adult default, which
+  // is what made the bar read half the fare on a two-passenger search.
+  const totalPrice =
+    getFarePrice(getSelectedFareOption(selectedOutbound), pax) +
+    getFarePrice(getSelectedFareOption(selectedReturn), pax);
+
+  // The redirect above lives in an effect, and effects run after render — so
+  // landing here without router state (a refresh, or Back onto a history entry
+  // that carries none) reached the header with no searchParams and threw before
+  // the redirect could fire. Bail out of the render instead; the effect still
+  // performs the navigation. Placed after every hook, including the two
+  // useVirtualList calls, so the hook order stays stable.
+  if (!searchParams || !initialResults) return null;
+
+  const renderRoundTripColumn = (type) => {
+    const isOut = type === "outbound";
+    const list = isOut ? filteredOutbound : filteredReturn;
+    const visible = isOut ? visibleOut : visibleRet;
+    const hasMore = isOut ? hasMoreOut : hasMoreRet;
+    const loaderRef = isOut ? loaderOutRef : loaderRetRef;
+    const sortBy = isOut ? sortOutbound : sortReturn;
+    const setSort = isOut ? setSortOutbound : setSortReturn;
+    const cheapest = isOut ? cheapestOutbound : cheapestReturn;
+    const fastest = isOut ? fastestOutbound : fastestReturn;
+    const sourceCount = isOut ? outboundFlights.length : returnFlights.length;
+    const sample = list[0] || (isOut ? outboundFlights[0] : returnFlights[0]);
+    const fromCode = isOut ? searchParams.from : searchParams.to;
+    const toCode = isOut ? searchParams.to : searchParams.from;
+    const fromCity = getCityName(sample?.sI?.[0]?.da) || fromCode;
+    const toCity = getCityName(sample?.sI?.[sample.sI.length - 1]?.aa) || toCode;
+    const date = isOut ? searchParams.departureDate : searchParams.returnDate;
+
+    const sortButton = (key, label) => (
+      <button
+        type="button"
+        className={`rt-sort-btn ${sortBy === key ? "is-active" : ""}`}
+        onClick={() => setSort(key)}
+      >
+        {label}
+      </button>
+    );
+
+    return (
+      <div className="rt-column">
+        <div className="rt-quickpicks">
+          <button
+            type="button"
+            className={`rt-quickpick ${sortBy === "price" ? "is-active" : ""}`}
+            onClick={() => setSort("price")}
+            disabled={!cheapest}
+          >
+            <span className="rt-quickpick-icon is-rupee">₹</span>
+            <span>
+              <span className="rt-quickpick-title">Cheapest</span>
+              <span className="rt-quickpick-sub">
+                {cheapest ? `${formatPrice(displayTripPrice(cheapest))} · Duration: ${getTripDuration(cheapest)}` : "—"}
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            className={`rt-quickpick ${sortBy === "duration" ? "is-active" : ""}`}
+            onClick={() => setSort("duration")}
+            disabled={!fastest}
+          >
+            <span className="rt-quickpick-icon">⚡</span>
+            <span>
+              <span className="rt-quickpick-title">Fastest</span>
+              <span className="rt-quickpick-sub">
+                {fastest ? `${formatPrice(displayTripPrice(fastest))} · Duration: ${getTripDuration(fastest)}` : "—"}
+              </span>
+            </span>
+          </button>
         </div>
 
-        {/* Flight Results */}
-        <div className="col-lg-9">
+        <div className="rt-route-title">
+          <span className="rt-route-cities">
+            {fromCity} <span className="rt-route-arrow">⟶</span> {toCity}
+          </span>
+          <span className="rt-route-date">{getLongDate(date)}</span>
+          {!isOut && (
+            <ShareBy
+              searchParams={searchParams}
+              resultCount={filteredOutbound.length + filteredReturn.length}
+            />
+          )}
+        </div>
+
+        <div className="rt-sort-row">
+          <span className="rt-sort-label">
+            Sort By : {SORT_LABELS[sortBy] || "Price"}
+          </span>
+          {sortButton("departure", "Departure")}
+          {sortButton("arrival", "Arrival")}
+          {sortButton("price", "Price")}
+        </div>
+
+        <div className="rt-list">
           {loading ? (
-            // Skeleton cards while loading, filters stay visible
-            <div>
-              {[1, 2, 3].map((i) => (
-                <div className="flight-results mb-3" key={i}>
-                  <div className="flight-item placeholder-glow">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <div className="d-flex align-items-center gap-3">
-                        <div className="airline-logo d-flex align-items-center justify-content-center">
-                          <Plane size={18} />
-                        </div>
-                        <div>
-                          <div className="placeholder col-6 mb-1"></div>
-                          <div className="placeholder col-4"></div>
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div className="placeholder col-4 mb-1"></div>
-                        <div className="placeholder col-6"></div>
-                      </div>
-                    </div>
-
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <div className="d-flex flex-column align-items-start gap-1">
-                        <span className="placeholder col-4"></span>
-                        <span className="placeholder col-3"></span>
-                      </div>
-                      <div className="d-flex flex-column align-items-center gap-1">
-                        <Clock size={18} className="text-muted" />
-                        <span className="placeholder col-4"></span>
-                      </div>
-                      <div className="d-flex flex-column align-items-end gap-1">
-                        <span className="placeholder col-4"></span>
-                        <span className="placeholder col-3"></span>
-                      </div>
-                    </div>
-
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center gap-2">
-                        <Luggage size={16} className="text-muted" />
-                        <span className="placeholder col-5"></span>
-                      </div>
-                      <button className="select-button" disabled>
-                        <span className="placeholder col-6"></span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : sortedFlights.length === 0 ? (
-            <div className="alert alert-info text-center">
-              <h4>No Flights Found</h4>
-              <p>Try adjusting your search criteria or filters.</p>
-            </div>
+            [1, 2, 3, 4].map((i) => <ShimmerCard key={i} />)
+          ) : visible.length === 0 ? (
+            renderEmpty(sourceCount)
           ) : (
-            <div className="flight-results">
-              {sortedFlights.map((flight, index) => (
-                <div key={index} className="flight-item">
-                  <div className="flight-header">
-                    <div className="flight-airline">
-                      <img src={flight.airline_logo} alt={flight.airline_name} style={{ width: '40px', height: '40px', marginRight: '12px' }} />
-                      <div>
-                        <div>{flight.airline_name} {flight.flight_no}</div>
-                        {flight.operating_airline !== flight.airline && (
-                          <div style={{ fontSize: '12px', color: '#999', marginTop: '2px' }}>
-                            Operated by {flight.operating_airline}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flight-price">
-                      ₹{flight.price.toFixed(0)}
-                      <div style={{ fontSize: '12px', color: '#999', fontWeight: '500', marginTop: '2px' }}>
-                        per adult
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flight-details">
-                    <div className="flight-time">
-                      <div className="flight-time-value">{formatTime(flight.departure)}</div>
-                      <div className="flight-time-label">{flight.origin}</div>
-                      <div className="flight-time-date">{formatDate(flight.departure)}</div>
-                      {flight.departure_terminal && (
-                        <div className="mt-1" style={{ fontSize: '11px', color: '#666' }}>
-                          Terminal {flight.departure_terminal}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flight-duration">
-                      <div>{flight.duration}</div>
-                      <div className="flight-stops">
-                        {flight.stops === 0 ? ' Direct' : ` ${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
-                      </div>
-                      {flight.layovers && flight.layovers.length > 0 && (
-                        <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
-                          via {flight.layovers[0].airport}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flight-time">
-                      <div className="flight-time-value">{formatTime(flight.arrival)}</div>
-                      <div className="flight-time-label">{flight.destination}</div>
-                      <div className="flight-time-date">{formatDate(flight.arrival)}</div>
-                      {flight.arrival_terminal && (
-                        <div className="mt-1" style={{ fontSize: '11px', color: '#666' }}>
-                          Terminal {flight.arrival_terminal}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flight-amenities">
-                    <div className="amenity-badge">
-                      {flight.fares[0]?.cabin_class || 'Economy'}
-                    </div>
-                    <div className="amenity-badge">
-                      {flight.fares[0]?.baggage || '15KG'}
-                    </div>
-                    <div className={`amenity-badge ${flight.stops === 0 ? 'direct' : 'stops'}`}>
-                      {flight.stops === 0 ? ' Direct Flight' : `${flight.stops} Stop${flight.stops > 1 ? 's' : ''}`}
-                    </div>
-                    <div className="amenity-badge seats-badge">
-                      {flight.fares[0]?.seats_available || 9} seats left
-                    </div>
-                    {flight.aircraft && (
-                      <div className="amenity-badge">
-                        ✈️ {flight.aircraft}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div style={{ fontSize: '13px', color: '#666' }}>
-
-                      <span style={{ fontWeight: '600', marginLeft: '8px' }}>Aircraft:</span> {flight.aircraft_name || flight.aircraft}
-                    </div>
-                    <button 
-                      className="select-button"
-                      onClick={() => handleFlightSelect(flight, flight.fares[0])}
-                      disabled={verifyingFlight === `${flight.flight_no}-${flight.fares[0]?.offer_id}`}
-                    >
-                      {verifyingFlight === `${flight.flight_no}-${flight.fares[0]?.offer_id}` ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                          Verifying...
-                        </>
-                      ) : (
-                        'Select Flight'
-                      )}
-                    </button>
-                    
-                    {/* Show verification error for this flight */}
-                    {verificationError && verifyingFlight === null && (
-                      <div className="verification-error mt-2">
-                        <small className="text-danger">{verificationError}</small>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {/* Pagination */}
-              {pagination && pagination.total_pages > 1 && (
-                <div className="d-flex justify-content-center mt-4">
-                  <nav>
-                    <ul className="pagination">
-                      <li className={`page-item ${!pagination.has_prev ? 'disabled' : ''}`}>
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={!pagination.has_prev}
-                        >
-                          Previous
-                        </button>
-                      </li>
-                      {[...Array(pagination.total_pages)].map((_, index) => {
-                        const page = index + 1;
-                        return (
-                          <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
-                            <button
-                              className="page-link"
-                              onClick={() => handlePageChange(page)}
-                            >
-                              {page}
-                            </button>
-                          </li>
-                        );
-                      })}
-                      <li className={`page-item ${!pagination.has_next ? 'disabled' : ''}`}>
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={!pagination.has_next}
-                        >
-                          Next
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
+            <>
+              {visible.map((trip) => renderRoundTripCard(trip, type))}
+              {hasMore && (
+                <div ref={loaderRef} className="load-more-trigger">
+                  <ShimmerCard />
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>
+    );
+  };
 
-      {/* Booking Form Modal */}
-      {showBookingForm && selectedFlight && (
-        <div className="booking-modal-overlay" onClick={closeBookingForm}>
-          <div className="booking-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="booking-modal-header">
-              <h4>Complete Your Booking</h4>
-              <button className="close-btn" onClick={closeBookingForm}>×</button>
-            </div>
-            
-            <div className="booking-modal-body">
-              {/* Flight Summary */}
-              <div className="flight-summary-card">
-                <div className="d-flex align-items-center mb-3">
-                  <img src={selectedFlight.airline_logo} alt={selectedFlight.airline_name} style={{ width: '40px', height: '40px', marginRight: '12px' }} />
-                  <div>
-                    <h6 className="mb-0">{selectedFlight.airline_name} {selectedFlight.flight_no}</h6>
-                    <small className="text-muted">{selectedFlight.origin} → {selectedFlight.destination}</small>
+  const renderBarLeg = (flight) => {
+    if (!flight) {
+      return <div className="rt-bar-leg is-empty">Select a flight</div>;
+    }
+    const first = flight.sI[0];
+    const last = flight.sI[flight.sI.length - 1];
+    const airline = first.fD.aI;
+    const fare = getSelectedFareOption(flight);
+    const flightNumbers = flight.sI.map((s) => `${s.fD.aI.code}-${s.fD.fN}`).join(", ");
+    return (
+      <div className="rt-bar-leg">
+        <div className="rt-bar-logo">
+          {logoLoadError[flight.id] ? (
+            <span>{airline.code}</span>
+          ) : (
+            <img
+              src={airlineLogo(airline.code)}
+              alt={airline.name}
+              onError={() => setLogoLoadError((p) => ({ ...p, [flight.id]: true }))}
+            />
+          )}
+        </div>
+        <div className="rt-bar-airline">
+          <div className="rt-bar-name">{airline.name}</div>
+          <div className="rt-bar-num" title={flightNumbers}>{flightNumbers}</div>
+        </div>
+        <div className="rt-bar-point">
+          <div className="rt-bar-time">{getTime(first.dt)}</div>
+          <div className="rt-bar-code">{first.da.code}</div>
+        </div>
+        <div className="rt-bar-arrow">⟶</div>
+        <div className="rt-bar-point">
+          <div className="rt-bar-time">{getTime(last.at)}</div>
+          <div className="rt-bar-code">{last.aa.code}</div>
+        </div>
+        <div className="rt-bar-price">{fare ? formatPrice(displayFarePrice(fare)) : "—"}</div>
+      </div>
+    );
+  };
+
+  const roundTripTotal =
+    (selectedOutbound ? displayFarePrice(getSelectedFareOption(selectedOutbound)) : 0) +
+    (selectedReturn ? displayFarePrice(getSelectedFareOption(selectedReturn)) : 0);
+
+  return (
+    <div className={`tj-results-page ${isRoundTrip ? "is-round" : ""}`}>
+      <FlightSearchHeader
+        searchParams={searchParams}
+        places={headerPlaces}
+        onModify={() => setModifyOpen(!modifyOpen)}
+      />
+      {modifyOpen && (
+        <div className="tj-modify-panel">
+          <div className="container">
+            <FlightSearchForm />
+          </div>
+        </div>
+      )}
+      {isRoundTrip && (
+        <button
+          type="button"
+          className="rt-sidebar-toggle"
+          onClick={() => setSidebarCollapsed((v) => !v)}
+          aria-label={sidebarCollapsed ? "Show filters" : "Hide filters"}
+          title={sidebarCollapsed ? "Show filters" : "Hide filters"}
+        >
+          {sidebarCollapsed ? "»" : "«"}
+        </button>
+      )}
+      <div className="container mt-4">
+        <div className="row">
+          <div
+            className={`col-lg-3 ${isRoundTrip ? "rt-sidebar-col" : ""}`}
+            hidden={isRoundTrip && sidebarCollapsed}
+          >
+            <FlightFiltersSidebar
+              filtersMeta={filtersMeta?.outbound}
+              returnFiltersMeta={filtersMeta?.return}
+              specialReturnOptions={isRoundTrip ? specialReturns : []}
+              onSpecialReturnPick={handleSpecialReturnPick}
+              resultCount={filteredOutbound.length + filteredReturn.length}
+              filters={filters}
+              onFilterChange={(k, v) => setFilters((p) => applyFilterChange(p, k, v))}
+              onClearFilters={() => setFilters(EMPTY_FILTERS)}
+              onClearSection={(key) => setFilters((p) => clearFilterKey(p, key))}
+              onRemoveChip={(chip) => setFilters((p) => removeFilterChip(p, chip))}
+              searchParams={searchParams}
+              priceView={priceView}
+              onPriceViewChange={(key, value) =>
+                setPriceView((p) => ({ ...p, [key]: value }))
+              }
+            />
+          </div>
+          <div
+            className={
+              isRoundTrip
+                ? `rt-main-col ${sidebarCollapsed ? "col-12 is-wide" : "col-lg-9"}`
+                : "col-lg-9"
+            }
+          >
+            {!isRoundTrip && (
+              <>
+                <FareDateStrip
+                  searchParams={searchParams}
+                  onPickDate={handlePickDate}
+                  pendingDate={pendingDate}
+                />
+                <ShareBy
+                  searchParams={searchParams}
+                  resultCount={filteredOutbound.length + filteredReturn.length}
+                />
+              </>
+            )}
+
+            {staleNotice && (
+              <div className="stale-notice" role="status">
+                <span>{staleNotice}</span>
+                <button type="button" onClick={() => setStaleNotice("")} aria-label="Dismiss">
+                  &times;
+                </button>
+              </div>
+            )}
+            {isRoundTrip ? (
+              <div className="rt-columns">
+                {renderRoundTripColumn("outbound")}
+                {renderRoundTripColumn("return")}
+              </div>
+            ) : (
+            <div className="row">
+              <div className="col-12">
+                <div className="tj-flights-column">
+                  <div className="fc-quickpicks">
+                    <button
+                      className={`fc-quickpick ${sortOutbound === "price" ? "active" : ""}`}
+                      onClick={() => setSortOutbound("price")}
+                      disabled={!cheapestOutbound}
+                    >
+                      <span className="fc-quickpick-icon">₹</span>
+                      <span>
+                        <span className="fc-quickpick-title">Cheapest</span>
+                        <span className="fc-quickpick-sub">
+                          {cheapestOutbound
+                            ? `${formatPrice(displayTripPrice(cheapestOutbound))} · ${getTripDuration(cheapestOutbound)}`
+                            : "—"}
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      className={`fc-quickpick ${sortOutbound === "duration" ? "active" : ""}`}
+                      onClick={() => setSortOutbound("duration")}
+                      disabled={!fastestOutbound}
+                    >
+                      <span className="fc-quickpick-icon">⚡</span>
+                      <span>
+                        <span className="fc-quickpick-title">Fastest</span>
+                        <span className="fc-quickpick-sub">
+                          {fastestOutbound
+                            ? `${formatPrice(displayTripPrice(fastestOutbound))} · ${getTripDuration(fastestOutbound)}`
+                            : "—"}
+                        </span>
+                      </span>
+                    </button>
                   </div>
-                </div>
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <div className="h6 mb-0">{formatTime(selectedFlight.departure)} - {formatTime(selectedFlight.arrival)}</div>
-                    <small className="text-muted">{formatDate(selectedFlight.departure)}</small>
+                  <div className="fc-col-headers">
+                    <button
+                      className="fc-col-head fc-col-sort"
+                      onClick={() => setSortOutbound("duration")}
+                      title="Sort by duration"
+                    >
+                      Sort By : {SORT_LABELS[sortOutbound] || "Duration"}
+                    </button>
+                    <button
+                      className="fc-col-head"
+                      onClick={() => setSortOutbound("departure")}
+                    >
+                      Departure
+                    </button>
+                    <button
+                      className="fc-col-head"
+                      onClick={() => setSortOutbound("arrival")}
+                    >
+                      Arrival
+                    </button>
+                    <button
+                      className="fc-col-head"
+                      onClick={() => setSortOutbound("price")}
+                    >
+                      Price
+                    </button>
                   </div>
-                  <div className="text-end">
-                    <div className="h5 mb-0 text-primary">₹{verifiedFlightData?.price || selectedFlight.selectedFare?.price}</div>
-                    <small className="text-muted">Verified Price</small>
+                  <div className="flight-list">
+                    {loading ? (
+                      [1, 2, 3, 4].map((i) => <ShimmerCard key={i} />)
+                    ) : visibleOut.length === 0 ? (
+                      renderEmpty(outboundFlights.length)
+                    ) : (
+                      <>
+                        {visibleOut.map((trip, idx) =>
+                          renderFlight(trip, "outbound", idx),
+                        )}
+                        {hasMoreOut && (
+                          <div ref={loaderOutRef} className="load-more-trigger">
+                            <ShimmerCard />
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
-
-              {/* Booking Form */}
-              <BookingForm 
-                flight={selectedFlight}
-                verifiedData={verifiedFlightData}
-                searchParams={searchParams}
-                onSubmit={handleBookingSubmit}
-                loading={bookingLoading}
-                error={bookingError}
-              />
+            </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {isRoundTrip && (selectedOutbound || selectedReturn) && (
+        <div className="rt-bar">
+          <div className="rt-bar-inner">
+            {renderBarLeg(selectedOutbound)}
+            <span className="rt-bar-divider" />
+            {renderBarLeg(selectedReturn)}
+            <span className="rt-bar-divider" />
+            <div className="rt-bar-total">{formatPrice(roundTripTotal)}</div>
+            <button
+              type="button"
+              className="rt-bar-book"
+              onClick={handleBook}
+              disabled={loading || !selectedOutbound || !selectedReturn}
+            >
+              {loading ? "Processing..." : "BOOK"}
+            </button>
+          </div>
+        </div>
+      )}
+      {!isRoundTrip && (selectedOutbound || selectedReturn) && (
+        <div className="tj-booking-bar">
+          <div className="container-fluid">
+            <div className="tj-booking-content">
+              <div className="tj-booking-total">
+                {formatPrice(totalPrice)} total
+              </div>
+              <button
+                className="tj-book-btn"
+                onClick={handleBook}
+                disabled={loading}
+              >
+                {loading ? "Processing..." : "BOOK"}
+              </button>
             </div>
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        .flight-results {
-          margin-top: 24px;
-          background: white;
-          border-radius: 20px;
-          padding: 32px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-          border: 1px solid rgba(237, 17, 115, 0.1);
-        }
-
-        .flight-item {
-          border: 2px solid #f8f9fa;
-          border-radius: 16px;
-          padding: 24px;
-          margin-bottom: 20px;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          cursor: pointer;
-          background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .flight-item:hover {
-          border-color: #ed1173;
-          box-shadow: 0 15px 40px rgba(237, 17, 115, 0.15);
-          transform: translateY(-2px);
-        }
-
-        .flight-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-          padding-bottom: 16px;
-          border-bottom: 2px solid #f8f9fa;
-        }
-
-        .flight-airline {
-          font-weight: 800;
-          color: #1a1a2e;
-          font-size: 18px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .airline-logo {
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, #ed1173, #ff6b9d);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: 700;
-          font-size: 14px;
-        }
-
-        .flight-price {
-          font-size: 24px;
-          font-weight: 900;
-          color: #ed1173;
-          text-shadow: 0 2px 4px rgba(237, 17, 115, 0.1);
-        }
-
-        .flight-details {
-          display: grid;
-          grid-template-columns: 1fr auto 1fr;
-          gap: 30px;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-
-        .flight-time {
-          text-align: center;
-        }
-
-        .flight-time-value {
-          font-size: 22px;
-          font-weight: 800;
-          color: #1a1a2e;
-          margin-bottom: 4px;
-        }
-
-        .flight-time-label {
-          font-size: 14px;
-          color: #666;
-          margin-bottom: 2px;
-          font-weight: 600;
-        }
-
-        .flight-time-date {
-          font-size: 12px;
-          color: #999;
-          font-weight: 500;
-        }
-
-        .flight-duration {
-          text-align: center;
-          color: #666;
-          font-size: 15px;
-          font-weight: 600;
-          padding: 12px 16px;
-          background: rgba(237, 17, 115, 0.05);
-          border-radius: 12px;
-          border: 1px solid rgba(237, 17, 115, 0.1);
-        }
-
-        .flight-stops {
-          font-size: 12px;
-          color: #ed1173;
-          margin-top: 6px;
-          font-weight: 700;
-        }
-
-        .flight-amenities {
-          display: flex;
-          gap: 16px;
-          align-items: center;
-          margin-bottom: 16px;
-          flex-wrap: wrap;
-        }
-
-        .amenity-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
-          background: #f8f9fa;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 600;
-          color: #666;
-          border: 1px solid #e9ecef;
-        }
-
-        .amenity-badge.direct {
-          background: rgba(76, 175, 80, 0.1);
-          color: #4caf50;
-          border-color: rgba(76, 175, 80, 0.2);
-        }
-
-        .amenity-badge.stops {
-          background: rgba(255, 152, 0, 0.1);
-          color: #ff9800;
-          border-color: rgba(255, 152, 0, 0.2);
-        }
-
-        .seats-badge {
-          background: rgba(233, 30, 99, 0.1);
-          color: #e91e63;
-          border-color: rgba(233, 30, 99, 0.2);
-        }
-
-        .select-button {
-          background: linear-gradient(135deg, #ed1173, #ff6b9d);
-          color: white;
-          border: none;
-          padding: 12px 28px;
-          border-radius: 12px;
-          font-weight: 700;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(237, 17, 115, 0.3);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          min-width: 140px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .select-button:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(237, 17, 115, 0.4);
-        }
-
-        .select-button:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .verification-error {
-          background: #f8d7da;
-          border: 1px solid #f5c6cb;
-          border-radius: 8px;
-          padding: 8px 12px;
-          margin-top: 8px;
-        }
-
-        .spinner-border-sm {
-          width: 16px;
-          height: 16px;
-          border-width: 2px;
-        }
-
-        /* Booking Modal Styles */
-        .booking-modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          padding: 20px;
-        }
-
-        .booking-modal {
-          background: white;
-          border-radius: 16px;
-          max-width: 600px;
-          width: 100%;
-          max-height: 90vh;
-          overflow-y: auto;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .booking-modal-header {
-          padding: 20px 24px;
-          border-bottom: 1px solid #e9ecef;
-          display: flex;
-          justify-content: between;
-          align-items: center;
-        }
-
-        .booking-modal-header h4 {
-          margin: 0;
-          color: #333;
-        }
-
-        .close-btn {
-          background: none;
-          border: none;
-          font-size: 24px;
-          cursor: pointer;
-          color: #666;
-          padding: 0;
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .close-btn:hover {
-          background: #f8f9fa;
-          color: #333;
-        }
-
-        .booking-modal-body {
-          padding: 24px;
-        }
-
-        .flight-summary-card {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 20px;
-          border-radius: 12px;
-          margin-bottom: 24px;
-        }
-
-        .flight-summary-card .h6,
-        .flight-summary-card .h5 {
-          color: white;
-        }
-
-        .flight-summary-card small {
-          color: rgba(255, 255, 255, 0.8);
-        }
-      `}</style>
     </div>
   );
-};
-
-export default FlightSearchResults;
+}

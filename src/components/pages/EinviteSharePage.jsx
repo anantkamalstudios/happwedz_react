@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { einviteApi } from "../../services/api/einviteApi";
 import { getImageUrl, handleImageError } from "../../utils/imageUtils";
+import { formatDate } from "../../utils/dateFormat";
 import Swal from "sweetalert2";
 import {
   FaWhatsapp,
@@ -357,11 +358,7 @@ const EinviteSharePage = () => {
                     <div className="d-flex justify-content-between py-2">
                       <span className="text-muted">Created</span>
                       <span className="fw-semibold">
-                        {new Date(card.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
+                        {formatDate(card.created_at)}
                       </span>
                     </div>
                   </div>

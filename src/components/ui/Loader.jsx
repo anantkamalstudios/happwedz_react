@@ -1,5 +1,9 @@
 import React, { useEffect } from "react";
-import logo from "../../../public/logo-no-bg.png";
+
+// Referenced by URL rather than imported. Importing out of /public made Vite
+// bundle a second copy into /assets, so the 9.3KB PNG shipped twice and landed
+// on the critical path via the entry chunk. The WebP is 3.4KB.
+const logo = "/logo-no-bg.png";
 
 const Loader = () => {
   useEffect(() => {

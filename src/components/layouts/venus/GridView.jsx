@@ -32,10 +32,14 @@ const GridView = ({ subVenuesData, section }) => {
     }));
   };
 
+  const validVenuesData = (subVenuesData || []).filter(
+    (v) => v && v.image && String(v.image).trim() !== ""
+  );
+
   const filteredVenues =
     filter === "all"
-      ? subVenuesData
-      : subVenuesData.filter((venue) => venue.type === filter);
+      ? validVenuesData
+      : validVenuesData.filter((venue) => venue.type === filter);
 
   return (
     <Row>
@@ -60,6 +64,13 @@ const GridView = ({ subVenuesData, section }) => {
                     src={v.image}
                     alt={v.name}
                     className="venue-image"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      const cardCol = e.target.closest(".col-12, .col-sm-6, .col-lg-4, .col-md-4, .col") || e.target.closest(".card");
+                      if (cardCol) {
+                        cardCol.style.display = "none";
+                      }
+                    }}
                   />
                   <button
                     className="btn-glass position-absolute top-0 end-0 m-2 rounded-circle"

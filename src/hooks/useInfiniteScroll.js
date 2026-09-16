@@ -8,8 +8,14 @@ import {
   extractRatingFilters,
   extractReviewFilters,
 } from "../utils/priceFilterUtils";
+import { hasView360 } from "../utils/view360Helper";
+import {
+  IMAGE_BASE_URL as UPLOADS_BASE_URL,
+  toCdnUrl,
+  API_BASE_URL,
+} from "../config/constants";
 
-const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
+const IMAGE_BASE_URL = UPLOADS_BASE_URL.replace(/\/+$/, "");
 
 const useInfiniteScroll = (
   section,
@@ -17,10 +23,26 @@ const useInfiniteScroll = (
   city = null,
   vendorType = null,
   initialLimit = 9,
-  filters = {}
+  filters = {},
 ) => {
+  const normalizeServiceStatus = (value) => {
+    const normalized = String(value || "")
+      .trim()
+      .toLowerCase();
+    if (normalized === "publish" || normalized === "published")
+      return "publish";
+    if (
+      normalized === "hide" ||
+      normalized === "draft" ||
+      normalized === "archived"
+    )
+      return "hide";
+    return "hide";
+  };
+
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  /** Start true so listing pages never flash "empty" before the first fetch runs. */
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
@@ -38,142 +60,170 @@ const useInfiniteScroll = (
 
   // Transform API data
   const transformApiData = useCallback((items) => {
-    return items.map((item) => {
-      const id = item.id;
-      const media = Array.isArray(item.media) ? item.media : [];
-      const vendor = item.vendor || {};
-      const subcategory = item.subcategory || {};
-      const attributes = item.attributes || {};
+    return items
+      .map((item) => {
+        const id = item.id;
+        const media = Array.isArray(item.media) ? item.media : [];
+        const vendor = item.vendor || {};
+        const subcategory = item.subcategory || {};
+        const attributes = item.attributes || {};
 
-      const portfolioUrls = attributes.Portfolio
-        ? attributes.Portfolio.split("|")
-            .map((url) => url.trim())
-            .filter((url) => url)
-        : [];
-      const normalizeUrl = (u) => {
-        if (!u) return null;
-        if (/^https?:\/\//i.test(u)) return u;
-        return `${IMAGE_BASE_URL}${u.startsWith("/") ? u : "/" + u}`;
-      };
-      const gallery = (media.length > 0 ? media : portfolioUrls)
-        .map(normalizeUrl)
-        .filter(Boolean);
-      const firstImage = gallery.length > 0 ? gallery[0] : null;
+        const portfolioUrls = attributes.Portfolio
+          ? attributes.Portfolio.split("|")
+              .map((url) => url.trim())
+              .filter((url) => url)
+          : [];
+        const normalizeUrl = (u) => {
+          if (!u) return null;
+          // Serve bucket-hosted media from whichever origin is configured for it.
+          const cleaned = toCdnUrl(String(u));
+          if (/^https?:\/\//i.test(cleaned)) return cleaned;
+          return `${IMAGE_BASE_URL}${cleaned.startsWith("/") ? cleaned : "/" + cleaned}`;
+        };
+        const gallery = (media.length > 0 ? media : portfolioUrls)
+          .map(normalizeUrl)
+          .filter(Boolean);
+        const firstImage =
+          gallery.length > 0 ? gallery[0] : "/images/imageNotFound.jpg";
 
-      const vendorTypeName =
-        attributes.vendor_type ||
-        vendor?.vendorType?.name ||
-        subcategory?.vendorType?.name ||
-        "";
-      const isVenue = vendorTypeName.toLowerCase().includes("venue");
+        const vendorTypeName =
+          attributes.vendor_type ||
+          vendor?.vendorType?.name ||
+          subcategory?.vendorType?.name ||
+          "";
+        const isVenue = vendorTypeName.toLowerCase().includes("venue");
 
-      const photoPackage =
-        attributes.photo_package_price ||
-        attributes.PhotoPackage_Price ||
-        attributes.PhotoPackage ||
-        attributes.PhotoPackage_price ||
-        attributes.PhotoPackagePrice ||
-        attributes.PhotoPackage_price_inr;
-      const photoVideoPackage =
-        attributes.photo_video_package_price ||
-        attributes.Photo_video_Price ||
-        attributes.Photo_video ||
-        attributes.PhotoVideo_Price ||
-        attributes.PhotoVideoPackage;
+        const photoPackage =
+          attributes.photo_package_price ||
+          attributes.PhotoPackage_Price ||
+          attributes.PhotoPackage ||
+          attributes.PhotoPackage_price ||
+          attributes.PhotoPackagePrice ||
+          attributes.PhotoPackage_price_inr;
+        const photoVideoPackage =
+          attributes.photo_video_package_price ||
+          attributes.Photo_video_Price ||
+          attributes.Photo_video ||
+          attributes.PhotoVideo_Price ||
+          attributes.PhotoVideoPackage;
 
-      const rawRooms =
-        attributes.rooms ??
-        attributes.Rooms ??
-        attributes.room_count ??
-        attributes.RoomCount ??
-        attributes.NoOfRooms ??
-        attributes.no_of_rooms ??
-        attributes.No_Of_Rooms;
-      let roomsParsed = null;
-      if (rawRooms !== undefined && rawRooms !== null) {
-        const onlyDigits = String(rawRooms).match(/\d+/);
-        const n = onlyDigits ? parseInt(onlyDigits[0], 10) : NaN;
-        roomsParsed = Number.isNaN(n) ? null : n;
-      }
+        const rawRooms =
+          attributes.rooms ??
+          attributes.Rooms ??
+          attributes.room_count ??
+          attributes.RoomCount ??
+          attributes.NoOfRooms ??
+          attributes.no_of_rooms ??
+          attributes.No_Of_Rooms;
+        let roomsParsed = null;
+        if (rawRooms !== undefined && rawRooms !== null) {
+          const onlyDigits = String(rawRooms).match(/\d+/);
+          const n = onlyDigits ? parseInt(onlyDigits[0], 10) : NaN;
+          roomsParsed = Number.isNaN(n) ? null : n;
+        }
 
-      // Parse latitude and longitude from attributes
-      const latitude = parseFloat(
-        attributes.latitude || attributes.Latitude || ""
-      );
-      const longitude = parseFloat(
-        attributes.longitude || attributes.Longitude || ""
-      );
-      const hasValidCoordinates = !isNaN(latitude) && !isNaN(longitude);
+        // Parse latitude and longitude from attributes
+        const latitude = parseFloat(
+          attributes.latitude || attributes.Latitude || "",
+        );
+        const longitude = parseFloat(
+          attributes.longitude || attributes.Longitude || "",
+        );
+        const hasValidCoordinates = !isNaN(latitude) && !isNaN(longitude);
 
-      return {
-        id,
-        vendor_id: item.vendor_id || vendor.id || null,
-        name:
-          attributes.vendor_name ||
-          attributes.Name ||
-          vendor.businessName ||
-          "Unknown Vendor",
-        lat: hasValidCoordinates ? latitude : null,
-        lng: hasValidCoordinates ? longitude : null,
-        subtitle: attributes.subtitle || "",
-        tagline: attributes.tagline || "",
-        description:
-          attributes.about_us ||
-          attributes.Aboutus ||
-          attributes.description ||
-          "",
-        slug: attributes.slug || "",
+        return {
+          id,
+          status: normalizeServiceStatus(item.status),
+          vendor_id: item.vendor_id || vendor.id || null,
+          name:
+            attributes.vendor_name ||
+            attributes.Name ||
+            vendor.businessName ||
+            "Unknown Vendor",
+          lat: hasValidCoordinates ? latitude : null,
+          lng: hasValidCoordinates ? longitude : null,
+          subtitle: attributes.subtitle || "",
+          tagline: attributes.tagline || "",
+          description:
+            attributes.about_us ||
+            attributes.Aboutus ||
+            attributes.description ||
+            "",
+          slug: item.slug || attributes.slug || "",
 
-        image: firstImage,
-        gallery,
-        videos: [],
+          image: firstImage,
+          gallery,
+          videos: [],
 
-        vegPrice: isVenue
-          ? attributes.veg_price || attributes.VegPrice || null
-          : null,
-        nonVegPrice: isVenue
-          ? attributes.non_veg_price || attributes.NonVegPrice || null
-          : null,
-        starting_price: !isVenue
-          ? photoPackage ||
-            photoVideoPackage ||
-            attributes.PriceRange ||
-            attributes.price ||
-            null
-          : null,
+          vegPrice: isVenue
+            ? attributes.veg_price || attributes.VegPrice || null
+            : null,
+          nonVegPrice: isVenue
+            ? attributes.non_veg_price || attributes.NonVegPrice || null
+            : null,
+          starting_price: !isVenue
+            ? photoPackage ||
+              photoVideoPackage ||
+              attributes.PriceRange ||
+              attributes.price ||
+              null
+            : null,
 
-        address: attributes.address || attributes.Address || "",
-        area: attributes.area || "",
-        city: attributes.city || vendor.city || "",
-        location: attributes.city || vendor.city || "",
-        rooms: roomsParsed,
+          address:
+            attributes.address && attributes.address.toLowerCase() !== "unknown"
+              ? attributes.address
+              : attributes.Address &&
+                  attributes.Address.toLowerCase() !== "unknown"
+                ? attributes.Address
+                : "",
+          area:
+            attributes.area && attributes.area.toLowerCase() !== "unknown"
+              ? attributes.area
+              : "",
+          city:
+            attributes.city && attributes.city.toLowerCase() !== "unknown"
+              ? attributes.city
+              : vendor.city && vendor.city.toLowerCase() !== "unknown"
+                ? vendor.city
+                : "",
+          location:
+            attributes.city && attributes.city.toLowerCase() !== "unknown"
+              ? attributes.city
+              : vendor.city && vendor.city.toLowerCase() !== "unknown"
+                ? vendor.city
+                : "",
+          rooms: roomsParsed,
 
-        rating: attributes.rating || 0,
-        review_count:
-          attributes.review_count ||
-          parseInt(attributes.review?.toString?.() || "0", 10) ||
-          0,
-        reviews:
-          attributes.review_count ||
-          parseInt(attributes.review?.toString?.() || "0", 10) ||
-          0,
+          rating: attributes.rating || 0,
+          review_count:
+            attributes.review_count ||
+            parseInt(attributes.review?.toString?.() || "0", 10) ||
+            0,
+          reviews:
+            attributes.review_count ||
+            parseInt(attributes.review?.toString?.() || "0", 10) ||
+            0,
 
-        vendor_type: vendorTypeName,
-        subcategory_name: subcategory?.name || "",
+          vendor_type: vendorTypeName,
+          subcategory_name: subcategory?.name || "",
 
-        call: attributes.Phone || vendor.phone || null,
-        whatsapp: attributes.Whatsapp || null,
-        website: attributes.Website || null,
+          call: attributes.Phone || vendor.phone || null,
+          whatsapp: attributes.Whatsapp || null,
+          website: attributes.Website || null,
 
-        about_us: attributes.about_us || attributes.Aboutus || "",
-        vendor_name:
-          vendor.businessName ||
-          attributes.vendor_name ||
-          attributes.Name ||
-          "",
-        url: attributes.Website || attributes.URL || null,
-      };
-    });
+          about_us: attributes.about_us || attributes.Aboutus || "",
+          vendor_name:
+            vendor.businessName ||
+            attributes.vendor_name ||
+            attributes.Name ||
+            "",
+          url: attributes.Website || attributes.URL || null,
+
+          // Only vendors who uploaded 360° content from their login get the 360° badge
+          has360: hasView360(item),
+        };
+      })
+      .filter(Boolean);
   }, []);
 
   // Fetch data with caching
@@ -192,6 +242,9 @@ const useInfiniteScroll = (
 
       setLoading(true);
       setError(null);
+
+      /** When true, `finally` must not call setLoading(false) — avoids races when navigation aborts the previous request while a new one is loading. */
+      let skipLoadingComplete = false;
 
       try {
         const subCategory = slug
@@ -216,16 +269,16 @@ const useInfiniteScroll = (
         const selectedSubcats = extractVenueSubCategories(filtersRef.current);
         if (selectedSubcats && selectedSubcats.trim().length > 0) {
           params.append("subCategory", selectedSubcats);
-        } else if (
-          !vendorType &&
-          subCategory &&
-          subCategory.toLowerCase() !== "all"
-        ) {
+        } else if (subCategory && subCategory.toLowerCase() !== "all") {
           params.append("subCategory", subCategory);
         }
 
         params.append("page", pageNum.toString());
         params.append("limit", limit.toString());
+
+        if (filtersRef.current?.search) {
+          params.append("search", filtersRef.current.search);
+        }
 
         // Extract price filters and add as minPrice/maxPrice query params
         const { minPrice, maxPrice } = extractPriceFilters(filtersRef.current);
@@ -238,7 +291,7 @@ const useInfiniteScroll = (
 
         // Extract capacity filters and add as minCapacity/maxCapacity
         const { minCapacity, maxCapacity } = extractCapacityFilters(
-          filtersRef.current
+          filtersRef.current,
         );
         if (minCapacity !== null && minCapacity !== undefined) {
           params.append("minCapacity", minCapacity.toString());
@@ -249,7 +302,7 @@ const useInfiniteScroll = (
 
         // Extract food price per plate
         const { minFoodPrice, maxFoodPrice } = extractFoodPriceFilters(
-          filtersRef.current
+          filtersRef.current,
         );
         if (minFoodPrice !== null && minFoodPrice !== undefined) {
           params.append("minFoodPrice", minFoodPrice.toString());
@@ -269,7 +322,7 @@ const useInfiniteScroll = (
 
         // Extract rating
         const { minRating, maxRating } = extractRatingFilters(
-          filtersRef.current
+          filtersRef.current,
         );
         if (minRating !== null && minRating !== undefined) {
           params.append("minRating", minRating.toString());
@@ -280,7 +333,7 @@ const useInfiniteScroll = (
 
         // Extract reviews
         const { minReviews, maxReviews } = extractReviewFilters(
-          filtersRef.current
+          filtersRef.current,
         );
         if (minReviews !== null && minReviews !== undefined) {
           params.append("minReviews", minReviews.toString());
@@ -291,10 +344,11 @@ const useInfiniteScroll = (
 
         // Add other filters as JSON (excluding price filters)
         const nonPriceFilters = { ...filtersRef.current };
-        // Remove price/capacity/venue-type/food price/rooms/rating/reviews keys from filters JSON
+        // Remove search and price/capacity/venue-type/food price/rooms/rating/reviews keys from filters JSON
         Object.keys(nonPriceFilters).forEach((key) => {
           const lowerKey = key.toLowerCase();
           if (
+            lowerKey === "search" ||
             lowerKey.includes("price") ||
             lowerKey === "prices" ||
             lowerKey === "pricing" ||
@@ -322,25 +376,8 @@ const useInfiniteScroll = (
           params.append("filters", JSON.stringify(nonPriceFilters));
         }
 
-        const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
+        const apiUrl = `${API_BASE_URL}/vendor-services?${params.toString()}`;
         const cacheKey = apiUrl;
-
-        // Check cache first
-        if (cacheRef.current.has(cacheKey)) {
-          const cached = cacheRef.current.get(cacheKey);
-          setData((prevData) => {
-            // Avoid duplicates
-            const existingIds = new Set(prevData.map((item) => item.id));
-            const newItems = cached.data.filter(
-              (item) => !existingIds.has(item.id)
-            );
-            return [...prevData, ...newItems];
-          });
-          setHasMore(cached.hasMore);
-          loadedPagesRef.current.add(pageNum);
-          setLoading(false);
-          return;
-        }
 
         // Abort any previous request
         if (abortRef.current) {
@@ -361,10 +398,53 @@ const useInfiniteScroll = (
         const itemsRaw = Array.isArray(result)
           ? result
           : Array.isArray(result.data)
-          ? result.data
-          : [];
+            ? result.data
+            : [];
 
-        const transformed = transformApiData(itemsRaw);
+        const isValidCity = (city) => {
+          if (!city || typeof city !== "string") return true;
+          const lower = city.toLowerCase().trim();
+          if (
+            lower === "unknown city" ||
+            lower === "null" ||
+            lower === "undefined"
+          ) {
+            return true;
+          }
+          return true;
+        };
+
+        const matchesSelectedCity = (item, selectedCity) => {
+          if (!selectedCity || selectedCity.toLowerCase() === "all")
+            return true;
+          const itemLocation = String(
+            item.city || item.location || item.address || item.area || "",
+          ).toLowerCase();
+          const cleanSelected = selectedCity
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+          const cleanItem = itemLocation.replace(/[^a-z0-9]/g, "");
+          return (
+            cleanItem.includes(cleanSelected) ||
+            cleanSelected.includes(cleanItem)
+          );
+        };
+
+        const VENUE_FALLBACK_IMG = "/images/imageNotFound.jpg";
+
+        // Keep the order the API returned. It already ranks every venue that has
+        // photos ahead of every venue that has none across the whole result set,
+        // which a page-at-a-time sort here cannot reproduce — it would only shuffle
+        // the current batch and make already-rendered cards jump as more pages load.
+        const transformed = transformApiData(itemsRaw)
+          .map((item) => {
+            if (!item) return null;
+            if (!item.image || String(item.image).trim() === "") {
+              item.image = VENUE_FALLBACK_IMG;
+            }
+            return item;
+          })
+          .filter(Boolean);
 
         // Determine if there are more pages
         let hasMorePages = true;
@@ -384,29 +464,36 @@ const useInfiniteScroll = (
         // Add to loaded pages
         loadedPagesRef.current.add(pageNum);
 
-        // Append to existing data
-        setData((prevData) => {
-          // Avoid duplicates
-          const existingIds = new Set(prevData.map((item) => item.id));
-          const newItems = transformed.filter(
-            (item) => !existingIds.has(item.id)
-          );
-          return [...prevData, ...newItems];
-        });
+        if (pageNum === 1) {
+          setData(transformed);
+        } else {
+          setData((prevData) => {
+            const existingIds = new Set(prevData.map((item) => item.id));
+            const newItems = transformed.filter(
+              (item) => !existingIds.has(item.id),
+            );
+            // Append in API order — re-sorting the accumulated list here would move
+            // cards the visitor has already scrolled past.
+            return [...prevData, ...newItems];
+          });
+        }
 
         setHasMore(hasMorePages);
       } catch (err) {
         if (err.name === "AbortError") {
+          skipLoadingComplete = true;
           return;
         }
         console.error(`❌ Error loading ${section} data:`, err);
         setError(`Failed to load ${section} data from API: ${err.message}`);
         setHasMore(false);
       } finally {
-        setLoading(false);
+        if (!skipLoadingComplete) {
+          setLoading(false);
+        }
       }
     },
-    [section, slug, city, vendorType, initialLimit, transformApiData]
+    [section, slug, city, vendorType, initialLimit, transformApiData],
   );
 
   // Debounced load more function
@@ -430,11 +517,21 @@ const useInfiniteScroll = (
 
   // Reset when dependencies change
   const reset = useCallback(() => {
-    setData([]);
+    // A scroll-triggered load that is still inside its debounce window belongs to
+    // the city/filters we are leaving: its closure holds the previous fetchData, so
+    // letting it fire would abort the incoming request and append the old city's
+    // venues to the new city's list. Drop it before starting over.
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
     setPage(1);
     setHasMore(true);
     setError(null);
+    setData([]);
     loadedPagesRef.current.clear();
+    cacheRef.current.clear();
+    setLoading(true);
   }, []);
 
   // Initial load - reset and fetch when section, slug, city, vendorType, or filters change

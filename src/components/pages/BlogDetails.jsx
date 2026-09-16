@@ -1,7 +1,12 @@
 // Utility to normalize image URLs
 // Utility to normalize image URLs
+import {
+  API_BASE_URL,
+  IMAGE_BASE_URL as IMAGE_BASE_URL_RAW,
+} from "../../config/constants";
+
 const getImageUrl = (imageData) => {
-  const baseUrl = "https://happywedzbackend.happywedz.com/";
+  const baseUrl = IMAGE_BASE_URL_RAW;
 
   const replacePrefix = (url) => {
     if (typeof url === "string") {
@@ -50,6 +55,9 @@ import { FaChevronLeft } from "react-icons/fa";
 import { User, Calendar, Clock, Heart } from "lucide-react";
 import { useLoader } from "../context/LoaderContext";
 import DOMPurify from "dompurify";
+import SEO from "../common/SEO";
+import { Helmet } from "react-helmet-async";
+import { formatDate as fmtDate } from "../../utils/dateFormat";
 
 const BlogDetails = ({ blogId, onBackClick }) => {
   const [blogData, setBlogData] = React.useState(null);
@@ -62,7 +70,7 @@ const BlogDetails = ({ blogId, onBackClick }) => {
       try {
         showLoader();
         const response = await fetch(
-          `https://happywedz.com/api/blogs/${blogId}`
+          `${API_BASE_URL}/blogs/${blogId}`
         );
         const result = await response.json();
 
@@ -81,15 +89,7 @@ const BlogDetails = ({ blogId, onBackClick }) => {
     }
   }, [blogId]);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
+  const formatDate = (dateString) => fmtDate(dateString);
 
   if (!blogData) {
     return (
@@ -109,6 +109,51 @@ const BlogDetails = ({ blogId, onBackClick }) => {
         backgroundColor: "#fff",
       }}
     >
+      <SEO
+        title={`${blogData.title} | HappyWedz Blog`}
+        description={blogData.shortDescription || `Read ${blogData.title} on the HappyWedz wedding planning blog.`}
+        image={blogData.images && blogData.images.length > 0 ? getImageUrl(blogData.images[0]) : undefined}
+        imageAlt={blogData.title}
+        type="article"
+      />
+
+      {/* BlogPosting JSON-LD structured data */}
+      {import.meta.env.VITE_ENABLE_SEO === "true" && (
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BlogPosting",
+              "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": `https://happywedz.com/blog/${blogId}`
+              },
+              "headline": blogData.title,
+              "description": blogData.shortDescription || `Read ${blogData.title} on the HappyWedz wedding planning blog.`,
+              "image": blogData.images && blogData.images.length > 0
+                ? blogData.images.map(img => getImageUrl(img))
+                : ["https://happywedz.com/images/og-default.jpg"],
+              "author": {
+                "@type": "Person",
+                "name": blogData.author || "HappyWedz Team"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "HappyWedz",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://happywedz.com/logo-no-bg.png"
+                }
+              },
+              "datePublished": blogData.createdDate || blogData.createdAt,
+              "dateModified": blogData.updatedAt || blogData.createdDate || blogData.createdAt,
+              "keywords": Array.isArray(blogData.tags) ? blogData.tags.join(", ") : blogData.tags,
+              "articleSection": blogData.category || "Weddings",
+              "url": `https://happywedz.com/blog/${blogId}`
+            })}
+          </script>
+        </Helmet>
+      )}
       <div
         className="container"
         style={{ paddingTop: "2rem", paddingBottom: "1rem" }}

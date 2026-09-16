@@ -5,8 +5,12 @@ import { FaStar } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Card, Modal } from "react-bootstrap";
+import { formatDate } from "../../utils/dateFormat";
+import { API_BASE_URL } from "../../config/constants";
 
-const API_BASE_URL = "https://happywedz.com/api";
+const getReviewerName = (review) => review?.user?.name || "Anonymous";
+const getReviewerInitial = (review) =>
+  getReviewerName(review).trim().charAt(0).toUpperCase() || "A";
 
 const ReviewSection = ({ vendor }) => {
   const { user, token } = useSelector((state) => state.auth);
@@ -126,16 +130,16 @@ const ReviewSection = ({ vendor }) => {
 
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-          <h3 className="fw-bold mb-2 fs-22">
+          <h2 className="fw-bold mb-2 fs-22">
             Reviews of{" "}
             {vendor?.attributes?.name ||
               vendor?.name ||
               vendor?.businessName ||
               vendor?.Name}{" "}
-          </h3>
+          </h2>
           <div className="d-flex align-items-center mb-1">
             <FaStar className="text-warning me-2" size={14} />
-            <h4 className="mb-0 fw-bold fs-14">
+            <div className="mb-0 fw-bold fs-14">
               {reviews.length > 0
                 ? (
                     reviews.reduce((sum, r) => sum + r.rating_quality, 0) /
@@ -143,7 +147,7 @@ const ReviewSection = ({ vendor }) => {
                   ).toFixed(1)
                 : "0.0"}{" "}
               <span className="text-dark fw-normal fs-14">Excellent</span>
-            </h4>
+            </div>
             <span className="text-muted ms-2 fs-14">
               • {reviews.length} Reviews
             </span>
@@ -270,35 +274,50 @@ const ReviewSection = ({ vendor }) => {
               <div key={review.id} className="col-md-6 col-lg-6">
                 <div className="h-100">
                   <div className="d-flex align-items-start gap-3 mb-3">
-                    <img
-                      src={review.user?.image || "/images/no-image.png"}
-                      alt={review.user?.name || "User"}
-                      className="rounded-circle"
+                    {review.user?.image ? (
+                      <img
+                        src={review.user.image}
+                        alt={getReviewerName(review)}
+                        className="rounded-circle"
+                        style={{
+                          width: "48px",
+                          height: "48px",
+                          objectFit: "cover",
+                        }}
+                        onError={(e) => {
+                          // Replace broken image with initial avatar fallback.
+                          e.currentTarget.style.display = "none";
+                          const fallback = e.currentTarget.nextElementSibling;
+                          if (fallback) fallback.style.display = "flex";
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className="rounded-circle align-items-center justify-content-center fw-bold text-white"
                       style={{
                         width: "48px",
                         height: "48px",
-                        objectFit: "cover",
+                        backgroundColor: "#6c757d",
+                        fontSize: "18px",
+                        display: review.user?.image ? "none" : "flex",
                       }}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "/images/no-image.png";
-                      }}
-                    />
+                      aria-label={getReviewerName(review)}
+                      title={getReviewerName(review)}
+                    >
+                      {getReviewerInitial(review)}
+                    </div>
                     <div className="flex-grow-1">
                       <h6
                         className="mb-0 fw-semibold"
                         style={{ fontSize: "16px" }}
                       >
-                        {review.user?.name || "Anonymous"}
+                        {getReviewerName(review)}
                       </h6>
                       <p
                         className="mb-0 text-muted"
                         style={{ fontSize: "14px" }}
                       >
-                        {new Date(review.createdAt).toLocaleDateString(
-                          "en-US",
-                          { month: "long", year: "numeric" }
-                        )}
+                        {formatDate(review.createdAt)}
                       </p>
                     </div>
                   </div>
@@ -372,29 +391,39 @@ const ReviewSection = ({ vendor }) => {
           {selectedReview && (
             <div>
               <div className="d-flex align-items-start gap-3 mb-4">
-                <img
-                  src={selectedReview.user?.image || "/images/no-image.png"}
-                  alt={selectedReview.user?.name || "User"}
-                  className="rounded-circle"
-                  style={{ width: "56px", height: "56px", objectFit: "cover" }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "/images/no-image.png";
+                {selectedReview.user?.image ? (
+                  <img
+                    src={selectedReview.user.image}
+                    alt={getReviewerName(selectedReview)}
+                    className="rounded-circle"
+                    style={{ width: "56px", height: "56px", objectFit: "cover" }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                      const fallback = e.currentTarget.nextElementSibling;
+                      if (fallback) fallback.style.display = "flex";
+                    }}
+                  />
+                ) : null}
+                <div
+                  className="rounded-circle align-items-center justify-content-center fw-bold text-white"
+                  style={{
+                    width: "56px",
+                    height: "56px",
+                    backgroundColor: "#6c757d",
+                    fontSize: "20px",
+                    display: selectedReview.user?.image ? "none" : "flex",
                   }}
-                />
+                  aria-label={getReviewerName(selectedReview)}
+                  title={getReviewerName(selectedReview)}
+                >
+                  {getReviewerInitial(selectedReview)}
+                </div>
                 <div className="flex-grow-1">
                   <h6 className="mb-0 fw-bold" style={{ fontSize: "18px" }}>
-                    {selectedReview.user?.name || "Anonymous"}
+                    {getReviewerName(selectedReview)}
                   </h6>
                   <p className="mb-0 text-muted" style={{ fontSize: "14px" }}>
-                    {new Date(selectedReview.createdAt).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      }
-                    )}
+                    {formatDate(selectedReview.createdAt)}
                   </p>
                 </div>
               </div>
@@ -415,9 +444,9 @@ const ReviewSection = ({ vendor }) => {
               </div>
 
               {selectedReview.title && (
-                <h5 className="fw-bold mb-3" style={{ fontSize: "18px" }}>
+                <div className="fw-bold mb-3 fs-18">
                   {selectedReview.title}
-                </h5>
+                </div>
               )}
 
               <p
@@ -428,9 +457,9 @@ const ReviewSection = ({ vendor }) => {
               </p>
 
               <div className="border-top pt-4 mb-4">
-                <h6 className="fw-semibold mb-3" style={{ fontSize: "16px" }}>
+                <div className="fw-semibold mb-3" style={{ fontSize: "16px" }}>
                   Rating breakdown
-                </h6>
+                </div>
                 <div className="row g-3">
                   {[
                     { label: "Quality of service", key: "rating_quality" },
@@ -476,9 +505,9 @@ const ReviewSection = ({ vendor }) => {
 
               {selectedReview.media && selectedReview.media.length > 0 && (
                 <div className="mb-4">
-                  <h6 className="fw-semibold mb-3" style={{ fontSize: "16px" }}>
+                  <div className="fw-semibold mb-3" style={{ fontSize: "16px" }}>
                     Photos
-                  </h6>
+                  </div>
                   <div className="d-flex flex-wrap gap-2">
                     {selectedReview.media.map((imgUrl, idx) => (
                       <img
@@ -503,9 +532,9 @@ const ReviewSection = ({ vendor }) => {
                   className="border rounded p-3 mt-4"
                   style={{ backgroundColor: "#f7f7f7" }}
                 >
-                  <h6 className="fw-semibold mb-2" style={{ fontSize: "16px" }}>
+                  <div className="fw-semibold mb-2" style={{ fontSize: "16px" }}>
                     Response from {vendor?.name || "vendor"}
-                  </h6>
+                  </div>
                   <p
                     className="mb-0"
                     style={{ fontSize: "14px", whiteSpace: "pre-line" }}
