@@ -3,6 +3,7 @@ import Herosection from "../home/Herosection";
 import WeddingCategories from "../home/WeddingCategories";
 import CtaPanel from "../home/CtaPanel";
 import cmsApi from "../../services/api/cmsApi";
+import { resolveMediaUrl } from "../../config/constants";
 import SEO from "../common/SEO";
 import StructuredData from "../common/StructuredData";
 import DeferUntilNearViewport from "../common/DeferUntilNearViewport";
@@ -38,15 +39,9 @@ const Home = () => {
   const [einviteBanner, setEinviteBanner] = useState(null);
   const [realWeddingData, setRealWeddingData] = useState(null);
   const [couplesSaysData, setCouplesSaysData] = useState(null);
-  const normalizeUrl = (u) => {
-    if (!u || typeof u !== "string") return null;
-    const cleaned = u.replace(/`/g, "").trim();
-    try {
-      return encodeURI(cleaned);
-    } catch {
-      return cleaned;
-    }
-  };
+  // CMS banner media follows the same three shapes as the rest of the home
+  // page (S3 URL, relative /uploads path, legacy origin).
+  const normalizeUrl = (u) => resolveMediaUrl(u);
   useEffect(() => {
     // These three are independent; awaiting them in series cost sequential
     // round trips (~5s on the trace) before any banner could render.
