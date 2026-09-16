@@ -58,7 +58,7 @@ jobs:
         run: |
           # 1) Upload new files except index.html. Old hashed assets stay,
           #    so visitors with the old page open still load their files.
-          rsync -az -e "$SSH" --exclude index.html \
+          rsync -az --chown=www:www -e "$SSH" --exclude index.html \
             --exclude .user.ini --exclude .well-known dist/ "$DEST"
           # 2) Upload index.html last so the new version goes live all at once.
-          rsync -az -e "$SSH" dist/index.html "$DEST"
+          rsync -az --chown=www:www -e "$SSH" dist/index.html "$DEST"
