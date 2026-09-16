@@ -1,10 +1,12 @@
 name: CI/CD
 
+# Pull requests into main or production only run the build as a check.
+# A push/merge into production builds and deploys to the aaPanel server.
 on:
   pull_request:
-    branches: [main]
+    branches: [main, production]
   push:
-    branches: [main]
+    branches: [production]
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -24,8 +26,9 @@ jobs:
 
       - run: npm ci
 
-      # .env is not in git. Every VITE_* variable or secret of the
-      # "production" environment is written into it for the build.
+      # .env is not in git. It is built from the ENV_FILE secret (a pasted
+      # copy of .env), if set, plus every VITE_* variable or secret of the
+      # "production" environment, which win over ENV_FILE on duplicates.
       - name: Write .env
         env:
           VARS_JSON: ${{ toJSON(vars) }}
@@ -34,8 +37,14 @@ jobs:
           node -e '
             const all = { ...JSON.parse(process.env.VARS_JSON), ...JSON.parse(process.env.SECRETS_JSON) };
             const keys = Object.keys(all).filter((k) => k.startsWith("VITE_")).sort();
-            require("fs").writeFileSync(".env", keys.map((k) => `${k}=${JSON.stringify(all[k])}`).join("\n") + "\n");
-            console.log(`Wrote ${keys.length} VITE_ keys:\n${keys.join("\n")}`);
+            if (!all.ENV_FILE && keys.length === 0) {
+              console.error("No env found: add VITE_* variables to the production environment or an ENV_FILE secret.");
+              process.exit(1);
+            }
+            const lines = keys.map((k) => `${k}=${JSON.stringify(all[k])}`);
+            require("fs").writeFileSync(".env", [all.ENV_FILE || "", ...lines].join("\n") + "\n");
+            console.log(`ENV_FILE secret: ${all.ENV_FILE ? "used" : "not set"}`);
+            console.log(`VITE_ variables/secrets: ${keys.length}\n${keys.join("\n")}`);
           '
 
       - run: npm run build
@@ -47,7 +56,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/production'
     runs-on: ubuntu-latest
     environment: production
     steps:
