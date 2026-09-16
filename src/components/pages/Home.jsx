@@ -102,12 +102,12 @@ const Home = () => {
           executed every one of them during initial load — swiper alone cost
           ~610ms of main-thread time before the user had scrolled a pixel. */}
       <Suspense fallback={null}>
-      <DeferUntilNearViewport minHeight={600}>
+      <DeferUntilNearViewport minHeight={600} stagger={0}>
       <PlanningToolsCTA />
       <MansoryImageSection />
       <VenueSlider />
       </DeferUntilNearViewport>
-      <DeferUntilNearViewport minHeight={500}>
+      <DeferUntilNearViewport minHeight={500} stagger={400}>
       <CtaPanel
         logo={normalizeUrl(einviteBanner?.logo) || logo}
         img={normalizeUrl(einviteBanner?.mainImage) || einviteImage}
@@ -156,7 +156,7 @@ const Home = () => {
         link="/matrimonial"
         btnName="Start Your Journey"
       /> */}
-      <DeferUntilNearViewport minHeight={600}>
+      <DeferUntilNearViewport minHeight={600} stagger={800}>
       <MainTestimonial
         heading={couplesSaysData?.heading}
         subHeading={couplesSaysData?.subHeading}
