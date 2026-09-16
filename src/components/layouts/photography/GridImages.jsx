@@ -11,28 +11,35 @@ const GridImages = ({ category, searchQuery, photos }) => {
     fetchTypesWithCategories();
   }, []);
   const { subcategory, city } = useParams();
+
+  const normalizeImageUrl = (rawUrl) => {
+    if (!rawUrl) return null;
+
+    const url = String(rawUrl).trim();
+    if (!url) return null;
+
+    if (url.startsWith("http://happywedz.com/")) {
+      return url.replace("http://happywedz.com", IMAGE_BASE_URL);
+    }
+    if (url.startsWith("https://happywedz.com/")) {
+      return url.replace("https://happywedz.com", IMAGE_BASE_URL);
+    }
+    if (url.startsWith("http")) {
+      return url;
+    }
+    return IMAGE_BASE_URL + url.replace(/^\/+/, "");
+  };
+
   const filteredImages = photos
     .map((img) => {
-      let url = img.images?.[0]?.trim();
-      let fallbackUrl = null;
+      const rawUrl =
+        Array.isArray(img.images) && img.images.length > 0
+          ? img.images[0]
+          : img.image_url || img.url || img.image;
 
-      if (url?.startsWith("http://happywedz.com/uploads/photography/")) {
-        url = url.replace("http://happywedz.com", IMAGE_BASE_URL);
-        // Extract filename and create fallback URL for blogs folder
-        const filename = url.split("/").pop();
-        fallbackUrl = `${IMAGE_BASE_URL}/uploads/blogs/${filename}`;
-      }
-      if (url?.startsWith("https://happywedz.com/uploads/photography/")) {
-        url = url.replace("https://happywedz.com", IMAGE_BASE_URL);
-        // Extract filename and create fallback URL for blogs folder
-        const filename = url.split("/").pop();
-        fallbackUrl = `${IMAGE_BASE_URL}/uploads/blogs/${filename}`;
-      }
-      if (url?.startsWith("https://happywedz.com/uploads/blogs/")) {
-        url = url.replace("https://happywedz.com", IMAGE_BASE_URL);
-      }
+      const url = normalizeImageUrl(rawUrl);
 
-      return { ...img, url, fallbackUrl };
+      return { ...img, url };
     })
     .filter((img) => {
       const matchesCategory =
@@ -115,12 +122,8 @@ const GridImages = ({ category, searchQuery, photos }) => {
                     className="card-img-top"
                     loading="lazy"
                     onError={(e) => {
-                      if (img.fallbackUrl && e.target.src !== img.fallbackUrl) {
-                        e.target.src = img.fallbackUrl;
-                      } else {
-                        e.target.src =
-                          "https://via.placeholder.com/300x200?text=No+Image";
-                      }
+                      e.target.src =
+                        "https://via.placeholder.com/300x200?text=No+Image";
                     }}
                   />
                   <div className="card-body p-2">
