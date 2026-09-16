@@ -13,6 +13,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
@@ -23,9 +24,19 @@ jobs:
 
       - run: npm ci
 
-      # .env is not in git; its full contents live in the ENV_FILE secret.
+      # .env is not in git. Every VITE_* variable or secret of the
+      # "production" environment is written into it for the build.
       - name: Write .env
-        run: echo "${{ secrets.ENV_FILE }}" > .env
+        env:
+          VARS_JSON: ${{ toJSON(vars) }}
+          SECRETS_JSON: ${{ toJSON(secrets) }}
+        run: |
+          node -e '
+            const all = { ...JSON.parse(process.env.VARS_JSON), ...JSON.parse(process.env.SECRETS_JSON) };
+            const keys = Object.keys(all).filter((k) => k.startsWith("VITE_")).sort();
+            require("fs").writeFileSync(".env", keys.map((k) => `${k}=${JSON.stringify(all[k])}`).join("\n") + "\n");
+            console.log(`Wrote ${keys.length} VITE_ keys:\n${keys.join("\n")}`);
+          '
 
       - run: npm run build
 
@@ -38,6 +49,7 @@ jobs:
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/download-artifact@v4
         with:
