@@ -1,0 +1,64 @@
+name: CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # .env is not in git; its full contents live in the ENV_FILE secret.
+      - name: Write .env
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload files
+        env:
+          SSH: ssh -p ${{ secrets.SSH_PORT }}
+          DEST: ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/
+        run: |
+          # 1) Upload new files except index.html. Old hashed assets stay,
+          #    so visitors with the old page open still load their files.
+          rsync -az -e "$SSH" --exclude index.html \
+            --exclude .user.ini --exclude .well-known dist/ "$DEST"
+          # 2) Upload index.html last so the new version goes live all at once.
+          rsync -az -e "$SSH" dist/index.html "$DEST"
