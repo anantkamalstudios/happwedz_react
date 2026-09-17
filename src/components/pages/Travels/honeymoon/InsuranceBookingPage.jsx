@@ -457,7 +457,7 @@ const InsuranceBookingPage = () => {
                     htmlFor="termsCheckbox"
                   >
                     I confirm that all passengers are Indian nationals between 0
-                    to 75 years of age, have authorised me to add Insurance, and
+                    to 80 years of age, have authorised me to add Insurance, and
                     agree to the{" "}
                     <a href="#" className="text-primary">
                       T&amp;C
@@ -589,14 +589,6 @@ const InsuranceBookingPage = () => {
                     <span>+ {formatPrice(bd.spGst)}</span>
                   </div>
                 )}
-                <div className="ins-breakdown-row">
-                  <span>TDS</span>
-                  <span>+ ₹0.00</span>
-                </div>
-                <div className="ins-breakdown-row ins-breakdown-net">
-                  <span>Net Price</span>
-                  <span>₹0.00</span>
-                </div>
               </div>
             </div>
           </div>
@@ -731,9 +723,7 @@ const InsuranceBookingPage = () => {
           color: #555;
           border-bottom: 1px solid #f0f0f0;
         }
-        .ins-breakdown-net {
-          font-weight: 700;
-          color: #111;
+        .ins-breakdown-row:last-child {
           border-bottom: none;
         }
         .ins-booking-success {
