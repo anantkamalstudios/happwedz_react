@@ -184,6 +184,9 @@ const EinviteHomePage = lazy(
 const EinviteCategoryPage = lazy(
   () => import("./components/pages/EinviteCategoryPage"),
 );
+const EinviteCardDetailPage = lazy(
+  () => import("./components/pages/EinviteCardDetailPage"),
+);
 const EinviteEditorPage = lazy(
   () => import("./components/pages/EinviteEditorPage"),
 );
@@ -670,6 +673,10 @@ function App() {
               <Route
                 path="/einvites/category/:category"
                 element={<EinviteCategoryPage />}
+              />
+              <Route
+                path="/einvites/card/:slug"
+                element={<EinviteCardDetailPage />}
               />
               <Route
                 path="/einvites/editor/:id"

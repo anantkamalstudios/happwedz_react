@@ -10,7 +10,39 @@ const getAuthHeaders = () => {
   };
 };
 
+const readJson = async (response, fallbackMessage) => {
+  let body = null;
+  try {
+    body = await response.json();
+  } catch {}
+  if (!response.ok) {
+    throw new Error(body?.message || fallbackMessage);
+  }
+  return body;
+};
+
 export const einviteApi = {
+  // Public catalogue of templates, with filters and per-type counts.
+  getTemplates: async ({ cardType, culture, theme, sort, search, page = 1, limit = 24 } = {}) => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (cardType) params.set("cardType", cardType);
+    if (culture) params.set("culture", culture);
+    if (theme) params.set("theme", theme);
+    if (sort) params.set("sort", sort);
+    if (search) params.set("search", search);
+    const response = await fetch(`${API_BASE_URL}/einvites/cards?${params.toString()}`);
+    return readJson(response, "Failed to load invitation designs");
+  },
+
+  // A template or a customer's copy, by id or slug.
+  getCard: async (idOrSlug) => {
+    const response = await fetch(
+      `${API_BASE_URL}/einvites/cards/${encodeURIComponent(idOrSlug)}`,
+    );
+    const body = await readJson(response, "Failed to load the invitation");
+    return body?.data || null;
+  },
+
   createInstance: async (payload) => {
     try {
       const response = await fetch(`${API_BASE_URL}/einvites/cards/instances`, {
