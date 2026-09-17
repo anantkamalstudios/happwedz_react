@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import axiosInstance from "../../../services/api/axiosInstance";
 import {
   Container,
@@ -27,7 +28,14 @@ import InstagramConnect from "./subVendors/InstagramConnect";
 import SubscriptionSettings from "./subscription/SubscriptionSettings";
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState("notifications");
+  // ?tab=integrations lets other pages (e.g. the Instagram page) open a section directly.
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => {
+    const requested = searchParams.get("tab");
+    return ["notifications", "billing", "integrations"].includes(requested)
+      ? requested
+      : "notifications";
+  });
   const [showSuccess, setShowSuccess] = useState(false);
   const { vendor, token } = useSelector((state) => state.vendorAuth || {});
   const [enquiryNotificationEnabled, setEnquiryNotificationEnabled] =

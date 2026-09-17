@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { FaGift, FaStore, FaEnvelope, FaStar, FaCog } from "react-icons/fa";
 import { LiaHomeSolid } from "react-icons/lia";
 import { FaRegStar } from "react-icons/fa";
-import { PiOfficeChairLight } from "react-icons/pi";
+import { PiInstagramLogoLight, PiOfficeChairLight } from "react-icons/pi";
 import { GoMail } from "react-icons/go";
 import { IoSettingsOutline } from "react-icons/io5";
 import { IoStorefrontOutline } from "react-icons/io5";
@@ -236,6 +236,13 @@ const Navbar = () => {
     }
 
     baseTabs.push({
+      id: "instagram",
+      slug: "vendor-instagram",
+      label: "Instagram",
+      Icon: PiInstagramLogoLight,
+    });
+
+    baseTabs.push({
       id: "settings",
       slug: "vendor-setting",
       label: "Settings",
@@ -302,16 +309,25 @@ const Navbar = () => {
                 onClick={() => handleTabClick(tab)}
               >
                 <div style={{ position: "relative" }}>
-                  <img
-                    src={tab.icon}
-                    alt={tab.label}
-                    style={{
-                      width: isMobile ? 24 : 30,
-                      height: isMobile ? 24 : 30,
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
+                  {tab.Icon ? (
+                    <tab.Icon
+                      size={isMobile ? 24 : 30}
+                      color="#2c3e50"
+                      aria-hidden="true"
+                      style={{ display: "block" }}
+                    />
+                  ) : (
+                    <img
+                      src={tab.icon}
+                      alt={tab.label}
+                      style={{
+                        width: isMobile ? 24 : 30,
+                        height: isMobile ? 24 : 30,
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                    />
+                  )}
                   {tab.id === "enquiries" &&
                     showEnquiryBadge &&
                     unreadEnquiryCount > 0 && (

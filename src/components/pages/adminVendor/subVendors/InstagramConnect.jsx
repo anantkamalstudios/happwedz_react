@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { Button, Spinner } from "react-bootstrap";
 import { FaInstagram } from "react-icons/fa6";
 import instagramApi from "../../../../services/api/instagramApi";
 
 export default function InstagramConnect() {
   const { vendor } = useSelector((state) => state.vendorAuth || {});
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [connection, setConnection] = useState(null);
@@ -136,14 +138,24 @@ export default function InstagramConnect() {
               </div>
             </div>
           </div>
-          <Button
-            variant="outline-danger"
-            size="sm"
-            style={{ flex: "0 0 auto", width: "auto" }}
-            onClick={handleDisconnect}
-          >
-            Disconnect
-          </Button>
+          <div className="d-flex flex-wrap gap-2">
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              style={{ flex: "0 0 auto", width: "auto" }}
+              onClick={() => navigate("/vendor-dashboard/vendor-instagram?tab=posts")}
+            >
+              View posts &amp; stories →
+            </Button>
+            <Button
+              variant="outline-danger"
+              size="sm"
+              style={{ flex: "0 0 auto", width: "auto" }}
+              onClick={handleDisconnect}
+            >
+              Disconnect
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 border rounded p-3">

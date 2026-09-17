@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { API_BASE_URL, IMAGE_BASE_URL } from "../../config/constants";
 import { Container, Row, Col, Button, Modal } from "react-bootstrap";
-import { FaLocationDot } from "react-icons/fa6";
+import { FaInstagram, FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import { useNavigate, useParams } from "react-router-dom";
@@ -8322,6 +8322,20 @@ const Detailed = () => {
                         ({venueData.attributes?.review_count || 0} reviews)
                       </span>
                     </div>
+
+                    {venueData?.instagram_username && (
+                      <a
+                        href={`https://www.instagram.com/${encodeURIComponent(venueData.instagram_username)}/`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="d-inline-flex align-items-center gap-1 text-decoration-none fw-semibold fs-14"
+                        style={{ color: "#C13584" }}
+                        aria-label={`Open @${venueData.instagram_username} on Instagram`}
+                      >
+                        <FaInstagram size={16} />
+                        Instagram
+                      </a>
+                    )}
                   </div>
                 </div>
 
