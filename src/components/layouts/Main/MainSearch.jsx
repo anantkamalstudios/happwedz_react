@@ -68,7 +68,9 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
   useEffect(() => {
     const fetchHeroInfo = async () => {
       try {
-        const response = await axios.get("/api/hero-sections");
+        // Absolute: a relative "/api/..." hits happywedz.com itself, which
+        // answers with index.html instead of the hero sections.
+        const response = await axios.get(`${API_BASE_URL}/hero-sections`);
         const dataInfo = response.data;
 
         const pathSegments = location.pathname.split("/").filter(Boolean);
@@ -781,7 +783,9 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
                   className="w-100 h-100"
                   style={{ objectFit: "cover" }}
                   onError={(e) => {
-                    e.currentTarget.src = "logo-no-bg.png";
+                    // Root-relative, or on /vendors/x/y it resolves under that path.
+                    if (e.currentTarget.src.endsWith("/logo-no-bg.png")) return;
+                    e.currentTarget.src = "/logo-no-bg.png";
                     e.currentTarget.style.objectFit = "cover";
                   }}
                 />
