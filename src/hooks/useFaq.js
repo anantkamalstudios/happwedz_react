@@ -16,7 +16,8 @@ export const useFaqFrontend = (navbarId = null) => {
       let data = response.data.faqs || [];
 
       if (navbarId) {
-        data = data.filter((faq) => faq.navbarId === parseInt(navbarId));
+        // The API returns the column name (navbar_id).
+        data = data.filter((faq) => Number(faq.navbar_id ?? faq.navbarId) === parseInt(navbarId, 10));
       }
 
       setFaqs(data);
