@@ -1111,3 +1111,53 @@
     padding-left: 26px;
   }
 }
+
+/* Video invitations */
+.eiv-video-panel {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--eiv-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.eiv-video-error {
+  margin-bottom: 8px;
+  color: #b3261e;
+  font-size: 14px;
+}
+
+.eiv-progress {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #f3dbe7;
+}
+
+.eiv-progress > div {
+  width: 40%;
+  height: 100%;
+  background: var(--eiv-primary);
+  animation: eiv-progress 1.2s ease-in-out infinite;
+}
+
+@keyframes eiv-progress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+.eiv-video-stage {
+  max-width: 360px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+}
+
+.eiv-tile-badge.is-video {
+  background: var(--eiv-primary);
+}
+
+.eiv-stage-video {
+  max-width: 340px;
+}

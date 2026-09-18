@@ -5,19 +5,24 @@ import Swal from "sweetalert2";
 import { FiEdit2, FiSend, FiTrash2 } from "react-icons/fi";
 import { einviteApi } from "../../../services/api/einviteApi";
 import EinvitePage from "./design/EinvitePage";
-import { cardFonts, cardSetSummary, getCardPages, loadFonts } from "./design/einviteDesign";
+import { cardFonts, cardSetSummary, getCardPages, isVideoCard, loadFonts } from "./design/einviteDesign";
 import { formatDate } from "./share/shareUtils";
 import "./einviteStudio.css";
 
 const MyCardTile = ({ card, onDelete }) => {
   const pages = getCardPages(card);
-  const summary = pages.length > 1 ? cardSetSummary(pages) : "";
+  const isVideo = isVideoCard(card);
+  const summary = isVideo ? "10-second video" : pages.length > 1 ? cardSetSummary(pages) : "";
 
   return (
     <div className="eiv-my-card">
       <Link to={`/einvites/editor/${card.id}`} className="eiv-my-card-media" aria-label={`Edit ${card.name}`}>
         <EinvitePage page={pages[0]} style={{ background: "#fff" }} />
-        {pages.length > 1 && <span className="eiv-tile-badge">{pages.length} cards</span>}
+        {isVideo ? (
+          <span className="eiv-tile-badge is-video">{"▶︎"} Video</span>
+        ) : (
+          pages.length > 1 && <span className="eiv-tile-badge">{pages.length} cards</span>
+        )}
       </Link>
       <div className="eiv-tile-name">{card.name}</div>
       <div className="eiv-tile-events">

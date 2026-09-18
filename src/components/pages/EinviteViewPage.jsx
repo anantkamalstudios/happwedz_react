@@ -8,9 +8,11 @@ import {
   cardFonts,
   cardPath,
   getCardPages,
+  isVideoCard,
   loadFonts,
   pageTitle,
 } from "../layouts/einvites/design/einviteDesign";
+import EinviteVideoPlayer from "../layouts/einvites/design/EinviteVideoPlayer";
 import "../layouts/einvites/einviteStudio.css";
 
 // A guest's last reply is kept on their device so they can see and change it.
@@ -215,6 +217,9 @@ const EinviteViewPage = () => {
   }
 
   const guestName = link?.guestName;
+  const isVideo = isVideoCard(card);
+  // A video is one invitation, so the RSVP doesn't ask which of its scenes to attend.
+  const rsvpPages = isVideo ? pages.slice(0, 1) : pages;
   const answerText = { yes: "You're coming", maybe: "You might come", no: "You can't make it" };
 
   return (
@@ -224,12 +229,18 @@ const EinviteViewPage = () => {
           <div className="text-center mb-4">
             <p className="eiv-eyebrow mb-2">{guestName ? `Dear ${guestName}` : "You're invited"}</p>
             <h1 className="eiv-info-title mb-1">{card.name || "Wedding Invitation"}</h1>
-            {pages.length > 1 && (
+            {!isVideo && pages.length > 1 && (
               <p className="eiv-status mb-0">{pages.map((page, index) => pageTitle(page, index)).join(" · ")}</p>
             )}
           </div>
 
-          {pages.map((page, index) => (
+          {isVideo && (
+            <div className="eiv-video-stage mb-4">
+              <EinviteVideoPlayer video={card.video} pages={pages} />
+            </div>
+          )}
+
+          {!isVideo && pages.map((page, index) => (
             <section key={page.id} className="mb-4" aria-label={pageTitle(page, index)}>
               {pages.length > 1 && <h2 className="eiv-invite-event">{pageTitle(page, index)}</h2>}
               <EinvitePage page={page} style={{ boxShadow: "0 16px 40px rgba(0,0,0,0.16)", borderRadius: 4 }} />
@@ -243,8 +254,8 @@ const EinviteViewPage = () => {
                 <h2 className="eiv-info-title mt-2 mb-1">Thank you{reply.guestName ? `, ${reply.guestName}` : ""}!</h2>
                 <p className="eiv-status mb-3">
                   {answerText[reply.attending] || "Your reply was sent"}
-                  {reply.attending !== "no" && pages.length > 1 && reply.events?.length > 0 &&
-                    ` · ${pages
+                  {reply.attending !== "no" && rsvpPages.length > 1 && reply.events?.length > 0 &&
+                    ` · ${rsvpPages
                       .map((page, index) => (reply.events.includes(page.id) ? pageTitle(page, index) : null))
                       .filter(Boolean)
                       .join(", ")}`}
@@ -262,7 +273,7 @@ const EinviteViewPage = () => {
                 </div>
                 {submitError && <div className="alert alert-danger py-2">{submitError}</div>}
                 <RsvpForm
-                  pages={pages}
+                  pages={rsvpPages}
                   initial={reply || { guestName: guestName || "" }}
                   onSubmit={submitRsvp}
                   submitting={submitting}

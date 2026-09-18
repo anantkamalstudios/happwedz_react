@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CARD_HEIGHT, CARD_WIDTH, fontStack, loadFonts, pageFonts } from "./einviteDesign";
+import { CARD_WIDTH, fontStack, loadFonts, pageAspect, pageFonts } from "./einviteDesign";
 
 export const fieldTextStyle = (field, scale) => ({
   position: "absolute",
@@ -22,7 +22,8 @@ export const fieldTextStyle = (field, scale) => ({
 
 // Draws one card page at whatever width its container gives it. Every size in
 // the design is scaled from the CARD_WIDTH-wide design space, so a thumbnail
-// and the full editor show exactly the same layout.
+// and the full editor show exactly the same layout. Video scenes are taller
+// (9:16); `underlay` is drawn behind the text, e.g. a video frame.
 const EinvitePage = ({
   page,
   className = "",
@@ -32,6 +33,7 @@ const EinvitePage = ({
   onBackgroundPointerDown,
   showOutlines = false,
   fieldCursor = "move",
+  underlay,
   children,
 }) => {
   const containerRef = useRef(null);
@@ -61,7 +63,7 @@ const EinvitePage = ({
       style={{
         position: "relative",
         width: "100%",
-        aspectRatio: `${CARD_WIDTH} / ${CARD_HEIGHT}`,
+        aspectRatio: `1 / ${pageAspect(page)}`,
         overflow: "hidden",
         background: "#f3efea",
         userSelect: "none",
@@ -69,6 +71,7 @@ const EinvitePage = ({
       }}
       onPointerDown={onBackgroundPointerDown}
     >
+      {underlay}
       {page?.backgroundUrl && failedBackground !== page.backgroundUrl && (
         <img
           src={page.backgroundUrl}

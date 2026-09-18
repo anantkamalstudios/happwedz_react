@@ -139,13 +139,14 @@ const ShareLinksTab = ({ card, pages }) => {
   return (
     <div>
       <p className="eiv-status">
-        Send different links to different guests. Each link shows only the cards you pick, and replies
-        come back to your RSVP list.
+        {pages.length > 1
+          ? "Send different links to different guests. Each link shows only the cards you pick, and replies come back to your RSVP list."
+          : "Send a separate link to each group of guests to see who viewed and replied through it."}
       </p>
 
       <LinkRow
         title="Everyone"
-        subtitle="All cards · anyone with this link"
+        subtitle={pages.length > 1 ? "All cards · anyone with this link" : "Anyone with this link"}
         url={cardViewUrl(card.id)}
         cardName={card.name}
       />
@@ -159,7 +160,7 @@ const ShareLinksTab = ({ card, pages }) => {
           <div key={link.id}>
             <LinkRow
               title={link.label}
-              subtitle={cardNames(pages, link.pageIds)}
+              subtitle={pages.length > 1 ? cardNames(pages, link.pageIds) : null}
               stats={`${link.viewCount || 0} ${link.viewCount === 1 ? "view" : "views"} · ${link.rsvpCount || 0} ${link.rsvpCount === 1 ? "reply" : "replies"}`}
               url={shareLinkUrl(link.token)}
               cardName={card.name}

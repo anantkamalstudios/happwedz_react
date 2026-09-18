@@ -55,11 +55,39 @@ export const EVENT_NAMES = [
   "Reception",
 ];
 
-const GENERIC_PAGE_NAME = /^(page|card)\s*\d+$/i;
+const GENERIC_PAGE_NAME = /^(page|card|scene)\s*\d+$/i;
 
-// "Haldi", or "Card 2" for pages that were never given an event name.
+// "Haldi", or "Card 2" ("Scene 2" in a video) for pages never given a name.
 export const pageTitle = (page, index) =>
-  page?.name && !GENERIC_PAGE_NAME.test(page.name.trim()) ? page.name.trim() : `Card ${index + 1}`;
+  page?.name && !GENERIC_PAGE_NAME.test(page.name.trim())
+    ? page.name.trim()
+    : `${isScene(page) ? "Scene" : "Card"} ${index + 1}`;
+
+// Video invitations are portrait (9:16) and last a fixed time, split into up
+// to three scenes. A scene is a page with start/end seconds; its background is
+// a still frame from the video.
+export const VIDEO_DURATION = 10;
+export const VIDEO_ASPECT = 16 / 9; // height ÷ width
+export const MAX_VIDEO_SCENES = 3;
+const CARD_ASPECT = 1.4; // CARD_HEIGHT ÷ CARD_WIDTH
+
+export const isVideoCard = (card) => card?.cardType === "video";
+export const isScene = (page) => typeof page?.start === "number";
+export const pageAspect = (page) => page?.aspect || (isScene(page) ? VIDEO_ASPECT : CARD_ASPECT);
+
+// Splits the video evenly between the scenes, e.g. 0–3.3, 3.3–6.7, 6.7–10.
+export const evenSceneTimes = (count) =>
+  Array.from({ length: count }, (_, index) => ({
+    start: Math.round(((VIDEO_DURATION * index) / count) * 10) / 10,
+    end: Math.round(((VIDEO_DURATION * (index + 1)) / count) * 10) / 10,
+  }));
+
+// 0 → 1 → 0 across a scene, with a short fade at each end (as in the rendered MP4).
+export const sceneOpacity = (page, time, fade = 0.4) => {
+  if (time < page.start || time >= page.end) return 0;
+  const edge = Math.min(fade, (page.end - page.start) / 3);
+  return Math.min(1, (time - page.start) / edge, (page.end - time) / edge);
+};
 
 // "Haldi · Sangeet · Wedding" for a set, or "" when the cards have no event names.
 export const cardSetSummary = (pages) => {
@@ -387,11 +415,17 @@ export const getCardPages = (card) => {
   if (!card) return [];
 
   if (Array.isArray(card.pages) && card.pages.length > 0) {
+    const video = isVideoCard(card);
     return card.pages.map((page, index) => ({
       id: page.id || `page_${index + 1}`,
       name: page.name || `Page ${index + 1}`,
       backgroundUrl: page.backgroundUrl || "",
       fields: parseFields(page.fields).filter(isTextField).map(normalizeField),
+      ...(video && {
+        aspect: VIDEO_ASPECT,
+        start: Number(page.start) || 0,
+        end: Number(page.end) || VIDEO_DURATION,
+      }),
     }));
   }
 

@@ -8,6 +8,7 @@ import {
   FiChevronRight,
   FiCopy,
   FiDownload,
+  FiFilm,
   FiShare2,
   FiTrash2,
 } from "react-icons/fi";
@@ -17,9 +18,11 @@ import {
   cardFonts,
   cardPath,
   getCardPages,
+  isVideoCard,
   loadFonts,
   pageTitle,
 } from "../layouts/einvites/design/einviteDesign";
+import EinviteVideoPlayer from "../layouts/einvites/design/EinviteVideoPlayer";
 import { downloadCardPages } from "../layouts/einvites/design/exportCard";
 import "../layouts/einvites/einviteStudio.css";
 
@@ -42,6 +45,7 @@ const EinviteEditorPage = () => {
   const [saving, setSaving] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
 
   const fieldRefs = useRef({});
   const loadedIdRef = useRef(null);
@@ -262,6 +266,9 @@ const EinviteEditorPage = () => {
     );
   }
 
+  // Video scenes are fixed by the design: the couple edits their text only.
+  const isVideo = isVideoCard(card);
+
   const status = saving
     ? "Saving..."
     : dirty
@@ -294,6 +301,12 @@ const EinviteEditorPage = () => {
           />
           <span className="eiv-status">{status}</span>
           <div className="d-flex flex-wrap gap-2 ms-auto">
+            {isVideo ? (
+              <button type="button" className="eiv-outline-btn" onClick={() => setPreviewing((on) => !on)}>
+                <FiFilm size={16} /> {previewing ? "Edit scenes" : "Play video"}
+              </button>
+            ) : (
+            <>
             <button type="button" className="eiv-outline-btn" onClick={() => download(false)} disabled={downloading}>
               <FiDownload size={16} />
               {downloading ? "Preparing..." : pages.length > 1 ? "Download card" : "Download"}
@@ -302,6 +315,8 @@ const EinviteEditorPage = () => {
               <button type="button" className="eiv-outline-btn" onClick={() => download(true)} disabled={downloading}>
                 All cards
               </button>
+            )}
+            </>
             )}
             <button
               type="button"
@@ -318,7 +333,8 @@ const EinviteEditorPage = () => {
               onClick={saveAndShare}
               disabled={saving}
             >
-              <FiShare2 size={16} /> Save &amp; share
+              {isVideo ? <FiFilm size={16} /> : <FiShare2 size={16} />}
+              {isVideo ? "Save & create video" : "Save & share"}
             </button>
           </div>
         </div>
@@ -354,13 +370,17 @@ const EinviteEditorPage = () => {
                   <FiChevronLeft size={22} />
                 </button>
               )}
-              <div className="eiv-stage-card">
-                <EinvitePage
-                  page={page}
-                  selectedFieldId={focusedFieldId}
-                  onFieldPointerDown={focusField}
-                  fieldCursor="text"
-                />
+              <div className={isVideo ? "eiv-stage-card eiv-stage-video" : "eiv-stage-card"}>
+                {isVideo && previewing ? (
+                  <EinviteVideoPlayer video={card.video} pages={pages} />
+                ) : (
+                  <EinvitePage
+                    page={page}
+                    selectedFieldId={focusedFieldId}
+                    onFieldPointerDown={focusField}
+                    fieldCursor="text"
+                  />
+                )}
               </div>
               {pages.length > 1 && (
                 <button type="button" className="eiv-arrow" aria-label="Next card"
@@ -369,17 +389,26 @@ const EinviteEditorPage = () => {
                 </button>
               )}
             </div>
-            <p className="eiv-status text-center mt-3 mb-0">Tap any text on the card to edit it.</p>
+            <p className="eiv-status text-center mt-3 mb-0">
+              {isVideo
+                ? previewing
+                  ? "This is how your video will look."
+                  : "Tap any text in the scene to edit it. Press Play video to watch it."
+                : "Tap any text on the card to edit it."}
+            </p>
           </div>
 
           <div className="col-lg-5 order-3">
             <div className="eiv-panel">
               <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
                 <h2 className="eiv-panel-title mb-0">
-                  {pages.length > 1
+                  {isVideo
+                    ? `${pageTitle(page, pageIndex)} · ${page.start}–${page.end} s`
+                    : pages.length > 1
                     ? `${pageTitle(page, pageIndex)} · card ${pageIndex + 1} of ${pages.length}`
                     : "Your details"}
                 </h2>
+                {!isVideo && (
                 <div className="d-flex gap-1 flex-shrink-0">
                   <button type="button" className="eiv-icon-btn" title="Duplicate this card" aria-label="Duplicate this card" onClick={duplicatePage}>
                     <FiCopy size={16} />
@@ -390,9 +419,11 @@ const EinviteEditorPage = () => {
                     </button>
                   )}
                 </div>
+                )}
               </div>
               <p className="eiv-status mb-2">Change the text below. The card updates as you type.</p>
 
+              {!isVideo && (
               <div className="eiv-field">
                 <label htmlFor="eiv-card-name">Card name (event)</label>
                 <input
@@ -404,6 +435,7 @@ const EinviteEditorPage = () => {
                   onChange={(e) => renamePage(e.target.value)}
                 />
               </div>
+              )}
 
               {page.fields.length === 0 ? (
                 <p className="eiv-status mb-0">This page has no text to edit.</p>

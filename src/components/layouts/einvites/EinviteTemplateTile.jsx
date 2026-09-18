@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import EinvitePage from "./design/EinvitePage";
-import { cardPath, cardSetSummary, getCardPages } from "./design/einviteDesign";
+import { cardPath, cardSetSummary, getCardPages, isVideoCard } from "./design/einviteDesign";
 import "./einviteStudio.css";
 
 // Catalogue tile. Cards from the old editor are always drawn live because their
@@ -10,6 +10,7 @@ import "./einviteStudio.css";
 const EinviteTemplateTile = ({ card }) => {
   const pages = useMemo(() => getCardPages(card), [card]);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
+  const isVideo = isVideoCard(card);
   const useThumbnail = Boolean(card.thumbnailUrl) && Number(card.designVersion) >= 2 && !thumbnailFailed;
 
   return (
@@ -25,10 +26,14 @@ const EinviteTemplateTile = ({ card }) => {
         ) : (
           <EinvitePage page={pages[0]} style={{ background: "#fff" }} />
         )}
-        {pages.length > 1 && <span className="eiv-tile-badge">{pages.length} cards</span>}
+        {isVideo ? (
+          <span className="eiv-tile-badge is-video">{"▶︎"} Video</span>
+        ) : (
+          pages.length > 1 && <span className="eiv-tile-badge">{pages.length} cards</span>
+        )}
       </div>
       <div className="eiv-tile-name">{card.name}</div>
-      {pages.length > 1 && cardSetSummary(pages) && (
+      {!isVideo && pages.length > 1 && cardSetSummary(pages) && (
         <div className="eiv-tile-events">{cardSetSummary(pages)}</div>
       )}
     </Link>

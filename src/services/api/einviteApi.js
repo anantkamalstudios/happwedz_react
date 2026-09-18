@@ -49,6 +49,22 @@ export const einviteApi = {
     request(`/cards/${id}/send-emails`, { method: "POST", body: { guestIds, pageIds, message }, fallbackMessage: "Failed to send the emails" }),
   getRsvps: (id) => request(`/cards/${id}/rsvps`, { fallbackMessage: "Failed to load RSVPs" }),
 
+  // ----- Video invitations (owner only) -----
+  // `overlays` are PNG blobs of each scene's text, in scene order.
+  startVideoRender: async (id, overlays) => {
+    const form = new FormData();
+    overlays.forEach((blob, index) => form.append("overlays", blob, `scene-${index + 1}.png`));
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/einvites/cards/${id}/render`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    return (await readJson(response, "Failed to start creating the video"))?.data;
+  },
+  getVideoRender: async (id) =>
+    (await request(`/cards/${id}/render`, { fallbackMessage: "Failed to check the video" }))?.data,
+
   // ----- Guests (no login) -----
   getInvite: async (token) =>
     (await request(`/invite/${encodeURIComponent(token)}`, { fallbackMessage: "This invitation could not be found" }))?.data,

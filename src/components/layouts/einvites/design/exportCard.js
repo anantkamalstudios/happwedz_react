@@ -1,4 +1,4 @@
-import { CARD_HEIGHT, CARD_WIDTH, fontStack, loadFonts, pageFonts } from "./einviteDesign";
+import { CARD_WIDTH, fontStack, loadFonts, pageAspect, pageFonts } from "./einviteDesign";
 
 const loadImage = (src) =>
   new Promise((resolve, reject) => {
@@ -59,9 +59,10 @@ const drawField = (ctx, field, scale, width, height) => {
   });
 };
 
-export const renderPageToCanvas = async (page, outputWidth = CARD_WIDTH) => {
+// `transparent` draws only the text (the layers laid over a video).
+export const renderPageToCanvas = async (page, outputWidth = CARD_WIDTH, { transparent = false } = {}) => {
   const width = Math.round(outputWidth);
-  const height = Math.round((outputWidth * CARD_HEIGHT) / CARD_WIDTH);
+  const height = Math.round(outputWidth * pageAspect(page));
   const scale = width / CARD_WIDTH;
 
   await loadFonts(pageFonts(page));
@@ -71,9 +72,11 @@ export const renderPageToCanvas = async (page, outputWidth = CARD_WIDTH) => {
   canvas.height = height;
   const ctx = canvas.getContext("2d");
 
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, width, height);
-  if (page.backgroundUrl) {
+  if (!transparent) {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+  }
+  if (page.backgroundUrl && !transparent) {
     const background = await loadImage(page.backgroundUrl);
     ctx.drawImage(background, 0, 0, width, height);
   }
@@ -115,4 +118,20 @@ export const downloadCardPages = async (cardName, pages, pageIndexes) => {
     const suffix = pages.length > 1 ? `-page-${index + 1}` : "";
     await saveCanvas(canvas, `${slug(cardName)}${suffix}.png`);
   }
+};
+
+const canvasBlob = (canvas) =>
+  new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Could not create the image"))), "image/png");
+  });
+
+// One transparent 720×1280 PNG of each scene's text, for the server to lay
+// over the video.
+export const renderVideoOverlays = async (pages) => {
+  const blobs = [];
+  for (const page of pages) {
+    const canvas = await renderPageToCanvas(page, 720, { transparent: true });
+    blobs.push(await canvasBlob(canvas));
+  }
+  return blobs;
 };

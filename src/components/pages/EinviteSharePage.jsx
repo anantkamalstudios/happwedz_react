@@ -9,10 +9,13 @@ import {
   cardFonts,
   cardPath,
   getCardPages,
+  isVideoCard,
   loadFonts,
   pageTitle,
 } from "../layouts/einvites/design/einviteDesign";
 import { downloadCardPages } from "../layouts/einvites/design/exportCard";
+import EinviteVideoPlayer from "../layouts/einvites/design/EinviteVideoPlayer";
+import VideoRenderPanel from "../layouts/einvites/share/VideoRenderPanel";
 import ShareLinksTab from "../layouts/einvites/share/ShareLinksTab";
 import SendToGuestsTab from "../layouts/einvites/share/SendToGuestsTab";
 import RsvpTab from "../layouts/einvites/share/RsvpTab";
@@ -123,6 +126,9 @@ const EinviteSharePage = () => {
   }
 
   const page = pages[Math.min(pageIndex, pages.length - 1)];
+  // A video is shared as one piece: links and RSVPs don't pick between its scenes.
+  const isVideo = isVideoCard(card);
+  const sharePages = isVideo ? pages.slice(0, 1) : pages;
 
   return (
     <div className="eiv">
@@ -138,9 +144,11 @@ const EinviteSharePage = () => {
             <Link className="eiv-outline-btn" to={`/einvites/editor/${card.id}`}>
               <FiEdit2 /> Edit
             </Link>
-            <button type="button" className="eiv-outline-btn" onClick={downloadAll} disabled={downloading}>
-              <FiDownload /> {downloading ? "Preparing..." : "Download"}
-            </button>
+            {!isVideo && (
+              <button type="button" className="eiv-outline-btn" onClick={downloadAll} disabled={downloading}>
+                <FiDownload /> {downloading ? "Preparing..." : "Download"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -148,9 +156,18 @@ const EinviteSharePage = () => {
           <div className="col-lg-4">
             <h1 className="eiv-info-title mb-1">{card.name}</h1>
             <p className="eiv-status mb-3">
-              {pages.length} {pages.length === 1 ? "card" : "cards"}
-              {pages.length > 1 && ` · ${pageTitle(page, pageIndex)}`}
+              {isVideo
+                ? "10-second video invitation"
+                : `${pages.length} ${pages.length === 1 ? "card" : "cards"}${pages.length > 1 ? ` · ${pageTitle(page, pageIndex)}` : ""}`}
             </p>
+            {isVideo ? (
+              <>
+                <div className="eiv-video-stage">
+                  <EinviteVideoPlayer video={card.video} pages={pages} />
+                </div>
+                <VideoRenderPanel card={card} pages={pages} />
+              </>
+            ) : (
             <div className="eiv-stage">
               {pages.length > 1 && (
                 <button type="button" className="eiv-arrow" aria-label="Previous card"
@@ -168,6 +185,7 @@ const EinviteSharePage = () => {
                 </button>
               )}
             </div>
+            )}
           </div>
 
           <div className="col-lg-8">
@@ -188,9 +206,9 @@ const EinviteSharePage = () => {
                 ))}
               </div>
 
-              {tab === "links" && <ShareLinksTab card={card} pages={pages} />}
-              {tab === "guests" && <SendToGuestsTab card={card} pages={pages} userId={currentUserId} />}
-              {tab === "rsvps" && <RsvpTab card={card} pages={pages} onCount={setRsvpCount} />}
+              {tab === "links" && <ShareLinksTab card={card} pages={sharePages} />}
+              {tab === "guests" && <SendToGuestsTab card={card} pages={sharePages} userId={currentUserId} />}
+              {tab === "rsvps" && <RsvpTab card={card} pages={sharePages} onCount={setRsvpCount} />}
             </div>
           </div>
         </div>

@@ -12,9 +12,11 @@ import {
   cardFonts,
   cardSetSummary,
   getCardPages,
+  isVideoCard,
   loadFonts,
   pageTitle,
 } from "../layouts/einvites/design/einviteDesign";
+import EinviteVideoPlayer from "../layouts/einvites/design/EinviteVideoPlayer";
 import "../layouts/einvites/einviteStudio.css";
 
 const EinviteCardDetailPage = () => {
@@ -120,9 +122,11 @@ const EinviteCardDetailPage = () => {
     );
   }
 
+  const isVideo = isVideoCard(card);
+
   const cta = (
     <button type="button" className="eiv-primary-btn" onClick={customise}>
-      Customise the card
+      {isVideo ? "Customise the video" : "Customise the card"}
     </button>
   );
 
@@ -148,6 +152,12 @@ const EinviteCardDetailPage = () => {
           <div className="col-lg-7">
             <h1 className="eiv-card-title">{card.name}</h1>
 
+            {isVideo ? (
+              <div className="eiv-video-stage">
+                <EinviteVideoPlayer video={card.video} pages={pages} />
+              </div>
+            ) : (
+            <>
             {pages.length > 1 && (
               <div className="eiv-page-pills" role="tablist" aria-label="Cards in this set">
                 {pages.map((page, index) => (
@@ -194,6 +204,8 @@ const EinviteCardDetailPage = () => {
                 ))}
               </div>
             )}
+            </>
+            )}
           </div>
 
           <div className="col-lg-5">
@@ -201,21 +213,31 @@ const EinviteCardDetailPage = () => {
               <span className="eiv-eyebrow">{typeInfo.title}</span>
               <h2 className="eiv-info-title mt-2 mb-3">{card.name}</h2>
               <div className="d-flex flex-wrap gap-2">
-                <span className="eiv-chip">{pages.length} {pages.length === 1 ? "card" : "cards"}</span>
+                <span className="eiv-chip">
+                  {isVideo ? "10-second video" : `${pages.length} ${pages.length === 1 ? "card" : "cards"}`}
+                </span>
                 {card.culture && <span className="eiv-chip">{card.culture}</span>}
                 {card.theme && <span className="eiv-chip">{card.theme}</span>}
               </div>
-              {pages.length > 1 && cardSetSummary(pages) && (
+              {!isVideo && pages.length > 1 && cardSetSummary(pages) && (
                 <p className="eiv-status mt-3 mb-0">
                   <strong>Includes:</strong> {cardSetSummary(pages)}
                 </p>
               )}
+              {isVideo ? (
+              <ul className="eiv-points">
+                <li><FiCheck size={16} /> Add your names, date and venue to each scene</li>
+                <li><FiCheck size={16} /> Get a 10-second HD video (MP4) with music</li>
+                <li><FiCheck size={16} /> Send it on WhatsApp or share a link and collect RSVPs</li>
+              </ul>
+              ) : (
               <ul className="eiv-points">
                 <li><FiCheck size={16} /> Add your names, dates and venue on every card</li>
                 <li><FiCheck size={16} /> Elegant wedding fonts, already laid out for you</li>
                 <li><FiCheck size={16} /> Keep only the functions you need, and choose which guests see which cards</li>
                 <li><FiCheck size={16} /> Share one link, collect RSVPs, or download in HD</li>
               </ul>
+              )}
               <div className="d-none d-lg-block">{cta}</div>
             </div>
           </div>
