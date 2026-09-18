@@ -49,6 +49,9 @@ const EinviteEditorPage = () => {
 
   const fieldRefs = useRef({});
   const loadedIdRef = useRef(null);
+  const stageRef = useRef(null);
+  // Where each text box was when the invitation opened, for "Reset position".
+  const originalPositionsRef = useRef({});
 
   useEffect(() => {
     // After the first save of a template the URL moves to the new copy's id;
@@ -73,7 +76,11 @@ const EinviteEditorPage = () => {
         }
         loadedIdRef.current = data.id;
         setCard(data);
-        setPages(getCardPages(data));
+        const loadedPages = getCardPages(data);
+        originalPositionsRef.current = Object.fromEntries(
+          loadedPages.flatMap((p) => p.fields.map((f) => [`${p.id}:${f.id}`, { x: f.x, y: f.y }]))
+        );
+        setPages(loadedPages);
         setName(data.name || "");
         setPageIndex(0);
         setFocusedFieldId(null);
@@ -130,6 +137,48 @@ const EinviteEditorPage = () => {
       input.focus({ preventScroll: true });
       input.scrollIntoView({ behavior: "smooth", block: "center" });
     }
+  };
+
+  // Tapping a text box edits it; dragging it moves it. A small threshold keeps
+  // a slightly shaky tap from nudging the text.
+  const startFieldPointer = (fieldId, event) => {
+    const container = stageRef.current?.firstElementChild;
+    const field = page?.fields.find((f) => f.id === fieldId);
+    if (!container || !field) return;
+    const rect = container.getBoundingClientRect();
+    const start = { pointerX: event.clientX, pointerY: event.clientY, x: field.x, y: field.y };
+    let moved = false;
+    setFocusedFieldId(fieldId);
+
+    const onMove = (moveEvent) => {
+      const dx = moveEvent.clientX - start.pointerX;
+      const dy = moveEvent.clientY - start.pointerY;
+      if (!moved && Math.hypot(dx, dy) < 6) return;
+      moved = true;
+      let x = start.x + dx / rect.width;
+      const y = start.y + dy / rect.height;
+      // Snap centred text boxes back to the middle.
+      if (field.width && Math.abs(x + field.width / 2 - 0.5) < 0.012) x = 0.5 - field.width / 2;
+      updateField(fieldId, {
+        x: Math.round(Math.min(1, Math.max(-0.2, x)) * 10000) / 10000,
+        y: Math.round(Math.min(1, Math.max(-0.1, y)) * 10000) / 10000,
+      });
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      if (!moved) focusField(fieldId);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  };
+
+  const originalPosition = (field) => originalPositionsRef.current[`${page?.id}:${field.id}`];
+  const isMoved = (field) => {
+    const original = originalPosition(field);
+    return Boolean(original) && (Math.abs(original.x - field.x) > 0.0005 || Math.abs(original.y - field.y) > 0.0005);
   };
 
   const showPage = (index) => {
@@ -370,15 +419,15 @@ const EinviteEditorPage = () => {
                   <FiChevronLeft size={22} />
                 </button>
               )}
-              <div className={isVideo ? "eiv-stage-card eiv-stage-video" : "eiv-stage-card"}>
+              <div ref={stageRef} className={isVideo ? "eiv-stage-card eiv-stage-video" : "eiv-stage-card"}>
                 {isVideo && previewing ? (
                   <EinviteVideoPlayer video={card.video} pages={pages} />
                 ) : (
                   <EinvitePage
                     page={page}
                     selectedFieldId={focusedFieldId}
-                    onFieldPointerDown={focusField}
-                    fieldCursor="text"
+                    onFieldPointerDown={startFieldPointer}
+                    fieldCursor="move"
                   />
                 )}
               </div>
@@ -393,8 +442,8 @@ const EinviteEditorPage = () => {
               {isVideo
                 ? previewing
                   ? "This is how your video will look."
-                  : "Tap any text in the scene to edit it. Press Play video to watch it."
-                : "Tap any text on the card to edit it."}
+                  : "Tap text to edit it, or drag it to move it. Press Play video to watch."
+                : "Tap text to edit it, or drag it to move it."}
             </p>
           </div>
 
@@ -464,6 +513,15 @@ const EinviteEditorPage = () => {
                       onFocus={() => setFocusedFieldId(field.id)}
                       onChange={(e) => updateField(field.id, { defaultText: e.target.value })}
                     />
+                    {isMoved(field) && (
+                      <button
+                        type="button"
+                        className="eiv-link-btn small mt-1"
+                        onClick={() => updateField(field.id, originalPosition(field))}
+                      >
+                        Reset position
+                      </button>
+                    )}
                   </div>
                 ))
               )}
