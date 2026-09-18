@@ -6,8 +6,10 @@ import {
   FiArrowLeft,
   FiChevronLeft,
   FiChevronRight,
+  FiCopy,
   FiDownload,
   FiShare2,
+  FiTrash2,
 } from "react-icons/fi";
 import { einviteApi } from "../../services/api/einviteApi";
 import EinvitePage from "../layouts/einvites/design/EinvitePage";
@@ -16,6 +18,7 @@ import {
   cardPath,
   getCardPages,
   loadFonts,
+  pageTitle,
 } from "../layouts/einvites/design/einviteDesign";
 import { downloadCardPages } from "../layouts/einvites/design/exportCard";
 import "../layouts/einvites/einviteStudio.css";
@@ -128,6 +131,42 @@ const EinviteEditorPage = () => {
   const showPage = (index) => {
     setPageIndex(index);
     setFocusedFieldId(null);
+  };
+
+  // A set can be trimmed to the functions the couple is holding, and a card
+  // can be copied (for a second reception, say) and renamed.
+  const renamePage = (value) => {
+    setPages((prev) => prev.map((p, index) => (index === pageIndex ? { ...p, name: value.slice(0, 60) } : p)));
+    setDirty(true);
+  };
+
+  const duplicatePage = () => {
+    const source = pages[pageIndex];
+    const suffix = Math.random().toString(36).slice(2, 8);
+    const copy = {
+      ...source,
+      id: `${source.id}_${suffix}`.slice(0, 60),
+      name: `${pageTitle(source, pageIndex)} (copy)`.slice(0, 60),
+      fields: source.fields.map((field) => ({ ...field })),
+    };
+    setPages((prev) => [...prev.slice(0, pageIndex + 1), copy, ...prev.slice(pageIndex + 1)]);
+    showPage(pageIndex + 1);
+    setDirty(true);
+  };
+
+  const removePage = async () => {
+    if (pages.length < 2) return;
+    const { isConfirmed } = await Swal.fire({
+      text: `Remove the ${pageTitle(pages[pageIndex], pageIndex)} card from your invitation?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Remove",
+      confirmButtonColor: "#ed1173",
+    });
+    if (!isConfirmed) return;
+    setPages((prev) => prev.filter((_, index) => index !== pageIndex));
+    showPage(Math.max(0, pageIndex - 1));
+    setDirty(true);
   };
 
   const save = async () => {
@@ -257,11 +296,11 @@ const EinviteEditorPage = () => {
           <div className="d-flex flex-wrap gap-2 ms-auto">
             <button type="button" className="eiv-outline-btn" onClick={() => download(false)} disabled={downloading}>
               <FiDownload size={16} />
-              {downloading ? "Preparing..." : pages.length > 1 ? "Download page" : "Download"}
+              {downloading ? "Preparing..." : pages.length > 1 ? "Download card" : "Download"}
             </button>
             {pages.length > 1 && (
               <button type="button" className="eiv-outline-btn" onClick={() => download(true)} disabled={downloading}>
-                All pages
+                All cards
               </button>
             )}
             <button
@@ -300,7 +339,7 @@ const EinviteEditorPage = () => {
                     <div>
                       <EinvitePage page={p} />
                     </div>
-                    Page {index + 1}
+                    {pageTitle(p, index)}
                   </button>
                 ))}
               </div>
@@ -310,7 +349,7 @@ const EinviteEditorPage = () => {
           <div className={`${pages.length > 1 ? "col-lg-6" : "col-lg-7"} order-1 order-lg-2`}>
             <div className="eiv-stage">
               {pages.length > 1 && (
-                <button type="button" className="eiv-arrow" aria-label="Previous page"
+                <button type="button" className="eiv-arrow" aria-label="Previous card"
                   disabled={pageIndex === 0} onClick={() => showPage(pageIndex - 1)}>
                   <FiChevronLeft size={22} />
                 </button>
@@ -324,7 +363,7 @@ const EinviteEditorPage = () => {
                 />
               </div>
               {pages.length > 1 && (
-                <button type="button" className="eiv-arrow" aria-label="Next page"
+                <button type="button" className="eiv-arrow" aria-label="Next card"
                   disabled={pageIndex === pages.length - 1} onClick={() => showPage(pageIndex + 1)}>
                   <FiChevronRight size={22} />
                 </button>
@@ -335,10 +374,36 @@ const EinviteEditorPage = () => {
 
           <div className="col-lg-5 order-3">
             <div className="eiv-panel">
-              <h2 className="eiv-panel-title mb-1">
-                {pages.length > 1 ? `Page ${pageIndex + 1} of ${pages.length}` : "Your details"}
-              </h2>
+              <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
+                <h2 className="eiv-panel-title mb-0">
+                  {pages.length > 1
+                    ? `${pageTitle(page, pageIndex)} · card ${pageIndex + 1} of ${pages.length}`
+                    : "Your details"}
+                </h2>
+                <div className="d-flex gap-1 flex-shrink-0">
+                  <button type="button" className="eiv-icon-btn" title="Duplicate this card" aria-label="Duplicate this card" onClick={duplicatePage}>
+                    <FiCopy size={16} />
+                  </button>
+                  {pages.length > 1 && (
+                    <button type="button" className="eiv-icon-btn" title="Remove this card" aria-label="Remove this card" onClick={removePage}>
+                      <FiTrash2 size={16} />
+                    </button>
+                  )}
+                </div>
+              </div>
               <p className="eiv-status mb-2">Change the text below. The card updates as you type.</p>
+
+              <div className="eiv-field">
+                <label htmlFor="eiv-card-name">Card name (event)</label>
+                <input
+                  id="eiv-card-name"
+                  className="eiv-text-input"
+                  value={page.name || ""}
+                  placeholder={pageTitle(page, pageIndex)}
+                  maxLength={60}
+                  onChange={(e) => renamePage(e.target.value)}
+                />
+              </div>
 
               {page.fields.length === 0 ? (
                 <p className="eiv-status mb-0">This page has no text to edit.</p>

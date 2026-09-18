@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import EinvitePage from "./design/EinvitePage";
-import { cardPath, getCardPages } from "./design/einviteDesign";
+import { cardPath, cardSetSummary, getCardPages } from "./design/einviteDesign";
 import "./einviteStudio.css";
 
 // Catalogue tile. Cards from the old editor are always drawn live because their
@@ -25,9 +25,12 @@ const EinviteTemplateTile = ({ card }) => {
         ) : (
           <EinvitePage page={pages[0]} style={{ background: "#fff" }} />
         )}
-        {pages.length > 1 && <span className="eiv-tile-badge">{pages.length} pages</span>}
+        {pages.length > 1 && <span className="eiv-tile-badge">{pages.length} cards</span>}
       </div>
       <div className="eiv-tile-name">{card.name}</div>
+      {pages.length > 1 && cardSetSummary(pages) && (
+        <div className="eiv-tile-events">{cardSetSummary(pages)}</div>
+      )}
     </Link>
   );
 };

@@ -10,8 +10,10 @@ import EinviteTemplateTile from "../layouts/einvites/EinviteTemplateTile";
 import {
   CARD_TYPES,
   cardFonts,
+  cardSetSummary,
   getCardPages,
   loadFonts,
+  pageTitle,
 } from "../layouts/einvites/design/einviteDesign";
 import "../layouts/einvites/einviteStudio.css";
 
@@ -128,7 +130,7 @@ const EinviteCardDetailPage = () => {
     <div className="eiv">
       <SEO
         title={`${card.name} – ${typeInfo.title} | HappyWedz`}
-        description={`Personalise the ${card.name} ${typeInfo.title.toLowerCase().replace(/s$/, "")} with your names, dates and venue. ${pages.length} beautifully designed ${pages.length === 1 ? "page" : "pages"}.`}
+        description={`Personalise the ${card.name} ${typeInfo.title.toLowerCase().replace(/s$/, "")} with your names, dates and venue. ${pages.length} beautifully designed ${pages.length === 1 ? "card" : "cards"}.`}
       />
 
       <div className="container py-4">
@@ -147,7 +149,7 @@ const EinviteCardDetailPage = () => {
             <h1 className="eiv-card-title">{card.name}</h1>
 
             {pages.length > 1 && (
-              <div className="eiv-page-pills" role="tablist" aria-label="Card pages">
+              <div className="eiv-page-pills" role="tablist" aria-label="Cards in this set">
                 {pages.map((page, index) => (
                   <button
                     key={page.id}
@@ -157,7 +159,7 @@ const EinviteCardDetailPage = () => {
                     className={`eiv-page-pill ${index === pageIndex ? "is-active" : ""}`}
                     onClick={() => goToPage(index)}
                   >
-                    Page {index + 1}
+                    {pageTitle(page, index)}
                   </button>
                 ))}
               </div>
@@ -165,7 +167,7 @@ const EinviteCardDetailPage = () => {
 
             <div className="eiv-stage">
               {pages.length > 1 && (
-                <button type="button" className="eiv-arrow" aria-label="Previous page"
+                <button type="button" className="eiv-arrow" aria-label="Previous card"
                   disabled={pageIndex === 0} onClick={() => goToPage(pageIndex - 1)}>
                   <FiChevronLeft size={22} />
                 </button>
@@ -174,7 +176,7 @@ const EinviteCardDetailPage = () => {
                 <EinvitePage page={pages[pageIndex]} />
               </div>
               {pages.length > 1 && (
-                <button type="button" className="eiv-arrow" aria-label="Next page"
+                <button type="button" className="eiv-arrow" aria-label="Next card"
                   disabled={pageIndex === pages.length - 1} onClick={() => goToPage(pageIndex + 1)}>
                   <FiChevronRight size={22} />
                 </button>
@@ -184,7 +186,7 @@ const EinviteCardDetailPage = () => {
             {pages.length > 1 && (
               <div className="eiv-thumbs">
                 {pages.map((page, index) => (
-                  <button key={page.id} type="button" aria-label={`Show page ${index + 1}`}
+                  <button key={page.id} type="button" aria-label={`Show ${pageTitle(page, index)}`}
                     className={`eiv-thumb ${index === pageIndex ? "is-active" : ""}`}
                     onClick={() => goToPage(index)}>
                     <EinvitePage page={page} />
@@ -199,14 +201,20 @@ const EinviteCardDetailPage = () => {
               <span className="eiv-eyebrow">{typeInfo.title}</span>
               <h2 className="eiv-info-title mt-2 mb-3">{card.name}</h2>
               <div className="d-flex flex-wrap gap-2">
-                <span className="eiv-chip">{pages.length} {pages.length === 1 ? "page" : "pages"}</span>
+                <span className="eiv-chip">{pages.length} {pages.length === 1 ? "card" : "cards"}</span>
                 {card.culture && <span className="eiv-chip">{card.culture}</span>}
                 {card.theme && <span className="eiv-chip">{card.theme}</span>}
               </div>
+              {pages.length > 1 && cardSetSummary(pages) && (
+                <p className="eiv-status mt-3 mb-0">
+                  <strong>Includes:</strong> {cardSetSummary(pages)}
+                </p>
+              )}
               <ul className="eiv-points">
-                <li><FiCheck size={16} /> Add your names, dates and venue on every page</li>
+                <li><FiCheck size={16} /> Add your names, dates and venue on every card</li>
                 <li><FiCheck size={16} /> Elegant wedding fonts, already laid out for you</li>
-                <li><FiCheck size={16} /> Download in HD or share instantly on WhatsApp</li>
+                <li><FiCheck size={16} /> Keep only the functions you need, and choose which guests see which cards</li>
+                <li><FiCheck size={16} /> Share one link, collect RSVPs, or download in HD</li>
               </ul>
               <div className="d-none d-lg-block">{cta}</div>
             </div>

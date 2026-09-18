@@ -695,6 +695,7 @@ function App() {
                 element={<EinviteSharePage />}
               />
               <Route path="/einvites/view/:id" element={<EinviteViewPage />} />
+              <Route path="/einvites/i/:token" element={<EinviteViewPage />} />
               <Route
                 path="/einvites/my-cards"
                 element={

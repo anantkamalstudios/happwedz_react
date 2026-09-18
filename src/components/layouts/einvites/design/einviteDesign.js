@@ -38,6 +38,35 @@ export const THEMES = [
   "Vintage",
 ];
 
+// A design is a set of cards, one per function. Each card is a page whose
+// name is the event it invites guests to.
+export const EVENT_NAMES = [
+  "Save the Date",
+  "Engagement",
+  "Roka",
+  "Tilak",
+  "Haldi",
+  "Mehendi",
+  "Sangeet",
+  "Cocktail",
+  "Wedding",
+  "Nikah",
+  "Anand Karaj",
+  "Reception",
+];
+
+const GENERIC_PAGE_NAME = /^(page|card)\s*\d+$/i;
+
+// "Haldi", or "Card 2" for pages that were never given an event name.
+export const pageTitle = (page, index) =>
+  page?.name && !GENERIC_PAGE_NAME.test(page.name.trim()) ? page.name.trim() : `Card ${index + 1}`;
+
+// "Haldi · Sangeet · Wedding" for a set, or "" when the cards have no event names.
+export const cardSetSummary = (pages) => {
+  const names = (pages || []).map((page) => page?.name?.trim()).filter((name) => name && !GENERIC_PAGE_NAME.test(name));
+  return names.length ? names.join(" · ") : "";
+};
+
 // Google Fonts with the weights each family actually ships (css2 rejects a
 // request for a weight a family does not have).
 export const FONT_LIBRARY = [
