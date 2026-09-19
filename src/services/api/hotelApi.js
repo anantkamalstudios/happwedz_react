@@ -228,7 +228,9 @@ export const bookHotel = async (payload) => {
 
 export const createHotelPaymentOrder = async (payload) => {
   try {
-    const response = await axiosInstance.post("hotels/create-payment-order", payload);
+    const response = await axiosInstance.post("hotels/create-payment-order", payload, {
+      skipAuthRedirect: true,
+    });
     return response.data;
   } catch (error) {
     if (!error?.response?.data?.duplicateBookingBlocked) {
@@ -252,7 +254,7 @@ export const verifyHotelPaymentAndBook = async (payload) => {
 
 export const holdHotelBooking = async (payload) => {
   try {
-    const response = await axiosInstance.post("hotels/hold", payload);
+    const response = await axiosInstance.post("hotels/hold", payload, { skipAuthRedirect: true });
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error creating hotel hold booking"));

@@ -933,15 +933,15 @@ export default function TripJackBookingReview({
             <section className="tripjack-review-panel">
               <div className="tripjack-review-panel-inner">
                 <h3 className="fw-bold mb-1">Guest Details</h3>
-                <div className="tripjack-room-copy mb-3">Only Lead Guest Name is Required</div>
+                <div className="tripjack-room-copy mb-3">Enter the name of every guest as on their ID</div>
 
                 <div className="d-grid gap-3">
                   {roomTravellerInfo.map((room, roomIndex) => {
                     const travellers = Array.isArray(room?.travellerInfo) ? room.travellerInfo : [];
                     const adultCount = travellers.filter((t) => t?.pt === "ADULT").length;
                     const childCount = travellers.filter((t) => t?.pt === "CHILD").length;
-                    // One block per guest in the selected occupancy. Only the lead
-                    // name is mandatory; the rest are validated only once filled in.
+                    // One block per guest in the selected occupancy; every guest's
+                    // name is required (the booking API validates each traveller).
                     const visible = travellers;
 
                     return (
@@ -1080,9 +1080,9 @@ export default function TripJackBookingReview({
               </div>
             </section>
 
-            {/* PAN sits in its own panel on TripJack, one entry per room rather than
-                one per adult. The value writes to that room's lead guest, which is the
-                field the booking payload actually carries. */}
+            {/* PAN sits in its own panel, one entry per adult guest: when the option
+                requires PAN, TripJack expects it on every adult traveller. Children
+                never carry one. */}
             {bookingRequirements?.panRequired ? (
               <section className="tripjack-review-panel">
                 <div className="tripjack-review-panel-inner">
@@ -1105,36 +1105,39 @@ export default function TripJackBookingReview({
 
                   {roomTravellerInfo.map((room, roomIndex) => {
                     const travellers = Array.isArray(room?.travellerInfo) ? room.travellerInfo : [];
-                    const leadIndex = travellers.findIndex((t) => t?.pt === "ADULT");
-                    const index = leadIndex >= 0 ? leadIndex : 0;
-                    const lead = travellers[index] || {};
-                    const leadName = [lead?.fN, lead?.lN].filter(Boolean).join(" ");
-                    return (
-                      <div key={`pan-room-${roomIndex}`} className="row g-3 mt-1">
-                        <div className="col-md-5">
-                          <label className="form-label fw-semibold">
-                            {panMode === "Corporate PAN" ? `Company Name (Room ${roomIndex + 1})` : `Name (Room ${roomIndex + 1})`}
-                          </label>
-                          <input
-                            className="form-control"
-                            placeholder="Name"
-                            value={leadName}
-                            readOnly
-                            title="Taken from the lead guest for this room"
-                          />
+                    let adultNumber = 0;
+                    return travellers.map((traveller, travellerIndex) => {
+                      if (traveller?.pt !== "ADULT") return null;
+                      adultNumber += 1;
+                      const guestLabel = `Room ${roomIndex + 1} · Guest ${adultNumber}`;
+                      const guestName = [traveller?.fN, traveller?.lN].filter(Boolean).join(" ");
+                      return (
+                        <div key={`pan-${roomIndex}-${travellerIndex}`} className="row g-3 mt-1">
+                          <div className="col-md-5">
+                            <label className="form-label fw-semibold">
+                              {panMode === "Corporate PAN" ? `Company Name (${guestLabel})` : `Name (${guestLabel})`}
+                            </label>
+                            <input
+                              className="form-control"
+                              placeholder="Enter the guest's name above"
+                              value={guestName}
+                              readOnly
+                              title="Taken from Guest Details"
+                            />
+                          </div>
+                          <div className="col-md-5">
+                            <label className="form-label fw-semibold">PAN</label>
+                            <input
+                              className="form-control"
+                              placeholder="ABCDE1234F"
+                              value={traveller?.pan || ""}
+                              onChange={(event) => onTravellerFieldChange(roomIndex, travellerIndex, "pan", event.target.value.toUpperCase())}
+                              disabled={bookingSubmitting}
+                            />
+                          </div>
                         </div>
-                        <div className="col-md-5">
-                          <label className="form-label fw-semibold">PAN</label>
-                          <input
-                            className="form-control"
-                            placeholder="ABCDE1234F"
-                            value={lead?.pan || ""}
-                            onChange={(event) => onTravellerFieldChange(roomIndex, index, "pan", event.target.value.toUpperCase())}
-                            disabled={bookingSubmitting}
-                          />
-                        </div>
-                      </div>
-                    );
+                      );
+                    });
                   })}
                 </div>
               </section>

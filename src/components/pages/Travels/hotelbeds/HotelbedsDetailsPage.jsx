@@ -1,7 +1,7 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Modal, Offcanvas } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import {
   BedDouble,
@@ -39,6 +39,8 @@ import {
 } from "../../../../services/api/hotelApi";
 import { formatDate as fmtDate } from "../../../../utils/dateFormat";
 import TripJackBookingReview from "./TripJackBookingReview";
+import { logout } from "../../../../redux/authSlice";
+import { isJwtExpired } from "../../../../utils/jwt";
 import TripJackBookingStatus from "./TripJackBookingStatus";
 import {
   saveBookingDraft,
@@ -1344,7 +1346,8 @@ function HotelDetailsPage({
   setActiveOption,
   setRoomModalOpen,
 }) {
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const { user, isAuthenticated, token } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const roomSectionRef = useRef(null);
@@ -2110,9 +2113,25 @@ function HotelDetailsPage({
     navigate(...loginRedirect(location, reason));
   };
 
+  // A page left open can outlive the login (tokens last two days). Sign out and
+  // go through login with the form parked, so the guest details survive.
+  const restartLoginForBooking = (reason) => {
+    setShowBookingStatusModal(false);
+    dispatch(logout());
+    toast.info("Your session has expired. Please log in again — your booking details are saved.");
+    parkBookingAndLogin(reason);
+  };
+  const sessionExpired = () =>
+    isAuthenticated && isJwtExpired(token || localStorage.getItem("token"));
+
   const handleProceedToBook = async () => {
     if (!reviewResponse?.bookingId || !bookingForm) {
       toast.error("Booking review data is missing. Please review the room again.");
+      return;
+    }
+
+    if (sessionExpired()) {
+      restartLoginForBooking("booking");
       return;
     }
 
@@ -2384,6 +2403,11 @@ const retryWithoutRepayment =
 
       await pollTripjackBookingStatus(bookingResponse?.bookingId || payload.bookingId);
     } catch (error) {
+      // 401 from the pre-payment call: nothing was charged; re-login and resume.
+      if (error?.response?.status === 401 && error?.config?.skipAuthRedirect) {
+        restartLoginForBooking("booking");
+        return;
+      }
       const timeoutOrCanceled =
         error?.code === "ECONNABORTED" ||
         error?.code === "ERR_CANCELED" ||
@@ -2425,7 +2449,9 @@ const retryWithoutRepayment =
             ? supplierFailureMessage
             : paymentFailure
               ? error?.response?.data?.error || error?.message || "Payment could not be completed."
-              : "Unable to submit this booking. Please review traveller details and try again.";
+              : error?.response?.data?.error ||
+                error?.response?.data?.message ||
+                "Unable to submit this booking. Please try again.";
 
       if (!duplicateBookingBlocked || (!timeoutOrCanceled && !tripjackDenied && !validationFailure)) {
         console.error("Unable to create TripJack booking", error);
@@ -2552,6 +2578,11 @@ const retryWithoutRepayment =
       return;
     }
 
+    if (sessionExpired()) {
+      restartLoginForBooking("hold");
+      return;
+    }
+
     if (!isAuthenticated || !user?.id) {
       parkBookingAndLogin("hold");
       return;
@@ -2609,6 +2640,10 @@ const retryWithoutRepayment =
       });
       toast.success("Hold booking created successfully.");
     } catch (error) {
+      if (error?.response?.status === 401 && error?.config?.skipAuthRedirect) {
+        restartLoginForBooking("hold");
+        return;
+      }
       const message =
         error?.response?.data?.error ||
         error?.response?.data?.message ||

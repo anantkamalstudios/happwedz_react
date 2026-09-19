@@ -6,6 +6,7 @@ import {
   readHwCookie,
 } from "../utils/ssoCookies";
 import { API_BASE_URL } from "../config/constants";
+import { isJwtExpired } from "../utils/jwt";
 
 // Initialize state from localStorage if available
 const storedToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -29,7 +30,14 @@ const resolveInitialSession = () => {
     return { user: null, token: null, isAuthenticated: false };
   }
 
-  if (storedToken && storedUser) {
+  // Logins last two days. A token past its expiry used to keep the user
+  // "logged in" here while every protected call failed with 401 — which on the
+  // hotel page surfaced only after the guest details were filled in.
+  if (storedToken && isJwtExpired(storedToken)) {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("tokenTimestamp");
+  } else if (storedToken && storedUser) {
     return {
       user: JSON.parse(storedUser),
       token: storedToken,
@@ -39,7 +47,7 @@ const resolveInitialSession = () => {
 
   const shared = readHwCookie();
 
-  if (shared?.token && shared?.id) {
+  if (shared?.token && shared?.id && !isJwtExpired(shared.token)) {
     const user = {
       id: shared.id,
       name: shared.name,
