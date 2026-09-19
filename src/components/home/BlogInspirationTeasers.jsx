@@ -7,7 +7,7 @@ import axios from "axios";
 import { FiArrowUpRight } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { formatDate } from "../../utils/dateFormat";
-import { API_BASE_URL, IMAGE_BASE_URL } from "../../config/constants";
+import { API_BASE_URL, resolveMediaUrl } from "../../config/constants";
 
 const BlogsCarousel = () => {
   const [blogs, setBlogs] = useState([]);
@@ -23,10 +23,9 @@ const BlogsCarousel = () => {
 
         // Map API fields to component fields
         const mappedBlogs = result.data.map((blog) => {
-          const cleanedImageUrl = blog.image.replace(
-            "https://happywedz.com:4000",
-            IMAGE_BASE_URL
-          );
+          // Blog media has been on S3 for a while, but older rows still carry
+          // the retired shared origin.
+          const cleanedImageUrl = resolveMediaUrl(blog.image);
 
           return {
             id: blog.id,

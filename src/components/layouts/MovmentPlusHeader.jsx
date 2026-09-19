@@ -229,6 +229,9 @@ const MovmentPlusHeader = () => {
         .movment_nav_anchor.desktop {
           top: 100px;
           height: calc(100vh - 100px);
+          /* Below the site header's dropdowns (profile menu 1050, Bootstrap
+             menus 1000), which open over the area this sidebar occupies. */
+          z-index: 999;
         }
 
         /* Reserve room on desktop so page content never sits under the sidebar */

@@ -6,8 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const BASE_URL = "https://happywedz.com";
-const API_BASE = process.env.VITE_API_URL || "https://happywedz.com/api";
-const PROD_API_BASE = "https://happywedz.com/api";
+const API_BASE = process.env.VITE_API_URL || "https://api.happywedz.com";
+const PROD_API_BASE = "https://api.happywedz.com";
 const OUTPUT_PATH = path.resolve(__dirname, "../public/sitemap.xml");
 const TODAY = new Date().toISOString().split("T")[0];
 

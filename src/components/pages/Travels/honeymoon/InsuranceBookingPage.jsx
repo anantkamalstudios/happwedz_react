@@ -93,7 +93,6 @@ const InsuranceBookingPage = () => {
 
   const totalPrice = reviewMeta.price || selectedPlan.price;
   const bd = selectedPlan.priceBreakdown || {};
-  const earnAmount = selectedPlan.earnAmount || 0;
 
   const updateTraveller = (index, field, value) => {
     setTravellers((prev) => {
@@ -512,7 +511,6 @@ const InsuranceBookingPage = () => {
                 <div className="p-3 border rounded bg-white shadow-sm">
                   <h6 className="fw-bold mb-2">*Disclaimers</h6>
                   <ul className="small mb-0">
-                    <li>Agent earnings are on non-insurance products.</li>
                     <li>
                       Insurance is through a group master policy with Aditya
                       Birla Health Insurance.
@@ -567,12 +565,6 @@ const InsuranceBookingPage = () => {
                       {formatPrice(totalPrice)}
                     </div>
                     <small className="text-muted">Inc. GST</small>
-                    {earnAmount > 0 && (
-                      <div className="ins-earn-pill mt-1">
-                        <span className="ins-earn-icon">%</span>
-                        Earn ₹{earnAmount.toLocaleString("en-IN")}*
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -595,12 +587,6 @@ const InsuranceBookingPage = () => {
                   <div className="ins-breakdown-row">
                     <span>TripSafe GST</span>
                     <span>+ {formatPrice(bd.spGst)}</span>
-                  </div>
-                )}
-                {earnAmount > 0 && (
-                  <div className="ins-breakdown-row ins-breakdown-earn">
-                    <span>TripSafe Earnings</span>
-                    <span>- {formatPrice(earnAmount)}</span>
                   </div>
                 )}
                 <div className="ins-breakdown-row">
@@ -722,29 +708,6 @@ const InsuranceBookingPage = () => {
           font-weight: 800;
           color: #111;
         }
-        .ins-earn-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: #e8f5e9;
-          color: #2e7d32;
-          font-size: 12px;
-          font-weight: 600;
-          padding: 3px 8px;
-          border-radius: 20px;
-        }
-        .ins-earn-icon {
-          background: #2e7d32;
-          color: #fff;
-          border-radius: 50%;
-          width: 16px;
-          height: 16px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 10px;
-          font-weight: 700;
-        }
         .ins-summary-breakdown {
           background: #f8f8f8;
           border-radius: 8px;
@@ -767,9 +730,6 @@ const InsuranceBookingPage = () => {
           font-size: 13px;
           color: #555;
           border-bottom: 1px solid #f0f0f0;
-        }
-        .ins-breakdown-earn {
-          color: #2e7d32;
         }
         .ins-breakdown-net {
           font-weight: 700;

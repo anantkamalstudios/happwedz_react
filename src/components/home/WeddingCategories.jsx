@@ -4,9 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import ErrorState from "../ui/ErrorState";
 import { fetchVendorTypesWithSubcategoriesApi } from "../../services/api/vendorTypesWithSubcategoriesApi";
 
-import { IMAGE_BASE_URL as IMAGE_BASE_URL_RAW } from "../../config/constants";
-
-const IMAGE_BASE_URL = IMAGE_BASE_URL_RAW.replace(/\/+$/, "");
+import { resolveMediaUrl } from "../../config/constants";
 
 const WeddingCategories = ({ onSelect }) => {
   const [categories, setCategories] = useState([]);
@@ -24,9 +22,9 @@ const WeddingCategories = ({ onSelect }) => {
       // Shared/deduped fetch — Header and Herosection request the same list.
       const vendorTypes = await fetchVendorTypesWithSubcategoriesApi();
       const apiData = vendorTypes.map((cat) => {
-        const imageSrc = cat.hero_image
-          ? IMAGE_BASE_URL + cat.hero_image
-          : "logo-no-bg.png";
+        // hero_image is an absolute S3 URL for anything uploaded since the
+        // S3 cutover, and a relative /uploads/... path for older rows.
+        const imageSrc = resolveMediaUrl(cat.hero_image, "/logo-no-bg.png");
         return {
           id: cat.id,
           title: cat.name,
