@@ -196,7 +196,7 @@ const MainSection = () => {
   const [heroInfo, setHeroInfo] = useState([]);
   const [venueFilters, setVenueFilters] = useState({});
 
-  const { data, loading, error, hasMore, loadMore } = useInfiniteScroll(
+  const { data: rawData, loading, error, hasMore, loadMore } = useInfiniteScroll(
     "venues",
     categoryInfo ? categoryInfo.name : null,
     selectedCity,
@@ -204,6 +204,14 @@ const MainSection = () => {
     18,
     venueFilters
   );
+
+  // useInfiniteScroll normalizes every item's status to "publish" or "hide";
+  // hidden venues must not be shown, matching the vendors listing behavior.
+  const data = useMemo(
+    () => rawData.filter((item) => item?.status !== "hide"),
+    [rawData]
+  );
+
   const [searchQuery, setSearchQuery] = useState("");
   const {
     selectedCategory,
