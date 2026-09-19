@@ -597,10 +597,6 @@ const Contactus = () => {
                 <FiMail size={25} className="primary-text" />
                 <span className="fs-14 fw-bold">support@happywedz.com</span>
               </div>
-              <div style={styles.contactInfo} className="mt-5">
-                <FiPhone size={25} className="primary-text" />
-                <span className="fs-14 fw-bold">+91 456 700</span>
-              </div>
             </div>
 
             <div style={styles.contactBox}>
@@ -619,10 +615,6 @@ const Contactus = () => {
               <div style={styles.contactInfo} className="mt-3">
                 <FiMail size={25} className="primary-text" />
                 <span className="fs-14 fw-bold">support@happywedz.com</span>
-              </div>
-              <div style={styles.contactInfo} className="mt-5">
-                <FiPhone size={25} className="primary-text" />
-                <span className="fs-14 fw-bold">+91 456 700</span>
               </div>
             </div>
 
@@ -643,10 +635,7 @@ const Contactus = () => {
                 <FiMapPin size={25} className="primary-text" />
                 <div className="d-flex flex-column">
                   <span className="fs-14 fw-bold">
-                    29/1B, Sinhgad Rd, next to Vidya Sahakri Bank,
-                    <br /> Near Veer Baji Pasalkar Chowk,
-                    <br /> Kirti Nagar, Vadgaon Budruk,
-                    <br /> Pune, Maharashtra 411041
+                    Pune, India
                   </span>
                 </div>
               </div>

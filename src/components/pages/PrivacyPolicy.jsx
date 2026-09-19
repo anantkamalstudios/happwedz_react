@@ -1000,7 +1000,7 @@ export default function PrivacyPolicy() {
           }}
         >
           <p style={{ fontSize: "14px", color: "#666" }}>
-            © 2025 HappyWedz Technologies Pvt. Ltd. All rights reserved.
+            © 2026 HappyWedz
           </p>
         </div>
       </div>
