@@ -5,12 +5,7 @@ import { useSelector } from "react-redux";
 import { Container, Row, Col } from "react-bootstrap";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import randomColor from "randomcolor";
-import {
-  API_BASE_URL,
-  IMAGE_BASE_URL as IMAGE_BASE_URL_RAW,
-} from "../../../../config/constants";
-
-const BACKEND_BASE_URL = IMAGE_BASE_URL_RAW.replace(/\/+$/, "");
+import { API_BASE_URL, resolveMediaUrl } from "../../../../config/constants";
 
 const Vendors = () => {
   const navigate = useNavigate();
@@ -131,10 +126,7 @@ const Vendors = () => {
                       }}
                     >
                       <img
-                        src={
-                          `${BACKEND_BASE_URL}/` +
-                          category.hero_image
-                        }
+                        src={resolveMediaUrl(category.hero_image, "/logo-no-bg.png")}
                         alt={category.name}
                         loading="lazy"
                         style={{

@@ -1403,18 +1403,12 @@ const validateBookingForm = (bookingForm, reviewResponse) => {
       return;
     }
 
-    // Only the lead guest is mandatory, matching TripJack and the API request builder,
-    // which pads any traveller left blank. A passport, when required, is still needed
-    // from every adult.
-    const leadAdultIndex = Math.max(0, travellerInfo.findIndex((item) => item?.pt === "ADULT"));
-
+    // The API validates every traveller (title, first and last name), and when the
+    // option requires PAN or passport, TripJack needs one from every adult — as in
+    // all the certification bookings. Checking only the lead guest here let the
+    // form through and the booking failed server-side.
     travellerInfo.forEach((traveller, travellerIndex) => {
       const isAdult = traveller?.pt === "ADULT";
-      const isLead = travellerIndex === leadAdultIndex;
-      const hasAnyName = Boolean(traveller?.fN?.trim() || traveller?.lN?.trim());
-      const needsPassport = isAdult && Boolean(bookingRequirements?.passportRequired);
-      // Skip a blank non-lead guest entirely; validate once someone starts filling it.
-      if (!isLead && !hasAnyName && !needsPassport) return;
 
       const validTitles = isAdult ? ["Mr", "Mrs", "Ms", "Miss"] : ["Master", "Miss"];
       if (!validTitles.includes(String(traveller?.ti || "").trim())) {
@@ -1426,8 +1420,7 @@ const validateBookingForm = (bookingForm, reviewResponse) => {
       if (!traveller?.lN?.trim()) {
         errors.push(`Enter last name for room ${roomIndex + 1}, traveller ${travellerIndex + 1}.`);
       }
-      // PAN is collected once per room, against that room's lead guest.
-      if (isLead && isAdult && bookingRequirements?.panRequired) {
+      if (isAdult && bookingRequirements?.panRequired) {
         const normalizedPan = String(traveller?.pan || "")
           .toUpperCase()
           .replace(/[^A-Z0-9]/g, "");

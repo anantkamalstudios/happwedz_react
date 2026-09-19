@@ -1,0 +1,96 @@
+name: CI/CD
+
+# Pull requests into main or production only run the build as a check.
+# A push/merge into production builds and deploys to the aaPanel server.
+on:
+  pull_request:
+    branches: [main, production]
+  push:
+    branches: [production]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # .env is not in git. It is built from the ENV_FILE secret (a pasted
+      # copy of .env), if set, plus every VITE_* variable or secret of the
+      # "production" environment, which win over ENV_FILE on duplicates.
+      - name: Write .env
+        env:
+          VARS_JSON: ${{ toJSON(vars) }}
+          SECRETS_JSON: ${{ toJSON(secrets) }}
+        run: |
+          node -e '
+            const all = { ...JSON.parse(process.env.VARS_JSON), ...JSON.parse(process.env.SECRETS_JSON) };
+            const keys = Object.keys(all).filter((k) => k.startsWith("VITE_")).sort();
+            if (!all.ENV_FILE && keys.length === 0) {
+              console.error("No env found: add VITE_* variables to the production environment or an ENV_FILE secret.");
+              process.exit(1);
+            }
+            const lines = keys.map((k) => `${k}=${JSON.stringify(all[k])}`);
+            require("fs").writeFileSync(".env", [all.ENV_FILE || "", ...lines].join("\n") + "\n");
+            console.log(`ENV_FILE secret: ${all.ENV_FILE ? "used" : "not set"}`);
+            console.log(`VITE_ variables/secrets: ${keys.length}\n${keys.join("\n")}`);
+          '
+
+      - run: npm run build
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: dist
+          path: dist
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/production'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      # Stop before touching the server if DEPLOY_PATH is missing or points
+      # outside /www/wwwroot/ (an empty value once uploaded the site into /).
+      - name: Check deploy path
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          case "$DEPLOY_PATH" in
+            /www/wwwroot/?*) echo "Deploying to $DEPLOY_PATH" ;;
+            *) echo "DEPLOY_PATH secret is empty or not under /www/wwwroot/ - refusing to deploy"; exit 1 ;;
+          esac
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: dist
+          path: dist
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload files
+        env:
+          SSH: ssh -p ${{ secrets.SSH_PORT }}
+          DEST: ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/
+        run: |
+          # 1) Upload new files except index.html. Old hashed assets stay,
+          #    so visitors with the old page open still load their files.
+          rsync -az --chown=www:www -e "$SSH" --exclude index.html \
+            --exclude .user.ini --exclude .well-known dist/ "$DEST"
+          # 2) Upload index.html last so the new version goes live all at once.
+          rsync -az --chown=www:www -e "$SSH" dist/index.html "$DEST"

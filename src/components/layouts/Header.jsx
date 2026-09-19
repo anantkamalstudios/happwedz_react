@@ -717,7 +717,7 @@ const Header = () => {
                   )}
                 </li>
 
-                {/* Photography */}
+                {/* Moment + (formerly Photography) */}
                 <li className="mb-2">
                   <Link
                     to="/movment-plus/home"
@@ -729,7 +729,7 @@ const Header = () => {
                       );
                     }}
                   >
-                    Photography
+                    Moment +
                   </Link>
                 </li>
 
@@ -1791,7 +1791,7 @@ const Header = () => {
                           </div>
                         </li>
 
-                        {/* Photography */}
+                        {/* Moment + (formerly Photography) */}
                         <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
@@ -1805,7 +1805,7 @@ const Header = () => {
                                 );
                               }}
                             >
-                              Photography
+                              Moment +
                             </Link>
                           </div>
                         </li>

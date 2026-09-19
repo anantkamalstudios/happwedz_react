@@ -4,12 +4,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import ShimmerCards from "../ui/ShimmerCards";
 import ErrorState from "../ui/ErrorState";
-import {
-  API_BASE_URL,
-  IMAGE_BASE_URL as IMAGE_BASE_URL_RAW,
-} from "../../config/constants";
-
-const IMAGE_BASE_URL = IMAGE_BASE_URL_RAW.replace(/\/+$/, "");
+import { API_BASE_URL, resolveMediaUrl } from "../../config/constants";
 
 const AllCategories = ({ onSelect }) => {
   const [categories, setCategories] = useState([]);
@@ -30,9 +25,8 @@ const AllCategories = ({ onSelect }) => {
         `${API_BASE_URL}/vendor-types/with-subcategories/all`
       );
       const apiData = response.data.map((cat) => {
-        const imageSrc = cat.hero_image
-          ? IMAGE_BASE_URL + cat.hero_image
-          : "logo-no-bg.png";
+        // New uploads are full S3 URLs; older ones are /uploads/... paths.
+        const imageSrc = resolveMediaUrl(cat.hero_image, "/logo-no-bg.png");
         return {
           id: cat.id,
           title: cat.name,

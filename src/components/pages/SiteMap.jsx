@@ -103,7 +103,7 @@ const SiteMap = () => {
       badge: "Digital Services",
       items: [
         { name: "E-Invites & Save the Date Cards", slug: "/einvites" },
-        { name: "Video Invitation Templates", slug: "/video-templates" },
+        { name: "Video Invitation Templates", slug: "/einvites/category/video" },
         // Virtual try-on disabled — route commented out in App.jsx
         // { name: "Virtual Try-On Studio", slug: "/try" },
       ],

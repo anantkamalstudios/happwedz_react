@@ -13,6 +13,7 @@ import Reviews from "./subVendors/Reviews";
 import VendorMessages from "./messages/VendorMessages";
 import VendorLeadsPage from "./VendorLeadsPage";
 import MovmentsPlus from "./movments-plus/MovmentsPlus";
+import InstagramPage from "./InstagramPage";
 import { VendorAccessProvider } from "../../../context/VendorAccessContext";
 
 const Main = () => {
@@ -44,6 +45,8 @@ const Main = () => {
         return <VendorLeadsPage />;
       case "movments-plus":
         return <MovmentsPlus />;
+      case "vendor-instagram":
+        return <InstagramPage />;
       default:
         return <HomeAdmin />;
     }

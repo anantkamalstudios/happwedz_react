@@ -31,6 +31,9 @@ const aiAxiosInstance = axios.create({
 
 const handle401Error = (error) => {
   const originalRequest = error.config;
+  // The caller recovers itself (e.g. hotel booking saves the form and returns
+  // the user after login); the generic redirect would drop that context.
+  if (originalRequest?.skipAuthRedirect) return;
 
   if (error.response?.status === 401 && !originalRequest?._retry) {
     if (originalRequest) {

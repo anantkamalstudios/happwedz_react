@@ -173,9 +173,7 @@ const Footer = () => {
                 lineHeight: "1.8",
               }}
             >
-              29/1B, Sinhgad Rd, next to Vidya Sahakri Bank,
-              <br /> Near Veer Baji Pasalkar Chowk, Kirti Nagar, Vadgaon Budruk,
-              Pune, Maharashtra 411041
+              Pune, India
             </p>
           </div>
 
@@ -497,8 +495,7 @@ const Footer = () => {
 
         <div className="text-center fs-14">
           <p style={{ color: "#fff" }}>
-            &copy; 2025 HappyWedz Designed & Developed by AnantKamal
-            Software Labs
+            &copy; 2026 HappyWedz
           </p>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import MovmentPlusHero from "../../movment-plus/MovmentPlusHero";
-import Brands from "../../movment-plus/Brands";
+// "Loved By 4,000+ Businesses Worldwide" section is hidden for now.
+// import Brands from "../../movment-plus/Brands";
 import HomeGridImages from "../../movment-plus/HomeGridImages";
 import "./movment-plus.css";
 import EventCreationTabs from "../../movment-plus/EventCreationTabs";
@@ -42,7 +43,7 @@ const MovementPlusHome = () => {
         description="Share and relive your wedding moments with Moment+ by HappyWedz. AI-powered face recognition lets guests instantly find their own photos from your wedding gallery."
       />
       <MovmentPlusHero />
-      <Brands />
+      {/* <Brands /> */}
       <HomeGridImages />
       <EventCreationTabs />
 

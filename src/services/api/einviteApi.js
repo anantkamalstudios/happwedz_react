@@ -10,7 +10,100 @@ const getAuthHeaders = () => {
   };
 };
 
+const readJson = async (response, fallbackMessage) => {
+  let body = null;
+  try {
+    body = await response.json();
+  } catch {}
+  if (!response.ok) {
+    throw new Error(body?.message || fallbackMessage);
+  }
+  return body;
+};
+
+// JSON request with the user's login token; throws with the server's message.
+const request = async (path, { method = "GET", body, fallbackMessage = "Something went wrong" } = {}) => {
+  const response = await fetch(`${API_BASE_URL}/einvites${path}`, {
+    method,
+    headers: getAuthHeaders(),
+    ...(body !== undefined && { body: JSON.stringify(body) }),
+  });
+  return readJson(response, fallbackMessage);
+};
+
 export const einviteApi = {
+  // ----- A couple's invitation: sharing and RSVPs (owner only) -----
+  deleteInstance: (id) =>
+    request(`/cards/${id}/instance`, { method: "DELETE", fallbackMessage: "Failed to delete the invitation" }),
+  getShareLinks: async (id) =>
+    (await request(`/cards/${id}/share-links`, { fallbackMessage: "Failed to load your links" }))?.data || [],
+  createShareLink: async (id, { label, pageIds }) =>
+    (await request(`/cards/${id}/share-links`, { method: "POST", body: { label, pageIds }, fallbackMessage: "Failed to create the link" }))?.data,
+  updateShareLink: async (linkId, patch) =>
+    (await request(`/share-links/${linkId}`, { method: "PUT", body: patch, fallbackMessage: "Failed to update the link" }))?.data,
+  deleteShareLink: (linkId) =>
+    request(`/share-links/${linkId}`, { method: "DELETE", fallbackMessage: "Failed to delete the link" }),
+  createGuestLinks: async (id, { guestIds, pageIds }) =>
+    (await request(`/cards/${id}/guest-links`, { method: "POST", body: { guestIds, pageIds }, fallbackMessage: "Failed to create guest links" }))?.data || [],
+  sendGuestEmails: (id, { guestIds, pageIds, message }) =>
+    request(`/cards/${id}/send-emails`, { method: "POST", body: { guestIds, pageIds, message }, fallbackMessage: "Failed to send the emails" }),
+  getRsvps: (id) => request(`/cards/${id}/rsvps`, { fallbackMessage: "Failed to load RSVPs" }),
+
+  // ----- Video invitations (owner only) -----
+  // `layers` describe each text box; `blobs` are their PNG frames, in layer order.
+  startVideoRender: async (id, { layers, blobs }) => {
+    const form = new FormData();
+    form.append("layers", JSON.stringify(layers));
+    blobs.forEach((blob, index) => form.append("frames", blob, `frame-${index}.png`));
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/einvites/cards/${id}/render`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    return (await readJson(response, "Failed to start creating the video"))?.data;
+  },
+  getVideoRender: async (id) =>
+    (await request(`/cards/${id}/render`, { fallbackMessage: "Failed to check the video" }))?.data,
+
+  // ----- Paying for a paid video design -----
+  checkout: async (id) =>
+    (await request(`/cards/${id}/checkout`, { method: "POST", fallbackMessage: "Couldn't start the payment" }))?.data,
+  verifyPayment: async (payment) =>
+    (await request(`/orders/verify`, { method: "POST", body: payment, fallbackMessage: "Couldn't confirm the payment" }))?.data,
+
+  // ----- Guests (no login) -----
+  getInvite: async (token) =>
+    (await request(`/invite/${encodeURIComponent(token)}`, { fallbackMessage: "This invitation could not be found" }))?.data,
+  sendRsvp: async ({ token, cardId, ...reply }) =>
+    (await request(token ? `/invite/${encodeURIComponent(token)}/rsvp` : `/cards/${cardId}/rsvp`, {
+      method: "POST",
+      body: reply,
+      fallbackMessage: "Failed to send your reply",
+    }))?.data,
+
+  // Public catalogue of templates, with filters and per-type counts.
+  getTemplates: async ({ cardType, culture, theme, price, sort, search, page = 1, limit = 24 } = {}) => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (cardType) params.set("cardType", cardType);
+    if (culture) params.set("culture", culture);
+    if (theme) params.set("theme", theme);
+    if (price) params.set("price", price);
+    if (sort) params.set("sort", sort);
+    if (search) params.set("search", search);
+    const response = await fetch(`${API_BASE_URL}/einvites/cards?${params.toString()}`);
+    return readJson(response, "Failed to load invitation designs");
+  },
+
+  // A template or a customer's copy, by id or slug.
+  getCard: async (idOrSlug) => {
+    const response = await fetch(
+      `${API_BASE_URL}/einvites/cards/${encodeURIComponent(idOrSlug)}`,
+    );
+    const body = await readJson(response, "Failed to load the invitation");
+    return body?.data || null;
+  },
+
   createInstance: async (payload) => {
     try {
       const response = await fetch(`${API_BASE_URL}/einvites/cards/instances`, {
@@ -196,6 +289,7 @@ export const einviteApi = {
     try {
       const response = await fetch(
         `${API_BASE_URL}/einvites/${userId}/einvites`,
+        { headers: getAuthHeaders() },
       );
       if (!response.ok) throw new Error("Failed to fetch user e-invites");
       return await response.json();

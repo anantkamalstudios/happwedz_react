@@ -166,13 +166,6 @@ const CardEditorPage = lazy(() => import("./components/CardEditorPage"));
 const PhotographyDetails = lazy(
   () => import("./components/pages/PhotographyDetails"),
 );
-const VideoEditorPage = lazy(() => import("./components/VideoEditorPage"));
-const VideoTemplates = lazy(
-  () => import("./components/layouts/eInvite/VideoTemplates"),
-);
-const VideoEditorDemo = lazy(
-  () => import("./components/layouts/eInvite/VideoEditorDemo"),
-);
 const ProfileImageSelector = lazy(
   () => import("./components/pages/ProfileImageSelector"),
 );
@@ -183,6 +176,9 @@ const EinviteHomePage = lazy(
 );
 const EinviteCategoryPage = lazy(
   () => import("./components/pages/EinviteCategoryPage"),
+);
+const EinviteCardDetailPage = lazy(
+  () => import("./components/pages/EinviteCardDetailPage"),
 );
 const EinviteEditorPage = lazy(
   () => import("./components/pages/EinviteEditorPage"),
@@ -659,17 +655,22 @@ function App() {
               />
               <Route path="/editor" element={<CardEditorPage />} />
               <Route path="/editor/:templateId" element={<CardEditorPage />} />
-              <Route path="/video-templates" element={<VideoTemplates />} />
-              <Route path="/video-editor" element={<VideoEditorPage />} />
-              <Route
-                path="/video-editor/:templateId"
-                element={<VideoEditorPage />}
-              />
-              <Route path="/video-demo" element={<VideoEditorDemo />} />
+              {/* The old video mock-up pages now open the video invitations catalogue. */}
+              {["/video-templates", "/video-editor", "/video-editor/:templateId", "/video-demo"].map((path) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={<Navigate to="/einvites/category/video" replace />}
+                />
+              ))}
               <Route path="/einvites" element={<EinviteHomePage />} />
               <Route
                 path="/einvites/category/:category"
                 element={<EinviteCategoryPage />}
+              />
+              <Route
+                path="/einvites/card/:slug"
+                element={<EinviteCardDetailPage />}
               />
               <Route
                 path="/einvites/editor/:id"
@@ -688,6 +689,7 @@ function App() {
                 element={<EinviteSharePage />}
               />
               <Route path="/einvites/view/:id" element={<EinviteViewPage />} />
+              <Route path="/einvites/i/:token" element={<EinviteViewPage />} />
               <Route
                 path="/einvites/my-cards"
                 element={

@@ -147,6 +147,7 @@ const Storefront = ({ setCompletion }) => {
   const [videoDrafts, setVideoDrafts] = useState([]);
   const [view360Images, setView360Images] = useState([]);
   const [view360Videos, setView360Videos] = useState([]);
+  const [view360Url, setView360Url] = useState("");
   const [vendorTypeName, setVendorTypeName] = useState("");
   // Persist active tab per-vendor so refresh/navigation keeps you on the same section
   const storageKey = React.useMemo(
@@ -167,6 +168,7 @@ const Storefront = ({ setCompletion }) => {
           setFormData({});
           setPhotoDrafts([]);
           setVideoDrafts([]);
+          setView360Url("");
         }
         localStorage.setItem("lastVendorId", vendor.id.toString());
 
@@ -234,6 +236,7 @@ const Storefront = ({ setCompletion }) => {
             }
 
             if (actualData.attributes) {
+              setView360Url(actualData.attributes.view360_url || "");
               const videosFromAttr =
                 actualData.attributes.video ||
                 actualData.attributes.vedio ||
@@ -1127,6 +1130,7 @@ const Storefront = ({ setCompletion }) => {
             url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
           )
         : [],
+      view360_url: view360Url.trim(),
       // Preferred vendors selection
       preferred_vendors:
         data.attributes?.preferred_vendors ||
@@ -1867,6 +1871,8 @@ const Storefront = ({ setCompletion }) => {
             setImages={setView360Images}
             videos={view360Videos}
             setVideos={setView360Videos}
+            url={view360Url}
+            setUrl={setView360Url}
             onSave={handleSave}
             onShowSuccess={showSuccessModal}
           />

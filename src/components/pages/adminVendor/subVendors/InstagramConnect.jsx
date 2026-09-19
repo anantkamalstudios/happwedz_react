@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { Button, Spinner } from "react-bootstrap";
 import { FaInstagram } from "react-icons/fa6";
 import instagramApi from "../../../../services/api/instagramApi";
 
 export default function InstagramConnect() {
   const { vendor } = useSelector((state) => state.vendorAuth || {});
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [connection, setConnection] = useState(null);
@@ -41,44 +43,42 @@ export default function InstagramConnect() {
     return () => window.removeEventListener("message", handleMessage);
   }, [fetchConnection]);
 
-  const handleConnect = () => {
+  const handleConnect = async () => {
     if (!vendor?.id) return;
 
     setError("");
     setConnecting(true);
 
-    const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
-    const igAppId = import.meta.env.VITE_INSTAGRAM_APP_ID;
+    // Open the popup straight from the click so the browser doesn't block it,
+    // then send it to Instagram once the server has signed the request.
+    const popup = window.open("", "InstagramLogin", "width=600,height=700");
 
-    if (!igAppId) {
-      setError("Instagram App ID is not configured (VITE_INSTAGRAM_APP_ID).");
+    try {
+      const { url } = await instagramApi.getAuthUrl();
+      if (!popup || popup.closed) {
+        setError("Please allow pop-ups for this site to connect Instagram.");
+        setConnecting(false);
+        return;
+      }
+      popup.location.href = url;
+    } catch (err) {
+      popup?.close();
+      setError(
+        err.response?.data?.error ||
+          "Could not start the Instagram connection. Please try again."
+      );
       setConnecting(false);
       return;
     }
 
-    const redirectUri = `${apiUrl}/instagram-callback`;
-
-    const authUrl =
-      "https://www.instagram.com/oauth/authorize" +
-      "?enable_fb_login=0" +
-      "&force_authentication=1" +
-      `&client_id=${igAppId}` +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      "&response_type=code" +
-      "&scope=" +
-      "instagram_business_basic," +
-      "instagram_business_manage_messages," +
-      "instagram_business_manage_comments," +
-      "instagram_business_content_publish" +
-      `&state=${vendor.id}`;
-
-    const popup = window.open(authUrl, "InstagramLogin", "width=600,height=700");
-
-    // If the user just closes the popup without finishing, stop showing the spinner.
+    // The popup finishes on the main site, which may be a different origin from
+    // this dashboard, so it can't always message back. Re-read the connection
+    // once it closes.
     const timer = setInterval(() => {
-      if (popup && popup.closed) {
+      if (popup.closed) {
         clearInterval(timer);
         setConnecting(false);
+        fetchConnection();
       }
     }, 800);
   };
@@ -138,14 +138,24 @@ export default function InstagramConnect() {
               </div>
             </div>
           </div>
-          <Button
-            variant="outline-danger"
-            size="sm"
-            style={{ flex: "0 0 auto", width: "auto" }}
-            onClick={handleDisconnect}
-          >
-            Disconnect
-          </Button>
+          <div className="d-flex flex-wrap gap-2">
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              style={{ flex: "0 0 auto", width: "auto" }}
+              onClick={() => navigate("/vendor-dashboard/vendor-instagram?tab=posts")}
+            >
+              View posts &amp; stories →
+            </Button>
+            <Button
+              variant="outline-danger"
+              size="sm"
+              style={{ flex: "0 0 auto", width: "auto" }}
+              onClick={handleDisconnect}
+            >
+              Disconnect
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 border rounded p-3">

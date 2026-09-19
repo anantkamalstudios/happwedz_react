@@ -1,384 +1,296 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { FaHeart } from "react-icons/fa";
+import { FiCheckCircle } from "react-icons/fi";
 import { einviteApi } from "../../services/api/einviteApi";
-import { getImageUrl, handleImageError } from "../../utils/imageUtils";
-import { FaHeart, FaMapMarkerAlt, FaComment } from "react-icons/fa";
+import EinvitePage from "../layouts/einvites/design/EinvitePage";
+import {
+  cardFonts,
+  cardPath,
+  getCardPages,
+  isVideoCard,
+  loadFonts,
+  pageTitle,
+} from "../layouts/einvites/design/einviteDesign";
+import EinviteVideoPlayer from "../layouts/einvites/design/EinviteVideoPlayer";
+import "../layouts/einvites/einviteStudio.css";
 
+// A guest's last reply is kept on their device so they can see and change it.
+const replyKey = (token, id) => `einvite-rsvp:${token || id}`;
+const readReply = (key) => {
+  try {
+    return JSON.parse(localStorage.getItem(key) || "null");
+  } catch {
+    return null;
+  }
+};
+const saveReply = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage unavailable (private browsing): the reply just isn't remembered.
+  }
+};
+
+const RsvpForm = ({ pages, initial, onSubmit, submitting }) => {
+  const [form, setForm] = useState({
+    guestName: initial?.guestName || "",
+    phone: initial?.phone || "",
+    email: initial?.email || "",
+    attending: initial?.attending || "",
+    events: initial?.events || pages.map((page) => page.id),
+    guestCount: initial?.guestCount || 1,
+    message: initial?.message || "",
+  });
+  const set = (patch) => setForm((prev) => ({ ...prev, ...patch }));
+  const toggleEvent = (id) =>
+    set({ events: form.events.includes(id) ? form.events.filter((value) => value !== id) : [...form.events, id] });
+
+  return (
+    <form
+      className="text-start"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit(form);
+      }}
+    >
+      <div className="mb-3">
+        <label className="form-label fw-semibold" htmlFor="rsvp-name">Your name</label>
+        <input id="rsvp-name" className="eiv-text-input" required maxLength={120}
+          value={form.guestName} onChange={(e) => set({ guestName: e.target.value })} />
+      </div>
+
+      <fieldset className="mb-3">
+        <legend className="form-label fw-semibold fs-6">Will you attend?</legend>
+        <div className="eiv-answer-group">
+          {[["yes", "Yes, I'll be there"], ["maybe", "Maybe"], ["no", "Sorry, can't make it"]].map(([value, label]) => (
+            <label key={value} className={form.attending === value ? "is-on" : ""}>
+              <input type="radio" name="rsvp-attending" value={value} required
+                checked={form.attending === value} onChange={() => set({ attending: value })} />
+              {label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      {form.attending !== "no" && (
+        <>
+          {pages.length > 1 && (
+            <fieldset className="mb-3">
+              <legend className="form-label fw-semibold fs-6">Which functions?</legend>
+              <div className="eiv-card-picker">
+                {pages.map((page, index) => (
+                  <label key={page.id} className={form.events.includes(page.id) ? "is-on" : ""}>
+                    <input type="checkbox" checked={form.events.includes(page.id)} onChange={() => toggleEvent(page.id)} />
+                    {pageTitle(page, index)}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
+          <div className="mb-3">
+            <label className="form-label fw-semibold" htmlFor="rsvp-count">Number of people (including you)</label>
+            <select id="rsvp-count" className="form-select" value={form.guestCount}
+              onChange={(e) => set({ guestCount: Number(e.target.value) })}>
+              {Array.from({ length: 20 }, (_, index) => index + 1).map((count) => (
+                <option key={count} value={count}>{count}</option>
+              ))}
+            </select>
+          </div>
+        </>
+      )}
+
+      <div className="row g-2 mb-3">
+        <div className="col-sm-6">
+          <label className="form-label fw-semibold" htmlFor="rsvp-phone">Phone <span className="fw-normal text-muted">(optional)</span></label>
+          <input id="rsvp-phone" className="eiv-text-input" inputMode="tel" maxLength={20}
+            value={form.phone} onChange={(e) => set({ phone: e.target.value })} />
+        </div>
+        <div className="col-sm-6">
+          <label className="form-label fw-semibold" htmlFor="rsvp-email">Email <span className="fw-normal text-muted">(optional)</span></label>
+          <input id="rsvp-email" type="email" className="eiv-text-input" maxLength={120}
+            value={form.email} onChange={(e) => set({ email: e.target.value })} />
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <label className="form-label fw-semibold" htmlFor="rsvp-message">Message for the couple <span className="fw-normal text-muted">(optional)</span></label>
+        <textarea id="rsvp-message" className="eiv-text-input" rows={3} maxLength={1000}
+          value={form.message} onChange={(e) => set({ message: e.target.value })} />
+      </div>
+
+      <button type="submit" className="eiv-primary-btn w-100 justify-content-center" disabled={submitting}>
+        {submitting ? "Sending..." : "Send reply"}
+      </button>
+    </form>
+  );
+};
+
+// What guests see. /einvites/i/:token shows the cards chosen for that link
+// (and greets a guest by name on a personal link); /einvites/view/:id shows
+// every card.
 const EinviteViewPage = () => {
-  const { id } = useParams();
+  const { id, token } = useParams();
   const navigate = useNavigate();
-  const [cardData, setCardData] = useState(null);
+  const [card, setCard] = useState(null);
+  const [link, setLink] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [rsvpStatus, setRsvpStatus] = useState("");
-  const [guestName, setGuestName] = useState("");
-  const [guestComment, setGuestComment] = useState("");
-  const [showRsvpForm, setShowRsvpForm] = useState(false);
+  const [reply, setReply] = useState(() => readReply(replyKey(token, id)));
+  const [editingReply, setEditingReply] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
-  // Font preloading effect for custom fonts
   useEffect(() => {
-    if (cardData && cardData.editableFields) {
-      const editableFields = Array.isArray(cardData.editableFields)
-        ? cardData.editableFields
-        : typeof cardData.editableFields === "string"
-        ? JSON.parse(cardData.editableFields)
-        : [];
-
-      const uniqueFonts = [
-        ...new Set(
-          editableFields.map((field) => field.fontFamily).filter(Boolean)
-        ),
-      ];
-
-      uniqueFonts.forEach((fontFamily) => {
-        // Check if font is already loaded
-        if (!document.querySelector(`link[href*="${fontFamily}"]`)) {
-          const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
-            fontFamily
-          )}:wght@400;500;600;700&display=swap`;
-
-          const fontLink = document.createElement("link");
-          fontLink.rel = "stylesheet";
-          fontLink.href = fontUrl;
-          document.head.appendChild(fontLink);
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    const load = token
+      ? einviteApi.getInvite(token).then((data) => ({ card: data?.card, link: data?.link }))
+      : einviteApi.getCard(id).then((data) => ({ card: data, link: null }));
+    load
+      .then((result) => {
+        if (cancelled) return;
+        if (result.card?.isTemplate) {
+          navigate(cardPath(result.card), { replace: true });
+          return;
         }
+        // A paid video can't be viewed until the couple has paid for it.
+        if (isVideoCard(result.card) && result.card.isUnlocked === false) {
+          throw new Error("This invitation isn't ready yet. Please check back soon.");
+        }
+        setCard(result.card);
+        setLink(result.link);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || "This invitation could not be found.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
-    }
-  }, [cardData]);
-
-  useEffect(() => {
-    const fetchEinvite = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await einviteApi.getPublicEinviteInstance(id);
- 
-        let data = null;
-        if (response.success && response.data) {
-          data = response.data;
-        } else if (response.data) {
-          data = response.data;
-        } else if (response.success === true || response.success === false) {
-          data = response;
-        } else {
-          data = response;
-        }
-
-        if (data && (data.id || data._id)) { 
-          setCardData(data);
-        } else { 
-          setError("E-invite not found or invalid data format");
-        }
-      } catch (err) { 
-        setError(`Failed to load e-invite: ${err.message}`);
-      } finally {
-        setLoading(false);
-      }
+    return () => {
+      cancelled = true;
     };
+  }, [id, token, navigate]);
 
-    if (id) {
-      fetchEinvite();
+  const pages = useMemo(() => getCardPages(card), [card]);
+  useEffect(() => {
+    if (pages.length) loadFonts(cardFonts(pages));
+  }, [pages]);
+
+  const submitRsvp = async (form) => {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const events = form.attending === "yes" || form.attending === "maybe" ? form.events : [];
+      await einviteApi.sendRsvp({ token, cardId: card.id, ...form, events });
+      const saved = { ...form, events, sentAt: new Date().toISOString() };
+      saveReply(replyKey(token, id), saved);
+      setReply(saved);
+      setEditingReply(false);
+    } catch (err) {
+      setSubmitError(err.message || "Couldn't send your reply. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-  }, [id]);
-
-  const handleRsvpSubmit = (e) => {
-    e.preventDefault();
-    alert(`Thank you ${guestName}! Your RSVP has been recorded.`);
-    setShowRsvpForm(false);
-    setGuestName("");
-    setGuestComment("");
-    setRsvpStatus("");
   };
 
   if (loading) {
     return (
-      <div className="container text-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+      <div className="eiv">
+        <div className="container py-5 text-center">
+          <div className="spinner-border" style={{ color: "#ed1173" }} role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="eiv-status mt-3">Opening your invitation...</p>
         </div>
-        <p className="mt-3">Loading your invitation...</p>
       </div>
     );
   }
 
-  if (error || !cardData) {
+  if (error || !card || pages.length === 0) {
     return (
-      <div className="container text-center py-5">
-        <h3 className="text-danger mb-3">Oops!</h3>
-        <p>{error || "E-invite not found"}</p>
-        <div
-          className="alert alert-info mt-3 text-start"
-          style={{ maxWidth: "600px", margin: "0 auto" }}
-        >
-          <h6>Debug Information:</h6>
-          <p className="mb-1">
-            <strong>ID:</strong> {id}
-          </p>
-          <p className="mb-1">
-            <strong>Error:</strong> {error}
-          </p>
-          <p className="mb-0 small">
-            Check the browser console (F12) for more details.
-          </p>
+      <div className="eiv">
+        <div className="eiv-empty">
+          <h3>Invitation not found</h3>
+          <p>{error || "This invitation is no longer available."}</p>
+          <Link className="eiv-outline-btn" to="/">Go to HappyWedz</Link>
         </div>
-        <button className="btn btn-primary mt-3" onClick={() => navigate("/")}>
-          Go to Home
-        </button>
       </div>
     );
   }
 
-  const bgUrl = getImageUrl(cardData.backgroundUrl || cardData.background_url);
-  const editableFields = Array.isArray(cardData.editableFields)
-    ? cardData.editableFields
-    : typeof cardData.editableFields === "string"
-    ? JSON.parse(cardData.editableFields)
-    : [];
+  const guestName = link?.guestName;
+  const isVideo = isVideoCard(card);
+  // A video is one invitation, so the RSVP doesn't ask which of its scenes to attend.
+  const rsvpPages = isVideo ? pages.slice(0, 1) : pages;
+  const answerText = { yes: "You're coming", maybe: "You might come", no: "You can't make it" };
 
   return (
-    <div
-      className="einvite-view-page"
-      style={{
-        backgroundColor: "#f8f9fa",
-        minHeight: "100vh",
-        paddingTop: "2rem",
-        paddingBottom: "3rem",
-      }}
-    >
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
-            {/* E-Invite Card Display - Fixed size 414x659.288 */}
-            <div
-              className="card border-0 shadow-lg mb-4 mx-auto"
-              style={{
-                width: "414px",
-                maxWidth: "100%",
-              }}
-            >
-              <div
-                className="position-relative"
-                style={{
-                  backgroundColor: "#ffffff",
-                  width: "100%",
-                  paddingBottom: "159.25%",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                  }}
-                >
-                  {bgUrl ? (
-                    <img
-                      src={bgUrl}
-                      alt="E-Invite"
-                      className="d-block"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                      onError={(e) =>
-                        handleImageError(
-                          e,
-                          cardData.backgroundUrl || cardData.background_url
-                        )
-                      }
-                    />
-                  ) : (
-                    <div
-                      className="text-center text-muted p-5"
-                      style={{
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      No background image found
-                    </div>
-                  )}
-
-                  {/* Text Fields Overlay */}
-                  {editableFields.map((field) => (
-                    <div
-                      key={field.id}
-                      style={{
-                        position: "absolute",
-                        left: field.x,
-                        top: field.y,
-                        color: field.color,
-                        fontFamily: `"${field.fontFamily}", Arial, sans-serif`,
-                        fontSize: `${field.fontSize}px`,
-                        fontWeight: "normal",
-                        whiteSpace: "nowrap",
-                        userSelect: "none",
-                        pointerEvents: "none",
-                        textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
-                        zIndex: 5,
-                      }}
-                      className="einvite-text-field"
-                    >
-                      {field.defaultText}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Card Info - Shows below the e-invite card */}
-            <div className="card border-0 shadow-sm mb-4">
-              <div className="card-body text-center p-4">
-                <h4 className="mb-3 fw-bold">
-                  {cardData.name || "Wedding Invitation"}
-                </h4>
-                <p className="text-muted mb-4">
-                  You're invited to celebrate this special occasion with us!
-                </p>
-
-                {/* Action Buttons */}
-                <div className="d-flex gap-2 justify-content-center flex-wrap">
-                  <button
-                    className="btn btn-primary d-flex align-items-center gap-2 px-3 py-2"
-                    onClick={() => setShowRsvpForm(!showRsvpForm)}
-                  >
-                    <FaHeart /> <span>RSVP</span>
-                  </button>
-                  <button className="btn btn-outline-primary d-flex align-items-center gap-2 px-3 py-2">
-                    <FaMapMarkerAlt /> <span>Location</span>
-                  </button>
-                  <button className="btn btn-outline-primary d-flex align-items-center gap-2 px-3 py-2">
-                    <FaComment /> <span>Comment</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* RSVP Form */}
-            {showRsvpForm && (
-              <div className="card border-0 shadow-sm animate-fade-in">
-                <div className="card-body p-4">
-                  <h5 className="mb-4 fw-bold">RSVP to this Event</h5>
-                  <form onSubmit={handleRsvpSubmit}>
-                    <div className="mb-3">
-                      <label className="form-label fw-semibold">
-                        Your Name
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Enter your full name"
-                        value={guestName}
-                        onChange={(e) => setGuestName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label fw-semibold">
-                        Will you attend?
-                      </label>
-                      <select
-                        className="form-select"
-                        value={rsvpStatus}
-                        onChange={(e) => setRsvpStatus(e.target.value)}
-                        required
-                      >
-                        <option value="">Select your response...</option>
-                        <option value="yes">Yes, I'll be there!</option>
-                        <option value="no">Sorry, can't make it</option>
-                        <option value="maybe">Maybe</option>
-                      </select>
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label fw-semibold">
-                        Message (Optional)
-                      </label>
-                      <textarea
-                        className="form-control"
-                        rows="3"
-                        placeholder="Leave a message for the host..."
-                        value={guestComment}
-                        onChange={(e) => setGuestComment(e.target.value)}
-                      ></textarea>
-                    </div>
-                    <div className="d-flex gap-2">
-                      <button
-                        type="submit"
-                        className="btn btn-primary flex-grow-1"
-                      >
-                        Submit RSVP
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={() => setShowRsvpForm(false)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
+    <div className="eiv eiv-invite">
+      <div className="container py-4 py-md-5">
+        <div className="mx-auto" style={{ maxWidth: 480 }}>
+          <div className="text-center mb-4">
+            <p className="eiv-eyebrow mb-2">{guestName ? `Dear ${guestName}` : "You're invited"}</p>
+            <h1 className="eiv-info-title mb-1">{card.name || "Wedding Invitation"}</h1>
+            {!isVideo && pages.length > 1 && (
+              <p className="eiv-status mb-0">{pages.map((page, index) => pageTitle(page, index)).join(" · ")}</p>
             )}
           </div>
+
+          {isVideo && (
+            <div className="eiv-video-stage mb-4">
+              <EinviteVideoPlayer video={card.video} pages={pages} />
+            </div>
+          )}
+
+          {!isVideo && pages.map((page, index) => (
+            <section key={page.id} className="mb-4" aria-label={pageTitle(page, index)}>
+              {pages.length > 1 && <h2 className="eiv-invite-event">{pageTitle(page, index)}</h2>}
+              <EinvitePage page={page} style={{ boxShadow: "0 16px 40px rgba(0,0,0,0.16)", borderRadius: 4 }} />
+            </section>
+          ))}
+
+          <div className="eiv-info" id="rsvp">
+            {reply && !editingReply ? (
+              <div className="text-center">
+                <FiCheckCircle size={40} style={{ color: "#1a9c5b" }} />
+                <h2 className="eiv-info-title mt-2 mb-1">Thank you{reply.guestName ? `, ${reply.guestName}` : ""}!</h2>
+                <p className="eiv-status mb-3">
+                  {answerText[reply.attending] || "Your reply was sent"}
+                  {reply.attending !== "no" && rsvpPages.length > 1 && reply.events?.length > 0 &&
+                    ` · ${rsvpPages
+                      .map((page, index) => (reply.events.includes(page.id) ? pageTitle(page, index) : null))
+                      .filter(Boolean)
+                      .join(", ")}`}
+                </p>
+                <button type="button" className="eiv-outline-btn" onClick={() => setEditingReply(true)}>
+                  Change my reply
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="text-center mb-3">
+                  <FaHeart size={22} style={{ color: "#ed1173" }} />
+                  <h2 className="eiv-info-title mt-2 mb-1">RSVP</h2>
+                  <p className="eiv-status mb-0">Please let us know if you can join us.</p>
+                </div>
+                {submitError && <div className="alert alert-danger py-2">{submitError}</div>}
+                <RsvpForm
+                  pages={rsvpPages}
+                  initial={reply || { guestName: guestName || "" }}
+                  onSubmit={submitRsvp}
+                  submitting={submitting}
+                />
+              </>
+            )}
+          </div>
+
+          <p className="text-center eiv-status small mt-4 mb-0">
+            Made with <Link to="/einvites">HappyWedz e-invites</Link>
+          </p>
         </div>
       </div>
-
-      <style jsx>{`
-        .einvite-text-field {
-          font-display: swap !important;
-          font-synthesis: none;
-          text-rendering: optimizeLegibility;
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* Ensure fonts load properly */
-        @font-face {
-          font-family: "Aguafina Script";
-          font-display: swap;
-        }
-
-        .animate-fade-in {
-          animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .btn {
-          transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        @media (max-width: 480px) {
-          .btn span {
-            display: none;
-          }
-          .btn {
-            padding: 0.5rem 0.75rem !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };
