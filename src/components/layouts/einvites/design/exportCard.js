@@ -1,4 +1,13 @@
-import { CARD_WIDTH, fontStack, loadFonts, pageAspect, pageFonts } from "./einviteDesign";
+import {
+  CARD_WIDTH,
+  SLIDE_DISTANCE,
+  animationFrameCount,
+  entranceState,
+  fontStack,
+  loadFonts,
+  pageAspect,
+  pageFonts,
+} from "./einviteDesign";
 
 const loadImage = (src) =>
   new Promise((resolve, reject) => {
@@ -125,13 +134,114 @@ const canvasBlob = (canvas) =>
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Could not create the image"))), "image/png");
   });
 
-// One transparent 720×1280 PNG of each scene's text, for the server to lay
-// over the video.
-export const renderVideoOverlays = async (pages) => {
-  const blobs = [];
-  for (const page of pages) {
-    const canvas = await renderPageToCanvas(page, 720, { transparent: true });
-    blobs.push(await canvasBlob(canvas));
+// ----- Video text layers -----
+
+const VIDEO_OUT_WIDTH = 720;
+const LAYER_FPS = 15;
+
+// The box a text box occupies (as in fieldTextStyle): its left/top, fixed width
+// or widest line, and the height of its lines. Animations scale around its
+// centre and "reveal" clips across it, like the CSS in the player.
+const fieldBox = (ctx, field, scale, width, height) => {
+  const fontSize = field.fontSize * scale;
+  ctx.font = `${field.fontStyle} ${field.fontWeight} ${fontSize}px ${fontStack(field.fontFamily)}`;
+  if ("letterSpacing" in ctx) ctx.letterSpacing = `${field.letterSpacing * scale}px`;
+  const text = field.uppercase ? field.defaultText.toUpperCase() : field.defaultText;
+  const boxWidth = field.width ? field.width * width : null;
+  const lines = text.split("\n").flatMap((paragraph) => wrapParagraph(ctx, paragraph, boxWidth));
+  const w = boxWidth || Math.max(...lines.map((line) => ctx.measureText(line).width), 1);
+  const h = lines.length * fontSize * field.lineHeight;
+  return { x: field.x * width, y: field.y * height, w, h };
+};
+
+// Draws one text box in an animation state onto ctx (already offset to the crop).
+const drawFieldState = (ctx, field, scale, width, height, state, box) => {
+  ctx.save();
+  ctx.globalAlpha = state.opacity;
+  const cx = box.x + box.w / 2;
+  const cy = box.y + box.h / 2;
+  ctx.translate(cx, cy + state.dy * scale);
+  ctx.scale(state.scale, state.scale);
+  ctx.translate(-cx, -cy);
+  if (state.reveal < 1) {
+    ctx.beginPath();
+    ctx.rect(box.x, box.y - box.h * 0.5, box.w * state.reveal, box.h * 2);
+    ctx.clip();
   }
-  return blobs;
+  drawField(ctx, field, scale, width, height);
+  ctx.restore();
+};
+
+// Smallest rectangle holding every visible pixel of a canvas, or null.
+const inkBounds = (canvas) => {
+  const { width, height } = canvas;
+  const data = canvas.getContext("2d").getImageData(0, 0, width, height).data;
+  let x0 = width;
+  let y0 = height;
+  let x1 = -1;
+  let y1 = -1;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (data[(y * width + x) * 4 + 3] > 0) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  return x1 < 0 ? null : { x0, y0, x1, y1 };
+};
+
+// Every text box of a video as a small transparent PNG (plus the frames of its
+// entrance animation), with where it goes. The server lays them over the video.
+// Returns { layers: [{ scene, field, frames, fps, x, y }], blobs } — blobs in layer order.
+export const renderVideoLayers = async (pages) => {
+  const width = VIDEO_OUT_WIDTH;
+  const layers = [];
+  const blobs = [];
+
+  for (let sceneIndex = 0; sceneIndex < pages.length; sceneIndex += 1) {
+    const page = pages[sceneIndex];
+    const height = Math.round(width * pageAspect(page));
+    const scale = width / CARD_WIDTH;
+    await loadFonts(pageFonts(page));
+
+    for (const field of page.fields || []) {
+      if (!String(field.defaultText || "").trim()) continue;
+      const animation = field.animation || "fade";
+
+      // Where the finished text sits, then room for where it moves from.
+      const full = document.createElement("canvas");
+      full.width = width;
+      full.height = height;
+      const fullCtx = full.getContext("2d");
+      const box = fieldBox(fullCtx, field, scale, width, height);
+      drawFieldState(fullCtx, field, scale, width, height, entranceState("none", 0), box);
+      const ink = inkBounds(full);
+      if (!ink) continue;
+      const pad = 6;
+      const slide = animation === "slide-up" ? Math.ceil(SLIDE_DISTANCE * scale) : 0;
+      const crop = {
+        x: Math.max(0, ink.x0 - pad),
+        y: Math.max(0, ink.y0 - pad),
+      };
+      crop.w = Math.min(width, ink.x1 + pad + 1) - crop.x;
+      crop.h = Math.min(height, ink.y1 + pad + 1 + slide) - crop.y;
+
+      const frames = animationFrameCount(animation, LAYER_FPS);
+      for (let frame = 0; frame < frames; frame += 1) {
+        const state = frames === 1 ? entranceState("none", 0) : entranceState(animation, frame / LAYER_FPS);
+        const canvas = document.createElement("canvas");
+        canvas.width = crop.w;
+        canvas.height = crop.h;
+        const ctx = canvas.getContext("2d");
+        ctx.translate(-crop.x, -crop.y);
+        drawFieldState(ctx, field, scale, width, height, state, box);
+        blobs.push(await canvasBlob(canvas));
+      }
+      layers.push({ scene: sceneIndex, field: field.id, frames, fps: LAYER_FPS, x: crop.x, y: crop.y });
+    }
+  }
+  return { layers, blobs };
 };

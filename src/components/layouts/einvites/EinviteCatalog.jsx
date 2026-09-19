@@ -13,6 +13,19 @@ const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
   { value: "name", label: "Name (A–Z)" },
 ];
+// Video designs have prices, so they can also be sorted and filtered by price.
+const VIDEO_SORT_OPTIONS = [
+  ...SORT_OPTIONS,
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+];
+const PRICE_OPTIONS = [
+  { value: "", label: "Any price" },
+  { value: "free", label: "Free" },
+  { value: "under1000", label: "Under ₹1,000" },
+  { value: "1000to2000", label: "₹1,000 – ₹2,000" },
+  { value: "over2000", label: "Over ₹2,000" },
+];
 
 const pickAllowed = (value, allowed, fallback = "") => (allowed.includes(value) ? value : fallback);
 
@@ -83,7 +96,11 @@ const FilterDropdown = ({ label, value, options, onChange, alwaysHighlighted = f
 // Filters live in the URL (?sort=&culture=&theme=) so a filtered list can be shared.
 const EinviteCatalog = ({ cardType, onCardTypeChange, showBreadcrumb = true }) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const sort = pickAllowed(searchParams.get("sort"), SORT_OPTIONS.map((o) => o.value), "popular");
+  const isVideo = cardType === "video";
+  const sortOptions = isVideo ? VIDEO_SORT_OPTIONS : SORT_OPTIONS;
+  const sort = pickAllowed(searchParams.get("sort"), sortOptions.map((o) => o.value), "popular");
+  const price = isVideo ? pickAllowed(searchParams.get("price"), PRICE_OPTIONS.map((o) => o.value)) : "";
+  const priceLabel = PRICE_OPTIONS.find((o) => o.value === price)?.label;
   const culture = pickAllowed(searchParams.get("culture"), CULTURES);
   const theme = pickAllowed(searchParams.get("theme"), THEMES);
 
@@ -108,6 +125,7 @@ const EinviteCatalog = ({ cardType, onCardTypeChange, showBreadcrumb = true }) =
     const next = new URLSearchParams(searchParams);
     next.delete("culture");
     next.delete("theme");
+    next.delete("price");
     setSearchParams(next, { replace: true });
   };
 
@@ -116,7 +134,7 @@ const EinviteCatalog = ({ cardType, onCardTypeChange, showBreadcrumb = true }) =
     setLoading(true);
     setError(null);
     einviteApi
-      .getTemplates({ cardType, culture, theme, sort, page: 1, limit: PAGE_SIZE })
+      .getTemplates({ cardType, culture, theme, price, sort, page: 1, limit: PAGE_SIZE })
       .then((result) => {
         if (cancelled) return;
         setCards(result?.data || []);
@@ -132,7 +150,7 @@ const EinviteCatalog = ({ cardType, onCardTypeChange, showBreadcrumb = true }) =
     return () => {
       cancelled = true;
     };
-  }, [cardType, culture, theme, sort, reloadKey]);
+  }, [cardType, culture, theme, price, sort, reloadKey]);
 
   const loadMore = async () => {
     setLoadingMore(true);
@@ -141,6 +159,7 @@ const EinviteCatalog = ({ cardType, onCardTypeChange, showBreadcrumb = true }) =
         cardType,
         culture,
         theme,
+        price,
         sort,
         page: page + 1,
         limit: PAGE_SIZE,
@@ -157,14 +176,17 @@ const EinviteCatalog = ({ cardType, onCardTypeChange, showBreadcrumb = true }) =
   return (
     <div className="eiv">
       <div className="eiv-filterbar">
-        <div className="eiv-filterbar-inner">
+        <div className="eiv-filterbar-inner" style={isVideo ? { gridTemplateColumns: "repeat(4, minmax(0, 1fr))" } : undefined}>
           <FilterDropdown
             label="Sort By"
             value={sort}
-            options={SORT_OPTIONS}
+            options={sortOptions}
             onChange={(value) => setFilter("sort", value)}
             alwaysHighlighted
           />
+          {isVideo && (
+            <FilterDropdown label="Price" value={price} options={PRICE_OPTIONS} onChange={(value) => setFilter("price", value)} />
+          )}
           <FilterDropdown
             label="Culture"
             value={culture}
@@ -218,7 +240,7 @@ const EinviteCatalog = ({ cardType, onCardTypeChange, showBreadcrumb = true }) =
           ))}
         </div>
 
-        {(culture || theme) && (
+        {(culture || theme || price) && (
           <div className="d-flex flex-wrap align-items-center gap-2 mb-4">
             {culture && (
               <span className="eiv-chip">
@@ -230,6 +252,12 @@ const EinviteCatalog = ({ cardType, onCardTypeChange, showBreadcrumb = true }) =
               <span className="eiv-chip">
                 {theme}
                 <button type="button" aria-label={`Remove ${theme}`} onClick={() => setFilter("theme", "")}>×</button>
+              </span>
+            )}
+            {price && (
+              <span className="eiv-chip">
+                {priceLabel}
+                <button type="button" aria-label={`Remove ${priceLabel}`} onClick={() => setFilter("price", "")}>×</button>
               </span>
             )}
             <button type="button" className="eiv-link-btn" onClick={clearFilters}>Clear all</button>
@@ -258,7 +286,7 @@ const EinviteCatalog = ({ cardType, onCardTypeChange, showBreadcrumb = true }) =
                 ? "Try a different culture or theme."
                 : "New designs are added regularly. Please check back soon."}
             </p>
-            {(culture || theme) && (
+            {(culture || theme || price) && (
               <button type="button" className="eiv-outline-btn" onClick={clearFilters}>
                 Clear filters
               </button>

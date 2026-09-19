@@ -12,7 +12,9 @@ import "./einviteStudio.css";
 const MyCardTile = ({ card, onDelete }) => {
   const pages = getCardPages(card);
   const isVideo = isVideoCard(card);
-  const summary = isVideo ? "10-second video" : pages.length > 1 ? cardSetSummary(pages) : "";
+  const summary = isVideo ? `${card.video?.duration || 10}-second video` : pages.length > 1 ? cardSetSummary(pages) : "";
+  // A paid video design the couple hasn't paid for yet.
+  const awaitingPayment = isVideo && card.isUnlocked === false;
 
   return (
     <div className="eiv-my-card">
@@ -24,15 +26,24 @@ const MyCardTile = ({ card, onDelete }) => {
           pages.length > 1 && <span className="eiv-tile-badge">{pages.length} cards</span>
         )}
       </Link>
-      <div className="eiv-tile-name">{card.name}</div>
+      <div className="eiv-tile-name">
+        {card.name}
+        {awaitingPayment && <span className="eiv-rsvp-badge is-maybe">Payment pending</span>}
+      </div>
       <div className="eiv-tile-events">
         {summary || `${pages.length} ${pages.length === 1 ? "card" : "cards"}`}
         {card.updated_at && ` · ${formatDate(card.updated_at)}`}
       </div>
       <div className="d-flex flex-wrap gap-2 mt-2">
-        <Link to={`/einvites/share/${card.id}`} className="eiv-chip-btn is-primary">
-          <FiSend size={15} /> Share &amp; RSVP
-        </Link>
+        {awaitingPayment ? (
+          <Link to={`/einvites/editor/${card.id}?step=review`} className="eiv-chip-btn is-primary">
+            Complete payment
+          </Link>
+        ) : (
+          <Link to={`/einvites/share/${card.id}`} className="eiv-chip-btn is-primary">
+            <FiSend size={15} /> Share &amp; RSVP
+          </Link>
+        )}
         <Link to={`/einvites/editor/${card.id}`} className="eiv-chip-btn">
           <FiEdit2 size={15} /> Edit
         </Link>

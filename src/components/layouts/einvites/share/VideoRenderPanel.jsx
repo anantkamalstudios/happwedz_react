@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Swal from "sweetalert2";
 import { FiDownload, FiFilm, FiRefreshCw, FiShare2 } from "react-icons/fi";
 import { einviteApi } from "../../../../services/api/einviteApi";
-import { renderVideoOverlays } from "../design/exportCard";
+import { renderVideoLayers } from "../design/exportCard";
+import { payForInvitation } from "./payForInvitation";
 
 const POLL_MS = 2000;
 
@@ -16,10 +17,17 @@ const fetchVideoFile = async (url, name) => {
   return new File([blob], fileName(name), { type: "video/mp4" });
 };
 
+const rupees = (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
+
 // Makes the couple's MP4 on the server and offers it for download or sharing.
-const VideoRenderPanel = ({ card, pages }) => {
+// A paid design is paid for here first. `autoStart` creates the video straight
+// away (after the Review step) when there isn't an up-to-date one yet.
+const VideoRenderPanel = ({ card, pages, autoStart = false, onUnlocked }) => {
+  const [unlocked, setUnlocked] = useState(card.isUnlocked !== false);
+  const [paying, setPaying] = useState(false);
+  const autoStartedRef = useRef(false);
   const [state, setState] = useState(() => ({
-    status: card.videoRender?.status || "none",
+    status: autoStart ? "loading" : card.videoRender?.status || "none",
     url: card.videoRender?.url || null,
     isCurrent: Boolean(card.videoRender?.isCurrent),
     error: card.videoRender?.error || null,
@@ -28,12 +36,12 @@ const VideoRenderPanel = ({ card, pages }) => {
   const [busy, setBusy] = useState(false);
   const timerRef = useRef(null);
 
-  const working = preparing || state.status === "queued" || state.status === "rendering";
+  const working = preparing || paying || state.status === "queued" || state.status === "rendering";
 
   const poll = useCallback(async () => {
     try {
       const next = await einviteApi.getVideoRender(card.id);
-      setState((prev) => ({ ...prev, ...next }));
+      setState((prev) => ({ ...prev, ...next, status: next?.status || "none" }));
       if (next?.status === "queued" || next?.status === "rendering") {
         timerRef.current = setTimeout(poll, POLL_MS);
       }
@@ -51,8 +59,7 @@ const VideoRenderPanel = ({ card, pages }) => {
   const create = async () => {
     setPreparing(true);
     try {
-      const overlays = await renderVideoOverlays(pages);
-      const next = await einviteApi.startVideoRender(card.id, overlays);
+      const next = await einviteApi.startVideoRender(card.id, await renderVideoLayers(pages));
       setState((prev) => ({ ...prev, ...next, error: null }));
       clearTimeout(timerRef.current);
       timerRef.current = setTimeout(poll, POLL_MS);
@@ -62,6 +69,33 @@ const VideoRenderPanel = ({ card, pages }) => {
       setPreparing(false);
     }
   };
+
+  const payAndCreate = async () => {
+    setPaying(true);
+    try {
+      const order = await payForInvitation(card.id);
+      if (!order) return;
+      setUnlocked(true);
+      onUnlocked?.();
+      Swal.fire({ text: `Payment successful (order ${order.orderNumber}). Creating your video now.`, icon: "success", timer: 2200, showConfirmButton: false });
+      await create();
+    } catch (err) {
+      Swal.fire({ text: err.message || "The payment didn't go through.", icon: "error" });
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  // After the Review step: make the video once the status has loaded, unless an
+  // up-to-date one already exists or one is being made.
+  useEffect(() => {
+    if (!autoStart || autoStartedRef.current || !unlocked) return;
+    if (state.status === "loading" || working) return;
+    if (state.status === "done" && state.isCurrent) return;
+    autoStartedRef.current = true;
+    create();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart, unlocked, state.status, state.isCurrent, working]);
 
   const download = async () => {
     setBusy(true);
@@ -111,13 +145,27 @@ const VideoRenderPanel = ({ card, pages }) => {
       {working ? (
         <>
           <p className="eiv-status mb-2">
-            {preparing
-              ? "Preparing your text..."
+            {paying
+              ? "Waiting for your payment..."
+              : preparing
+              ? "Preparing your text and animations..."
               : state.status === "queued" && state.position > 1
               ? `Waiting to start (${state.position - 1} ahead of you)...`
               : "Creating your video. This takes about 10–20 seconds..."}
           </p>
           <div className="eiv-progress"><div /></div>
+        </>
+      ) : !unlocked ? (
+        <>
+          <p className="eiv-status mb-2">
+            This is a paid design.{" "}
+            <strong>{rupees(card.pricing?.price)}</strong>
+            {card.pricing?.mrp > card.pricing?.price && <s className="ms-1 text-muted">{rupees(card.pricing.mrp)}</s>}
+            {" "}once, then create and re-create your video as often as you like.
+          </p>
+          <button type="button" className="eiv-primary-btn eiv-btn-sm" onClick={payAndCreate}>
+            <FiFilm size={16} /> Pay {rupees(card.pricing?.price)} &amp; create video
+          </button>
         </>
       ) : (
         <>

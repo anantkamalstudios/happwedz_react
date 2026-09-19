@@ -157,7 +157,7 @@ const EinviteSharePage = () => {
             <h1 className="eiv-info-title mb-1">{card.name}</h1>
             <p className="eiv-status mb-3">
               {isVideo
-                ? "10-second video invitation"
+                ? `${card.video?.duration || 10}-second video invitation`
                 : `${pages.length} ${pages.length === 1 ? "card" : "cards"}${pages.length > 1 ? ` · ${pageTitle(page, pageIndex)}` : ""}`}
             </p>
             {isVideo ? (
@@ -165,7 +165,12 @@ const EinviteSharePage = () => {
                 <div className="eiv-video-stage">
                   <EinviteVideoPlayer video={card.video} pages={pages} />
                 </div>
-                <VideoRenderPanel card={card} pages={pages} />
+                <VideoRenderPanel
+                  card={card}
+                  pages={pages}
+                  autoStart={searchParams.get("create") === "1"}
+                  onUnlocked={() => setCard((prev) => ({ ...prev, isUnlocked: true }))}
+                />
               </>
             ) : (
             <div className="eiv-stage">
@@ -190,6 +195,13 @@ const EinviteSharePage = () => {
 
           <div className="col-lg-8">
             <div className="eiv-info">
+              {isVideo && card.isUnlocked === false ? (
+                <div className="eiv-empty py-4">
+                  <h3>Pay to share your video</h3>
+                  <p>This is a paid design. Once you've paid, you can create the video and share it with guests here.</p>
+                </div>
+              ) : (
+              <>
               <div className="eiv-share-tabs" role="tablist">
                 {TABS.map((item) => (
                   <button
@@ -209,6 +221,8 @@ const EinviteSharePage = () => {
               {tab === "links" && <ShareLinksTab card={card} pages={sharePages} />}
               {tab === "guests" && <SendToGuestsTab card={card} pages={sharePages} userId={currentUserId} />}
               {tab === "rsvps" && <RsvpTab card={card} pages={sharePages} onCount={setRsvpCount} />}
+              </>
+              )}
             </div>
           </div>
         </div>

@@ -50,10 +50,11 @@ export const einviteApi = {
   getRsvps: (id) => request(`/cards/${id}/rsvps`, { fallbackMessage: "Failed to load RSVPs" }),
 
   // ----- Video invitations (owner only) -----
-  // `overlays` are PNG blobs of each scene's text, in scene order.
-  startVideoRender: async (id, overlays) => {
+  // `layers` describe each text box; `blobs` are their PNG frames, in layer order.
+  startVideoRender: async (id, { layers, blobs }) => {
     const form = new FormData();
-    overlays.forEach((blob, index) => form.append("overlays", blob, `scene-${index + 1}.png`));
+    form.append("layers", JSON.stringify(layers));
+    blobs.forEach((blob, index) => form.append("frames", blob, `frame-${index}.png`));
     const token = localStorage.getItem("token");
     const response = await fetch(`${API_BASE_URL}/einvites/cards/${id}/render`, {
       method: "POST",
@@ -64,6 +65,12 @@ export const einviteApi = {
   },
   getVideoRender: async (id) =>
     (await request(`/cards/${id}/render`, { fallbackMessage: "Failed to check the video" }))?.data,
+
+  // ----- Paying for a paid video design -----
+  checkout: async (id) =>
+    (await request(`/cards/${id}/checkout`, { method: "POST", fallbackMessage: "Couldn't start the payment" }))?.data,
+  verifyPayment: async (payment) =>
+    (await request(`/orders/verify`, { method: "POST", body: payment, fallbackMessage: "Couldn't confirm the payment" }))?.data,
 
   // ----- Guests (no login) -----
   getInvite: async (token) =>
@@ -76,11 +83,12 @@ export const einviteApi = {
     }))?.data,
 
   // Public catalogue of templates, with filters and per-type counts.
-  getTemplates: async ({ cardType, culture, theme, sort, search, page = 1, limit = 24 } = {}) => {
+  getTemplates: async ({ cardType, culture, theme, price, sort, search, page = 1, limit = 24 } = {}) => {
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (cardType) params.set("cardType", cardType);
     if (culture) params.set("culture", culture);
     if (theme) params.set("theme", theme);
+    if (price) params.set("price", price);
     if (sort) params.set("sort", sort);
     if (search) params.set("search", search);
     const response = await fetch(`${API_BASE_URL}/einvites/cards?${params.toString()}`);

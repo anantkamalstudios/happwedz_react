@@ -24,6 +24,8 @@ export const fieldTextStyle = (field, scale) => ({
 // the design is scaled from the CARD_WIDTH-wide design space, so a thumbnail
 // and the full editor show exactly the same layout. Video scenes are taller
 // (9:16); `underlay` is drawn behind the text, e.g. a video frame.
+// `fieldStyle(field, scale)` adds styles to one text box (return null to hide it),
+// which the video player uses for animations.
 const EinvitePage = ({
   page,
   className = "",
@@ -34,6 +36,7 @@ const EinvitePage = ({
   showOutlines = false,
   fieldCursor = "move",
   underlay,
+  fieldStyle,
   children,
 }) => {
   const containerRef = useRef(null);
@@ -92,6 +95,8 @@ const EinvitePage = ({
 
       {scale > 0 &&
         (page?.fields || []).map((field) => {
+          const extraStyle = fieldStyle ? fieldStyle(field, scale) : null;
+          if (fieldStyle && extraStyle === null) return null;
           const isSelected = field.id === selectedFieldId;
           const interactive = Boolean(onFieldPointerDown);
           const dragging = interactive && fieldCursor === "move";
@@ -111,6 +116,7 @@ const EinvitePage = ({
                 outlineOffset: 2,
                 // Dragging needs the pointer; tapping to edit must still let the page scroll.
                 touchAction: dragging ? "none" : "auto",
+                ...extraStyle,
               }}
               onPointerDown={
                 interactive

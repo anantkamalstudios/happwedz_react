@@ -155,6 +155,10 @@ const EinviteViewPage = () => {
           navigate(cardPath(result.card), { replace: true });
           return;
         }
+        // A paid video can't be viewed until the couple has paid for it.
+        if (isVideoCard(result.card) && result.card.isUnlocked === false) {
+          throw new Error("This invitation isn't ready yet. Please check back soon.");
+        }
         setCard(result.card);
         setLink(result.link);
       })

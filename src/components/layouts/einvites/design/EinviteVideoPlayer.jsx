@@ -1,8 +1,19 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import EinvitePage from "./EinvitePage";
-import { VIDEO_ASPECT, VIDEO_DURATION, sceneOpacity } from "./einviteDesign";
+import { VIDEO_ASPECT, VIDEO_DURATION, fieldStateAt } from "./einviteDesign";
 
 const layer = { position: "absolute", inset: 0, width: "100%", height: "100%" };
+
+// CSS for a text box's animation state (see entranceState in einviteDesign).
+const motionStyle = (state, scale) =>
+  state
+    ? {
+        opacity: state.opacity,
+        transform: `translateY(${state.dy * scale}px) scale(${state.scale})`,
+        transformOrigin: "center",
+        clipPath: state.reveal < 1 ? `inset(-50% ${(1 - state.reveal) * 100}% -50% 0)` : undefined,
+      }
+    : null;
 
 // A still frame of a video at a given time, used behind the text while a
 // scene is being designed.
@@ -34,9 +45,9 @@ export const VideoFrame = ({ src, time = 0 }) => {
 };
 
 // Plays a video invitation the way the rendered MP4 looks: the background
-// loops, the music (if any) plays alongside, and each scene's text fades in
-// and out during its time.
-const EinviteVideoPlayer = ({ video, pages, autoPlay = true, className = "", style }) => {
+// loops, the music (if any) plays alongside, and each text box enters with its
+// animation and fades out with its scene.
+const EinviteVideoPlayer = ({ video, pages, autoPlay = true, showControls = true, className = "", style }) => {
   const videoRef = useRef(null);
   const audioRef = useRef(null);
   const clockRef = useRef({ startedAt: 0, offset: 0 });
@@ -100,9 +111,7 @@ const EinviteVideoPlayer = ({ video, pages, autoPlay = true, className = "", sty
     if (!next && !playing) play();
   };
 
-  const visible = (pages || [])
-    .map((page) => ({ page, opacity: sceneOpacity(page, time) }))
-    .filter((item) => item.opacity > 0);
+  const visible = (pages || []).filter((page) => time >= page.start && time < page.end);
 
   return (
     <div
@@ -133,14 +142,16 @@ const EinviteVideoPlayer = ({ video, pages, autoPlay = true, className = "", sty
       />
       {hasMusic && <audio ref={audioRef} src={video.audioUrl} muted={muted} loop preload="auto" />}
 
-      {visible.map(({ page, opacity }) => (
+      {visible.map((page) => (
         <EinvitePage
           key={page.id}
           page={{ ...page, backgroundUrl: "" }}
-          style={{ ...layer, background: "transparent", opacity }}
+          style={{ ...layer, background: "transparent" }}
+          fieldStyle={(field, scale) => motionStyle(fieldStateAt(page, field, time), scale)}
         />
       ))}
 
+      {showControls && (
       <div
         style={{
           position: "absolute",
@@ -177,6 +188,7 @@ const EinviteVideoPlayer = ({ video, pages, autoPlay = true, className = "", sty
           {muted ? "🔇 Sound off" : "🔊 Sound on"}
         </button>
       </div>
+      )}
     </div>
   );
 };

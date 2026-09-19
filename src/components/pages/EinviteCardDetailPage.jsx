@@ -17,6 +17,9 @@ import {
   pageTitle,
 } from "../layouts/einvites/design/einviteDesign";
 import EinviteVideoPlayer from "../layouts/einvites/design/EinviteVideoPlayer";
+import StepHeader from "../layouts/einvites/video/StepHeader";
+
+const rupees = (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
 import "../layouts/einvites/einviteStudio.css";
 
 const EinviteCardDetailPage = () => {
@@ -214,7 +217,7 @@ const EinviteCardDetailPage = () => {
               <h2 className="eiv-info-title mt-2 mb-3">{card.name}</h2>
               <div className="d-flex flex-wrap gap-2">
                 <span className="eiv-chip">
-                  {isVideo ? "10-second video" : `${pages.length} ${pages.length === 1 ? "card" : "cards"}`}
+                  {isVideo ? `${card.video?.duration || 10}-second video` : `${pages.length} ${pages.length === 1 ? "card" : "cards"}`}
                 </span>
                 {card.culture && <span className="eiv-chip">{card.culture}</span>}
                 {card.theme && <span className="eiv-chip">{card.theme}</span>}
@@ -225,11 +228,28 @@ const EinviteCardDetailPage = () => {
                 </p>
               )}
               {isVideo ? (
-              <ul className="eiv-points">
-                <li><FiCheck size={16} /> Add your names, date and venue to each scene</li>
-                <li><FiCheck size={16} /> Get a 10-second HD video (MP4) with music</li>
-                <li><FiCheck size={16} /> Send it on WhatsApp or share a link and collect RSVPs</li>
-              </ul>
+              <>
+                <div className="eiv-detail-price">
+                  {card.pricing?.isPaid ? (
+                    <>
+                      <strong>{rupees(card.pricing.price)}</strong>
+                      {card.pricing.mrp > card.pricing.price && <s>{rupees(card.pricing.mrp)}</s>}
+                      {card.pricing.discountPercent > 0 && <span className="eiv-discount">{card.pricing.discountPercent}% OFF</span>}
+                    </>
+                  ) : (
+                    <strong className="eiv-free">FREE</strong>
+                  )}
+                </div>
+                <StepHeader current={1} isPaid={card.pricing?.isPaid} />
+                <h3 className="eiv-subheading mt-2">What you should know</h3>
+                <ul className="eiv-points">
+                  <li><FiCheck size={16} /> Add your names, date and venue to each scene and see them on the video as you type</li>
+                  <li><FiCheck size={16} /> Get your HD video (MP4) instantly{card.pricing?.isPaid ? " after payment" : ""} — no waiting</li>
+                  <li><FiCheck size={16} /> Change your text and re-create the video whenever you like</li>
+                  <li><FiCheck size={16} /> Send it on WhatsApp, or share a link and collect RSVPs</li>
+                  {card.pricing?.isPaid && <li><FiCheck size={16} /> Payments are non-refundable once your video is created</li>}
+                </ul>
+              </>
               ) : (
               <ul className="eiv-points">
                 <li><FiCheck size={16} /> Add your names, dates and venue on every card</li>

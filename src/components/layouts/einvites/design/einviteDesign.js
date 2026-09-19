@@ -63,12 +63,14 @@ export const pageTitle = (page, index) =>
     ? page.name.trim()
     : `${isScene(page) ? "Scene" : "Card"} ${index + 1}`;
 
-// Video invitations are portrait (9:16) and last a fixed time, split into up
-// to three scenes. A scene is a page with start/end seconds; its background is
-// a still frame from the video.
-export const VIDEO_DURATION = 10;
+// Video invitations are portrait (9:16). The admin sets the length (5–60 s) and
+// splits it into scenes. A scene is a page with start/end seconds; its
+// background is a still frame from the video.
+export const VIDEO_DURATION = 10; // default length
+export const MIN_VIDEO_DURATION = 5;
+export const MAX_VIDEO_DURATION = 60;
 export const VIDEO_ASPECT = 16 / 9; // height ÷ width
-export const MAX_VIDEO_SCENES = 3;
+export const MAX_VIDEO_SCENES = 6;
 const CARD_ASPECT = 1.4; // CARD_HEIGHT ÷ CARD_WIDTH
 
 export const isVideoCard = (card) => card?.cardType === "video";
@@ -76,18 +78,66 @@ export const isScene = (page) => typeof page?.start === "number";
 export const pageAspect = (page) => page?.aspect || (isScene(page) ? VIDEO_ASPECT : CARD_ASPECT);
 
 // Splits the video evenly between the scenes, e.g. 0–3.3, 3.3–6.7, 6.7–10.
-export const evenSceneTimes = (count) =>
+export const evenSceneTimes = (count, duration = VIDEO_DURATION) =>
   Array.from({ length: count }, (_, index) => ({
-    start: Math.round(((VIDEO_DURATION * index) / count) * 10) / 10,
-    end: Math.round(((VIDEO_DURATION * (index + 1)) / count) * 10) / 10,
+    start: Math.round(((duration * index) / count) * 10) / 10,
+    end: Math.round(((duration * (index + 1)) / count) * 10) / 10,
   }));
 
-// 0 → 1 → 0 across a scene, with a short fade at each end (as in the rendered MP4).
-export const sceneOpacity = (page, time, fade = 0.4) => {
-  if (time < page.start || time >= page.end) return 0;
-  const edge = Math.min(fade, (page.end - page.start) / 3);
-  return Math.min(1, (time - page.start) / edge, (page.end - time) / edge);
+// ----- Text animation (shared by the browser player and the MP4 frames) -----
+
+// How each text box enters its scene.
+export const ANIMATIONS = [
+  { value: "none", label: "None (appears)" },
+  { value: "fade", label: "Fade in" },
+  { value: "slide-up", label: "Slide up" },
+  { value: "zoom-in", label: "Zoom in" },
+  { value: "reveal", label: "Reveal left to right" },
+];
+export const ANIMATION_SECONDS = 0.8;
+export const EXIT_FADE_SECONDS = 0.4;
+// Slide distance and starting zoom, in units of the 1000-wide design space.
+export const SLIDE_DISTANCE = 40;
+const ZOOM_FROM = 0.8;
+
+const easeOut = (p) => 1 - (1 - p) ** 3;
+
+// A text box's look `local` seconds after its entrance begins:
+// opacity 0–1, dy (design units, downwards), scale, reveal (0–1 of its width).
+export const entranceState = (animation, local) => {
+  if (animation === "none") return { opacity: 1, dy: 0, scale: 1, reveal: 1 };
+  const e = easeOut(Math.min(1, Math.max(0, local / ANIMATION_SECONDS)));
+  switch (animation) {
+    case "slide-up":
+      return { opacity: e, dy: (1 - e) * SLIDE_DISTANCE, scale: 1, reveal: 1 };
+    case "zoom-in":
+      return { opacity: e, dy: 0, scale: ZOOM_FROM + (1 - ZOOM_FROM) * e, reveal: 1 };
+    case "reveal":
+      return { opacity: 1, dy: 0, scale: 1, reveal: e };
+    default:
+      return { opacity: e, dy: 0, scale: 1, reveal: 1 };
+  }
 };
+
+// When a text box shows: from its scene's start (+ its delay) to the scene's end.
+export const fieldTiming = (page, field) => ({
+  start: Math.min((page.start || 0) + (Number(field.animDelay) || 0), (page.end || 0) - 0.1),
+  end: page.end,
+});
+
+// A text box's look at time `t` of the video, or null while it's hidden.
+// It fades out with its scene over the last EXIT_FADE_SECONDS.
+export const fieldStateAt = (page, field, t) => {
+  const { start, end } = fieldTiming(page, field);
+  if (t < start || t >= end) return null;
+  const state = entranceState(field.animation || "fade", t - start);
+  const exit = Math.min(1, (end - t) / Math.min(EXIT_FADE_SECONDS, (end - start) / 3));
+  return { ...state, opacity: state.opacity * exit };
+};
+
+// Frames needed to draw a text box's entrance animation at `fps`.
+export const animationFrameCount = (animation, fps) =>
+  animation === "none" ? 1 : Math.ceil(ANIMATION_SECONDS * fps) + 1;
 
 // "Haldi · Sangeet · Wedding" for a set, or "" when the cards have no event names.
 export const cardSetSummary = (pages) => {
@@ -347,6 +397,14 @@ export const normalizeField = (field, index = 0) => ({
   letterSpacing: clamp(field?.letterSpacing, -20, 100, 0),
   lineHeight: clamp(field?.lineHeight, 0.6, 3, 1.2),
   uppercase: field?.uppercase === true,
+  // Form rules for couples, and (in videos) how the text enters its scene.
+  characterLimit:
+    field?.characterLimit === null || field?.characterLimit === undefined || field?.characterLimit === ""
+      ? null
+      : Math.round(clamp(field.characterLimit, 1, 1000, 100)),
+  required: field?.required === true,
+  animation: ANIMATIONS.some((item) => item.value === field?.animation) ? field.animation : "fade",
+  animDelay: clamp(field?.animDelay, 0, MAX_VIDEO_DURATION, 0),
 });
 
 const isTextField = (field) =>
@@ -424,7 +482,7 @@ export const getCardPages = (card) => {
       ...(video && {
         aspect: VIDEO_ASPECT,
         start: Number(page.start) || 0,
-        end: Number(page.end) || VIDEO_DURATION,
+        end: Number(page.end) || card.video?.duration || VIDEO_DURATION,
       }),
     }));
   }
