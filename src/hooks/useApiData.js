@@ -445,7 +445,7 @@ const transformApiData = (items) => {
           attributes.Aboutus ||
           attributes.description ||
           "",
-        slug: attributes.slug || "",
+        slug: item.slug || attributes.slug || "",
         lat: hasValidCoordinates ? latitude : null,
         lng: hasValidCoordinates ? longitude : null,
         image: firstImage,
