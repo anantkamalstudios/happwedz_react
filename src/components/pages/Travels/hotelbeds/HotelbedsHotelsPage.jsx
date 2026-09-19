@@ -842,6 +842,9 @@ const areAppliedFiltersEqual = (left = {}, right = {}) => {
   return true;
 };
 
+const getSearchKey = (payload) =>
+  payload ? `${payload.correlationId || ""}|${JSON.stringify(payload.searchQuery || {})}` : "";
+
 const buildSearchPayload = (
   searchPayload,
   searchResponse,
@@ -1751,6 +1754,37 @@ export default function HotelbedsHotelsPage() {
   );
   const loadMoreRef = useRef(null);
   const appendRequestRef = useRef(false);
+  // The search currently shown, and the one whose results are already loaded —
+  // the refresh effect below skips that one instead of sending it again.
+  const appliedSearchKeyRef = useRef(getSearchKey(initialPayload));
+  const freshSearchKeyRef = useRef(initialResponse ? getSearchKey(initialPayload) : "");
+
+  const applySearch = useCallback((payload, response, suggestion) => {
+    const nextHotels = extractHotels(response, payload);
+    const nextLastHotelId = extractLastHotelId(response, nextHotels);
+    appliedSearchKeyRef.current = getSearchKey(payload);
+    freshSearchKeyRef.current = response ? getSearchKey(payload) : "";
+    setSearchPayload(payload);
+    setSelectedSuggestion(suggestion || null);
+    setSearchResponse(response);
+    setLoadedHotels(nextHotels);
+    setLastHotelId(nextLastHotelId);
+    setHasMoreResults(Boolean(nextLastHotelId) && extractHasMore(response));
+  }, []);
+
+  // /hotels and /hotels/:hotelId share this component instance, so it is not
+  // remounted when the hotel page's search bar navigates here with a new search.
+  // Without this the new search (e.g. a changed adult count) was ignored and the
+  // previous one was searched again.
+  useEffect(() => {
+    const nextPayload = location.state?.hotelSearchPayload;
+    if (!nextPayload || getSearchKey(nextPayload) === appliedSearchKeyRef.current) return;
+    applySearch(
+      nextPayload,
+      location.state?.hotelSearchResponse || null,
+      location.state?.selectedHotelSuggestion || null,
+    );
+  }, [location.state, applySearch]);
 
   const hotels = loadedHotels;
   const activePayload = searchPayload || initialPayload;
@@ -1791,7 +1825,23 @@ export default function HotelbedsHotelsPage() {
   }, [activePayload, searchResponse, loadedHotels]);
 
   useEffect(() => {
+    // Opening a hotel ends the "fresh" window: coming back refreshes prices.
+    if (hotelId) freshSearchKeyRef.current = "";
     if (!activePayload || hotelId) return undefined;
+
+    // A newer search was applied this commit and state has not caught up yet;
+    // the next render runs with it.
+    const searchKey = getSearchKey(activePayload);
+    if (searchKey !== appliedSearchKeyRef.current) return undefined;
+    // The search form already fetched these results with the same sort — sending
+    // it again only doubled every search. Left set, so a re-run (StrictMode) skips too.
+    if (
+      freshSearchKeyRef.current === searchKey &&
+      mapSortOrderToAPI(sortOrder) === (activePayload.sortOrder || "popularity")
+    ) {
+      return undefined;
+    }
+    freshSearchKeyRef.current = "";
 
     let active = true;
     appendRequestRef.current = false;
@@ -2112,19 +2162,25 @@ export default function HotelbedsHotelsPage() {
     <div className="hotel-list-page">
       <div className="hotel-search-bar-container">
         <HotelSearchForm
+          // The form reads its initial values once; remount it when the active
+          // search changes so it never shows a search that is no longer applied.
+          key={getSearchKey(activePayload)}
           compact
           initialPayload={activePayload}
           initialSuggestion={activeSuggestion}
           onSearch={(nextPayload, response, selectedDestination) => {
-            // Update the state with new search results
-            setSearchPayload(nextPayload);
-            setSelectedSuggestion(selectedDestination || null);
-            setSearchResponse(response);
-            const nextHotels = extractHotels(response, nextPayload);
-            setLoadedHotels(nextHotels);
-            const nextLastHotelId = extractLastHotelId(response, nextHotels);
-            setLastHotelId(nextLastHotelId);
-            setHasMoreResults(Boolean(nextLastHotelId) && extractHasMore(response));
+            applySearch(nextPayload, response, selectedDestination);
+            // Keep router state in step: hotel cards and "back to results" build on
+            // location.state, and would otherwise carry the previous search.
+            navigate(location.pathname, {
+              replace: true,
+              state: {
+                ...location.state,
+                hotelSearchPayload: nextPayload,
+                hotelSearchResponse: response,
+                selectedHotelSuggestion: selectedDestination || null,
+              },
+            });
           }}
         />
       </div>
