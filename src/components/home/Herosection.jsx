@@ -303,7 +303,14 @@ const Herosection = () => {
       const items = Array.isArray(data?.data) ? data.data : [];
       // Vendors without a photo stay in the results — searching by name has to
       // reach them, and getVendorImage() falls back to the placeholder for them.
-      setVendorResults(items);
+      // Only published listings are searchable; "hide" (the column's default),
+      // draft and archived ones must not show up.
+      setVendorResults(
+        items.filter((item) => {
+          const status = String(item?.status || "").trim().toLowerCase();
+          return status === "publish" || status === "published";
+        }),
+      );
       setShowVendorDropdown(true);
     } catch (e) {
       console.error("Vendor search error:", e);

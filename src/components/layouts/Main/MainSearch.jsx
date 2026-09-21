@@ -390,6 +390,11 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
       results.forEach((item) => {
         if (!item) return;
 
+        // Only published listings are searchable; "hide" (the column's default),
+        // draft and archived ones must not show up.
+        const status = String(item.status || "").trim().toLowerCase();
+        if (status !== "publish" && status !== "published") return;
+
         const id = item.id;
         const name = (item.attributes?.name || item.vendor?.businessName || "").trim().toLowerCase();
         const city = (item.attributes?.city || item.vendor?.city || "").trim().toLowerCase();
