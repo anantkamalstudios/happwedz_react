@@ -64,7 +64,15 @@ const VendorLogin = () => {
       }
 
       persistVendorSession(vendor, token);
-      dispatch(loginVendor({ token, vendor }));
+      dispatch(
+        loginVendor({
+          token,
+          vendor,
+          // Their store.happywedz.com vendor dashboard session (null if the
+          // store was unreachable).
+          storeSellerSession: data?.data?.storeSellerSession ?? data?.storeSellerSession ?? null,
+        })
+      );
 
       // A vendor who still has to complete their business details is sent there rather
       // than to a dashboard they cannot act on yet.

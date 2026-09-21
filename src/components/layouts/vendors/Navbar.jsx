@@ -10,7 +10,7 @@ import { IoStorefrontOutline } from "react-icons/io5";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import vendorServicesApi from "../../../services/api/vendorServicesApi";
 import { useVendorAccess } from "../../../context/VendorAccessContext";
-import { API_BASE_URL } from "../../../config/constants";
+import { API_BASE_URL, STORE_ORIGIN } from "../../../config/constants";
 
 const Navbar = () => {
   const { slug } = useParams();
@@ -249,6 +249,16 @@ const Navbar = () => {
       icon: "/images/vendorsDashboard/settingsico.png",
     });
 
+    // The vendor's shop on store.happywedz.com. Signing in here already signed
+    // them in there (the sellerInfo cookie), so it opens straight into their
+    // store dashboard.
+    baseTabs.push({
+      id: "my-store",
+      href: `${STORE_ORIGIN}/vendor`,
+      label: "My Store",
+      Icon: IoStorefrontOutline,
+    });
+
     return baseTabs;
   }, [isPhotographer]);
 
@@ -260,6 +270,11 @@ const Navbar = () => {
   }, [slug]);
 
   const handleTabClick = (tab) => {
+    // Another site: open it alongside rather than leaving the HappyWedz dashboard.
+    if (tab.href) {
+      window.open(tab.href, "_blank", "noopener");
+      return;
+    }
     setActiveTab(tab.id);
     navigate(`/vendor-dashboard/${tab.slug}`);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });

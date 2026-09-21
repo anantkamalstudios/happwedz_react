@@ -154,6 +154,22 @@ const VendorDashboard = ({ onNavigate }) => {
     );
   }
 
+  // The analytics request failed (network, expired login, server error): show
+  // why and let the vendor retry instead of crashing the whole page.
+  if (!analytics) {
+    return (
+      <div className="movments-plus-dashboard-container w-100 justify-content-center">
+        <div className="text-center py-5 px-3">
+          <h5 className="mb-2">We couldn't load your Moments+ dashboard</h5>
+          <p className="text-muted mb-3">{error || "Please check your connection and try again."}</p>
+          <button type="button" className="btn btn-primary" onClick={fetchDashboardAnalytics}>
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const { package: pkg, media, tokens, reach, activity, usage } = analytics;
 
   return (

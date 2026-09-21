@@ -221,7 +221,13 @@ const VendorRegister = () => {
 
       if (token && vendor) {
         persistVendorSession(vendor, token);
-        dispatch(loginVendor({ token, vendor }));
+        dispatch(
+          loginVendor({
+            token,
+            vendor,
+            storeSellerSession: data?.data?.storeSellerSession ?? data?.storeSellerSession ?? null,
+          })
+        );
 
         // A brand new vendor always goes to Business details — that is where they
         // complete their information and upload the documents that get them verified.
