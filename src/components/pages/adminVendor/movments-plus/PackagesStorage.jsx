@@ -297,9 +297,16 @@ const PackagesStorage = () => {
             pkg.name &&
             pkg.name.toLowerCase() === currentPackage.name.toLowerCase();
           const isMostPopular = pkg.name.toLowerCase() === "standard";
-          const features = pkg.message
-            ? pkg.message.split("\n").filter((f) => f.trim())
-            : [];
+          // Points the admin lists one by one; the short description sits under
+          // the plan name. Plans saved before points existed kept theirs in the
+          // description, one per line.
+          const legacyLines = !Array.isArray(pkg.features) && pkg.message?.includes("\n");
+          const features = Array.isArray(pkg.features)
+            ? pkg.features.filter((f) => String(f).trim())
+            : legacyLines
+              ? pkg.message.split("\n").filter((f) => f.trim())
+              : [];
+          const description = legacyLines ? "" : pkg.message?.trim();
 
           return (
             <div
@@ -325,7 +332,7 @@ const PackagesStorage = () => {
               <div className="package-card-header">
                 <h3 className="package-name inter">{pkg.name}</h3>
                 <p className="package-storage-info inter">
-                  {Number(pkg.price) === 0 ? "Starter plan" : "Paid plan"}
+                  {description || (Number(pkg.price) === 0 ? "Starter plan" : "Paid plan")}
                 </p>
               </div>
 
