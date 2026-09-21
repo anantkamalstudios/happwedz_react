@@ -3,8 +3,6 @@ import { Container, Button } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import GridView from "./Main/GridView";
 import { hasView360 } from "../../utils/view360Helper";
-import { subVenuesData } from "../../data/subVenuesData";
-import { subVendorsData } from "../../data/subVendorsData";
 import {
   API_BASE_URL,
   IMAGE_BASE_URL as IMAGE_BASE_URL_RAW,
@@ -51,8 +49,15 @@ const isValidImg = (url) => {
   return true;
 };
 
+// The status column defaults to "hide", so anything that isn't explicitly
+// published (including a missing status) is treated as hidden.
+const isPublished = (status) => {
+  const normalized = String(status || "").trim().toLowerCase();
+  return normalized === "publish" || normalized === "published";
+};
+
 const transformApiData = (items) => {
-  return items.map((item) => {
+  return items.filter((item) => item && isPublished(item.status)).map((item) => {
     if (item.name && item.vendor_type && !item.attributes) {
       return item;
     }
@@ -282,25 +287,6 @@ const SimilarServices = ({ venueData, currentId, currentCity: propCity }) => {
               city: displayCity,
               location: item.address ? `${item.address}, ${displayCity}` : displayCity,
             });
-          }
-        }
-
-        if (cityMatched.length < 4) {
-          const staticPool = [...subVenuesData, ...subVendorsData];
-          for (const item of staticPool) {
-            if (
-              !seenIds.has(item.id) &&
-              String(item.name).toLowerCase().trim() !== currentName &&
-              isValidImg(item.image)
-            ) {
-              seenIds.add(item.id);
-              cityMatched.push({
-                ...item,
-                city: displayCity,
-                location: `${displayCity}`,
-              });
-              if (cityMatched.length >= 4) break;
-            }
           }
         }
 

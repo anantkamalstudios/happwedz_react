@@ -27,7 +27,7 @@ import AllCategories from "../layouts/AllCategories";
 import WeddingCategories from "../home/WeddingCategories";
 import VenueInfoSection from "../layouts/Main/VenueInfoSection";
 import GridView from "../layouts/Main/GridView";
-import LoadingState from "../LoadingState";
+import ShimmerVenueGrid from "../ui/ShimmerVenueGrid";
 import EmptyState from "../EmptyState";
 import useInfiniteScroll from "../../hooks/useInfiniteScroll";
 import { MyContext } from "../../context/useContext";
@@ -266,7 +266,7 @@ const MainSection = () => {
           onFiltersChange={setVenueFilters}
         />
 
-        {loading && data.length === 0 && <LoadingState title="Venues" />}
+        {loading && data.length === 0 && <ShimmerVenueGrid count={6} />}
 
         {!loading && data.length === 0 && (
           <EmptyState section="venues" title="Venues" />

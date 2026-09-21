@@ -15,8 +15,7 @@ const cityImages = {
   Jaipur:
     "https://images.unsplash.com/photo-1605601922758-ead61eff3a76?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTh8fGluZGlhbiUyMGNpdHl8ZW58MHx8MHx8fDA%3D",
   Agra: "https://cdn1.weddingwire.in/assets/img/listing-city/in-agra-10011197.webp",
-  Ahmedabad:
-    "https://cdn1.weddingwire.in/assets/img/listing-city/in-ahmedabad-10010831.webp",
+  Ahmedabad: "/images/cities/ahmedabad.jpg",
   Chandigarh:
     "https://images.unsplash.com/photo-1605601922758-ead61eff3a76?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTh8fGluZGlhbiUyMGNpdHl8ZW58MHx8MHx8fDA%3D",
   Lucknow:
