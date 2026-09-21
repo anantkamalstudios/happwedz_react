@@ -59,7 +59,8 @@ const VenueSlider = () => {
   };
 
   const displayData = (venues || []).filter((v) => {
-    if (!v || !v.image) return false;
+    if (!v || v.status === "hide") return false;
+    if (!v.image) return false;
     const imgStr = String(v.image).toLowerCase().trim();
     if (
       !imgStr ||
@@ -240,7 +241,7 @@ const VenueSlider = () => {
               <SwiperSlide key={id}>
                 <div className="venues-slider-card shadow-sm">
                   <Link
-                    to={`/details/info/${id}`}
+                    to={`/details/info/${item.slug || id}`}
                     className="text-decoration-none"
                   >
                     <div className="venues-slider-image-container">
