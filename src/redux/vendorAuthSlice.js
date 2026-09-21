@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { writeSellerCookie, clearSellerCookie } from "../utils/ssoCookies";
 
 // Fallback to 1 hour if the backend does not provide an expiry in the token.
 const DEFAULT_VENDOR_TOKEN_EXPIRATION_MS = 60 * 60 * 1000;
@@ -86,6 +87,14 @@ const vendorAuthSlice = createSlice({
       safeSetItem("vendor", JSON.stringify(cleanVendor));
       safeSetItem("vendorToken", action.payload.token);
       safeSetItem("vendorTokenExpiry", expiresAt.toString());
+
+      // Login and registration responses carry the vendor's store dashboard
+      // session; mirror it for store.happywedz.com. Other callers (session
+      // restore in App.jsx) do not send the key at all, and must leave the
+      // cookie as it is rather than clear it.
+      if ("storeSellerSession" in action.payload) {
+        writeSellerCookie(action.payload.storeSellerSession);
+      }
     },
     vendorLogout: (state) => {
       state.vendor = null;
@@ -93,6 +102,8 @@ const vendorAuthSlice = createSlice({
       safeRemoveItem("vendor");
       safeRemoveItem("vendorToken");
       safeRemoveItem("vendorTokenExpiry");
+      // Signing out of HappyWedz signs the vendor out of their store dashboard.
+      clearSellerCookie();
     },
     setVendor: (state, action) => {
       state.vendor = action.payload;

@@ -98,3 +98,28 @@ export const clearSsoCookies = () => {
 };
 
 export const readHwCookie = () => readCookie(HW_COOKIE);
+
+// ── Vendors ────────────────────────────────────────────────────────────────
+// A vendor's store dashboard session (store.happywedz.com/vendor), kept apart
+// from the customer cookies above: one person can be both a customer and a
+// vendor, and neither session may act as the other.
+const SELLER_COOKIE = "sellerInfo";
+
+/**
+ * Mirror a vendor's store-dashboard session into a cookie the store can read.
+ *
+ * `storeSellerSession` comes with the vendor login and registration responses
+ * ({ token, expiresIn, seller }). It is absent when the store was unreachable;
+ * the HappyWedz vendor login still stands, and any stale cookie is removed so
+ * the store never opens on an old session.
+ */
+export const writeSellerCookie = (storeSellerSession) => {
+  if (!storeSellerSession?.token) {
+    erase(SELLER_COOKIE);
+    return;
+  }
+  // The seller token lives 2 days on the store; the cookie does not outlast it.
+  write(SELLER_COOKIE, { token: storeSellerSession.token, seller: storeSellerSession.seller }, 2);
+};
+
+export const clearSellerCookie = () => erase(SELLER_COOKIE);
