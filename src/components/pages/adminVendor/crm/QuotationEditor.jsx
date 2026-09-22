@@ -57,7 +57,7 @@ const QuotationEditor = ({ client, events, profile, quotation, onClose, onSaved,
   };
 
   return (
-    <Modal show onHide={onClose} size="xl" centered className="crm-modal" backdrop="static" scrollable>
+    <Modal show onHide={onClose} size="xl" centered className="crm-modal" dialogClassName="crm-dialog-xl" backdrop="static" scrollable>
       <Modal.Header closeButton>
         <Modal.Title>{editing ? `Edit quotation ${quotation.number}` : `New quotation for ${client.name}`}</Modal.Title>
       </Modal.Header>

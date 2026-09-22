@@ -74,7 +74,7 @@ const ClientFormModal = ({ client, events: initialEvents, onClose, onSaved }) =>
   };
 
   return (
-    <Modal show onHide={onClose} size="lg" centered className="crm-modal" backdrop="static">
+    <Modal show onHide={onClose} size="lg" centered className="crm-modal" dialogClassName="crm-dialog-lg" backdrop="static">
       <form onSubmit={submit}>
         <Modal.Header closeButton>
           <Modal.Title>{editing ? "Edit client" : "Add client"}</Modal.Title>

@@ -61,7 +61,7 @@ const InvoiceModal = ({ client, events, profile, quotations, defaultQuotationId,
   };
 
   return (
-    <Modal show onHide={onClose} size="xl" centered className="crm-modal" backdrop="static" scrollable>
+    <Modal show onHide={onClose} size="xl" centered className="crm-modal" dialogClassName="crm-dialog-xl" backdrop="static" scrollable>
       <Modal.Header closeButton>
         <Modal.Title>New invoice for {client.name}</Modal.Title>
       </Modal.Header>

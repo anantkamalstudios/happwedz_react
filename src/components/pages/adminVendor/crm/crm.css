@@ -671,7 +671,25 @@ textarea.crm-input {
   color: #6f4600;
 }
 
-/* Modals */
+/* Modals. The site's global CSS narrows .modal-dialog, so CRM dialogs set their own width. */
+.modal-dialog.crm-dialog-xl {
+  max-width: min(1100px, calc(100vw - 32px)) !important;
+  width: 100% !important;
+}
+
+.modal-dialog.crm-dialog-lg {
+  max-width: min(820px, calc(100vw - 32px)) !important;
+  width: 100% !important;
+}
+
+@media (max-width: 575px) {
+  .modal-dialog.crm-dialog-xl,
+  .modal-dialog.crm-dialog-lg {
+    max-width: calc(100vw - 16px) !important;
+    margin: 8px auto;
+  }
+}
+
 .crm-modal .modal-content {
   border-radius: 14px;
   border: 0;
@@ -781,6 +799,7 @@ textarea.crm-input {
 /* Quotation / invoice items */
 .crm-items {
   width: 100%;
+  min-width: 680px;
   border-collapse: collapse;
 }
 
