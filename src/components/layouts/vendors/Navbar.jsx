@@ -301,7 +301,7 @@ const Navbar = () => {
           style={{ minWidth: 0, width: "100%" }}
         >
           <div
-            className="d-flex gap-3 gap-lg-4"
+            className="d-flex gap-3"
             style={{
               flexWrap: isMobile ? "nowrap" : "wrap",
               overflowX: isMobile ? "auto" : "visible",
@@ -319,8 +319,8 @@ const Navbar = () => {
                 }`}
                 style={{
                   background: "transparent",
-                  fontSize: isMobile ? 12 : 14,
-                  minWidth: isMobile ? 56 : 70,
+                  fontSize: isMobile ? 12 : 13,
+                  minWidth: isMobile ? 56 : 58,
                   color:
                     activeTab === tab.id ? "var(--primary-color)" : "#2c3e50",
                   paddingLeft: isMobile ? 6 : undefined,
@@ -332,7 +332,7 @@ const Navbar = () => {
                 <div style={{ position: "relative" }}>
                   {tab.Icon ? (
                     <tab.Icon
-                      size={isMobile ? 24 : 30}
+                      size={isMobile ? 24 : 22}
                       color="#2c3e50"
                       aria-hidden="true"
                       style={{ display: "block" }}
@@ -342,8 +342,8 @@ const Navbar = () => {
                       src={tab.icon}
                       alt={tab.label}
                       style={{
-                        width: isMobile ? 24 : 30,
-                        height: isMobile ? 24 : 30,
+                        width: isMobile ? 24 : 22,
+                        height: isMobile ? 24 : 22,
                         objectFit: "cover",
                         display: "block",
                       }}
@@ -376,10 +376,10 @@ const Navbar = () => {
                     )}
                 </div>
                 <span
-                  className="mt-3"
                   style={{
-                    marginTop: isMobile ? 6 : 12,
-                    fontSize: isMobile ? 11 : 14,
+                    marginTop: isMobile ? 6 : 6,
+                    fontSize: isMobile ? 11 : 13,
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {tab.label}
