@@ -352,7 +352,12 @@ const PackagesStorage = () => {
 
               <ul className="package-allowances inter">
                 {[
-                  ["Storage", `${pkg.storage_limit_gb} GB`],
+                  [
+                    "Storage",
+                    pkg.storage_limit_gb >= 1024
+                      ? `${Number((pkg.storage_limit_gb / 1024).toFixed(2))} TB`
+                      : `${pkg.storage_limit_gb} GB`,
+                  ],
                   ["Events", pkg.max_events ?? "Unlimited"],
                   ["Access codes", pkg.max_access_codes ?? "Unlimited"],
                   ["Media files", pkg.max_media_files ?? "Unlimited"],
