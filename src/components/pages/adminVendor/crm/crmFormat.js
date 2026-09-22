@@ -134,3 +134,60 @@ export const STATUS_TONES = {
 
 export const QUOTATION_STATUS_LABELS = { draft: "Draft", sent: "Sent", accepted: "Accepted", rejected: "Declined", expired: "Expired" };
 export const INVOICE_STATE_LABELS = { unpaid: "Unpaid", part_paid: "Part paid", paid: "Paid", cancelled: "Cancelled" };
+
+// ---- Sharing on WhatsApp (plain wa.me links; no WhatsApp Business API) ----
+
+// Indian numbers: 10 digits get the 91 country code.
+export const whatsappNumber = (phone) => {
+  let digits = String(phone || "").replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("0")) digits = digits.slice(1);
+  if (digits.length === 10) digits = `91${digits}`;
+  return digits.length >= 11 ? digits : "";
+};
+
+// With no usable number WhatsApp asks which chat to send it to.
+export const whatsappLink = (phone, text = "") => {
+  const number = whatsappNumber(phone);
+  const query = text ? `?text=${encodeURIComponent(text)}` : "";
+  return `https://wa.me/${number}${query}`;
+};
+
+export const publicLinks = {
+  quotation: (token) => `${window.location.origin}/crm/quote/${token}`,
+  invoice: (token) => `${window.location.origin}/crm/doc/invoice/${token}`,
+  receipt: (token) => `${window.location.origin}/crm/doc/receipt/${token}`,
+};
+
+const firstName = (name) => String(name || "").split(/[\s&,]+/)[0] || "there";
+
+// Paragraphs of a WhatsApp message, skipping empty ones.
+const paragraphs = (...parts) => parts.filter(Boolean).join("\n\n");
+
+export const whatsappText = {
+  quotation: ({ client, seller, quotation }) =>
+    paragraphs(
+      `Hi ${firstName(client.name)}, here is your quotation ${quotation.number} from ${seller} for ${rupees(quotation.totalPaise)}.`,
+      `View and accept it here: ${publicLinks.quotation(quotation.publicToken)}`,
+    ),
+  invoice: ({ client, seller, invoice }) =>
+    paragraphs(
+      `Hi ${firstName(client.name)}, please find invoice ${invoice.number} from ${seller} for ${rupees(invoice.totalPaise)}.` +
+        (invoice.paidPaise
+          ? ` Received so far: ${rupees(invoice.paidPaise)}. Balance: ${rupees(Math.max(0, invoice.totalPaise - invoice.paidPaise))}.`
+          : ""),
+      publicLinks.invoice(invoice.publicToken),
+    ),
+  receipt: ({ client, seller, payment }) =>
+    paragraphs(
+      `Hi ${firstName(client.name)}, we have received ${rupees(payment.amountPaise)} on ${formatDate(payment.paidOn)}. Thank you!`,
+      `Receipt ${payment.receiptNumber}: ${publicLinks.receipt(payment.publicToken)}`,
+      `– ${seller}`,
+    ),
+  reminder: ({ client, seller, due, amountPaise, upiId }) =>
+    paragraphs(
+      `Hi ${firstName(client.name)}, a gentle reminder that ${rupees(amountPaise)} is pending${due?.date ? `, due on ${formatDate(due.date)}` : ""}.`,
+      due?.invoiceToken ? `Invoice ${due.invoiceNumber}: ${publicLinks.invoice(due.invoiceToken)}` : "",
+      upiId ? `UPI: ${upiId}` : "",
+      `If you've already paid, please ignore this. Thank you!\n– ${seller}`,
+    ),
+};

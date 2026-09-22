@@ -11,12 +11,16 @@ import {
   formatDate,
   labelOf,
   rupees,
+  todayIso,
+  whatsappLink,
+  whatsappText,
 } from "./crmFormat";
 import { Badge, Spinner } from "./crmUi";
 import ClientFormModal from "./ClientFormModal";
 import QuotationEditor from "./QuotationEditor";
 import InvoiceModal from "./InvoiceModal";
 import PaymentModal from "./PaymentModal";
+import { ActivityCard, FollowUpBar, WhatsAppIcon } from "./ClientExtras";
 import { useToast } from "../../../layouts/toasts/Toast";
 import { resolveMediaUrl } from "../../../../config/constants";
 
@@ -64,7 +68,7 @@ const ConfirmModal = ({ title, text, confirmLabel, danger, input, onConfirm, onC
 };
 
 // Send a quotation: email it and/or copy the link.
-const SendQuotationModal = ({ quotation, client, onClose, onSent }) => {
+const SendQuotationModal = ({ quotation, client, seller, onClose, onSent }) => {
   const { addToast } = useToast();
   const [email, setEmail] = useState(client.email || "");
   const [sendEmail, setSendEmail] = useState(!!client.email);
@@ -123,6 +127,15 @@ const SendQuotationModal = ({ quotation, client, onClose, onSent }) => {
               <input className="crm-input" readOnly value={link} onFocus={(e) => e.target.select()} />
               <button className="crm-btn crm-btn-primary" onClick={copy}>Copy</button>
             </div>
+            <a
+              className="crm-btn crm-btn-wa"
+              style={{ marginTop: 12 }}
+              href={whatsappLink(client.phone, whatsappText.quotation({ client, seller, quotation }))}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <WhatsAppIcon /> Share on WhatsApp
+            </a>
           </>
         )}
       </Modal.Body>
@@ -221,7 +234,23 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
   }
   if (!data) return <Spinner />;
 
-  const { client, events, quotations, invoices, payments, files, money, profile } = data;
+  const { client, events, quotations, invoices, payments, files, money, profile, due, lastReminder, activity } = data;
+  const seller = profile?.legalName || "us";
+
+  // Open WhatsApp with a message ready to send. The tab is opened before any
+  // await so the browser doesn't treat it as a popup.
+  const shareOnWhatsApp = async (makeText, prepare) => {
+    const tab = window.open("", "_blank");
+    try {
+      if (prepare) await prepare();
+      const url = whatsappLink(client.phone, makeText());
+      if (tab) tab.location.href = url;
+      else window.location.href = url;
+    } catch (err) {
+      if (tab) tab.close();
+      addToast(errorMessage(err, "Could not prepare the message."), "error");
+    }
+  };
   const liveInvoices = invoices.filter((i) => i.status !== "cancelled");
   const counts = { quotations: quotations.length, invoices: invoices.length, payments: payments.length };
 
@@ -245,6 +274,11 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
           </div>
         </div>
         <div className="crm-actions">
+          {client.phone && (
+            <a className="crm-btn crm-btn-wa" href={whatsappLink(client.phone)} target="_blank" rel="noreferrer">
+              <WhatsAppIcon /> WhatsApp
+            </a>
+          )}
           <button className="crm-btn" onClick={() => setModal({ type: "edit" })}><Pencil size={14} /> Edit</button>
           <button className="crm-btn" onClick={() => setModal({ type: "quotation" })}><FileText size={14} /> New quotation</button>
           <button className="crm-btn crm-btn-primary" onClick={() => setModal({ type: "payment" })}><Plus size={15} /> Record payment</button>
@@ -274,15 +308,54 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
           </div>
           <div className="crm-stat-note">
             {money.isPending
-              ? client.paymentDueDate
-                ? `Payment pending · due ${formatDate(client.paymentDueDate)}`
+              ? due
+                ? `${due.date < todayIso() ? "Overdue since" : "Due"} ${formatDate(due.date)}`
                 : "Payment pending"
               : money.finalPaise
                 ? "Fully paid"
                 : "No amount yet"}
           </div>
         </div>
+        {money.isPending && (
+          <div className="crm-remind">
+            <span className="crm-muted">
+              {lastReminder
+                ? `Last reminder emailed ${formatDate(lastReminder.createdAt)}.`
+                : profile?.autoReminders && client.remindersEnabled && client.email && due
+                  ? "Automatic email reminders are on for this client."
+                  : "Remind the client about the pending balance."}
+            </span>
+            <span className="crm-actions">
+              <button
+                className="crm-btn crm-btn-sm"
+                disabled={!client.email}
+                title={client.email ? "" : "Add the client's email to send email reminders"}
+                onClick={() =>
+                  setModal({
+                    type: "confirm",
+                    title: "Email a payment reminder?",
+                    text: `${client.email} will get a reminder for ${rupees(money.balancePaise)}${due ? ` (due ${formatDate(due.date)})` : ""}, with your bank and UPI details${due?.invoiceToken ? " and a link to the invoice" : ""}.`,
+                    confirmLabel: "Send reminder",
+                    onConfirm: run(() => crmApi.sendReminder(client.id), "Could not send the reminder."),
+                  })
+                }
+              >
+                <Mail size={13} /> Email reminder
+              </button>
+              <button
+                className="crm-btn crm-btn-sm crm-btn-wa"
+                onClick={() =>
+                  shareOnWhatsApp(() => whatsappText.reminder({ client, seller, due, amountPaise: money.balancePaise, upiId: profile?.upiId }))
+                }
+              >
+                <WhatsAppIcon size={13} /> WhatsApp reminder
+              </button>
+            </span>
+          </div>
+        )}
       </div>
+
+      <FollowUpBar key={`${client.followUpDate}-${client.followUpNote}`} client={client} onSaved={load} />
 
       <div className="crm-tabs" role="tablist">
         {TABS.map((t) => (
@@ -360,6 +433,7 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
             </div>
           </div>
 
+          <div style={{ display: "grid", gap: 16 }}>
           <div className="crm-card crm-card-pad">
             <div className="crm-card-title">
               <span>Photos &amp; documents</span>
@@ -405,6 +479,8 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
               <div className="crm-muted crm-small">Keep photos, signed contracts and other documents for this client here. Images or PDF, up to 10 MB each.</div>
             )}
           </div>
+          <ActivityCard clientId={client.id} activity={activity || []} onChanged={load} />
+          </div>
         </div>
       )}
 
@@ -434,6 +510,24 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
                 <div className="crm-actions">
                   <span className="crm-strong" style={{ marginRight: 6 }}>{rupees(q.totalPaise)}</span>
                   <button className="crm-btn crm-btn-sm" onClick={() => open(pdfPaths.quotation(q.id))}>PDF</button>
+                  <button
+                    className="crm-btn crm-btn-sm crm-btn-wa"
+                    aria-label="Share on WhatsApp"
+                    title="Share on WhatsApp"
+                    onClick={() =>
+                      shareOnWhatsApp(
+                        () => whatsappText.quotation({ client, seller, quotation: q }),
+                        q.status === "draft" || q.status === "rejected"
+                          ? async () => {
+                              await crmApi.sendQuotation(q.id, { sendEmail: false });
+                              load();
+                            }
+                          : null,
+                      )
+                    }
+                  >
+                    <WhatsAppIcon size={13} />
+                  </button>
                   {q.status !== "accepted" && (
                     <button className="crm-btn crm-btn-sm" onClick={() => setModal({ type: "quotation", quotation: q })}>Edit</button>
                   )}
@@ -518,6 +612,16 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
               <div className="crm-actions">
                 <span className="crm-strong" style={{ marginRight: 6 }}>{rupees(inv.totalPaise)}</span>
                 <button className="crm-btn crm-btn-sm" onClick={() => open(pdfPaths.invoice(inv.id))}>PDF</button>
+                {inv.status !== "cancelled" && (
+                  <button
+                    className="crm-btn crm-btn-sm crm-btn-wa"
+                    aria-label="Share on WhatsApp"
+                    title="Share on WhatsApp"
+                    onClick={() => shareOnWhatsApp(() => whatsappText.invoice({ client, seller, invoice: inv }))}
+                  >
+                    <WhatsAppIcon size={13} />
+                  </button>
+                )}
                 {inv.status !== "cancelled" && (
                   <>
                     <button
@@ -604,7 +708,15 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
                       <td>{p.invoiceNumber || <span className="crm-muted">—</span>}</td>
                       <td className="crm-small" style={{ maxWidth: 240 }}>{p.note || <span className="crm-muted">—</span>}</td>
                       <td className="crm-num crm-strong">{rupees(p.amountPaise)}</td>
-                      <td>
+                      <td style={{ whiteSpace: "nowrap" }}>
+                        <button
+                          className="crm-btn crm-btn-sm crm-btn-ghost crm-btn-wa"
+                          aria-label="Send receipt on WhatsApp"
+                          title="Send receipt on WhatsApp"
+                          onClick={() => shareOnWhatsApp(() => whatsappText.receipt({ client, seller, payment: p }))}
+                        >
+                          <WhatsAppIcon size={14} />
+                        </button>
                         <button
                           className="crm-btn crm-btn-sm crm-btn-ghost crm-btn-danger"
                           aria-label="Remove payment"
@@ -649,7 +761,7 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
         />
       )}
       {modal?.type === "send" && (
-        <SendQuotationModal quotation={modal.quotation} client={client} onClose={close} onSent={load} />
+        <SendQuotationModal quotation={modal.quotation} client={client} seller={seller} onClose={close} onSent={load} />
       )}
       {modal?.type === "invoice" && (
         <InvoiceModal

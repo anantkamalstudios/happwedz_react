@@ -54,6 +54,11 @@ export const crmApi = {
   createPayment: (clientId, body) => data(axiosInstance.post(`${BASE}/clients/${clientId}/payments`, body)),
   deletePayment: (id) => data(axiosInstance.delete(`${BASE}/payments/${id}`)),
 
+  addNote: (clientId, body) => data(axiosInstance.post(`${BASE}/clients/${clientId}/notes`, { body })),
+  deleteNote: (noteId) => data(axiosInstance.delete(`${BASE}/notes/${noteId}`)),
+  sendReminder: (clientId) => data(axiosInstance.post(`${BASE}/clients/${clientId}/reminders`)),
+  calendar: (from, to) => data(axiosInstance.get(`${BASE}/calendar`, { params: { from, to } })),
+
   // Public quotation page (no login).
   publicQuotation: (token) => data(axiosInstance.get(`/crm/public/quotations/${token}`)),
   respondToQuotation: (token, decision) => data(axiosInstance.post(`/crm/public/quotations/${token}/respond`, { decision })),

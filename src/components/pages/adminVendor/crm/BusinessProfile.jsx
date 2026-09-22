@@ -11,7 +11,9 @@ const GSTIN_RE = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 const FIELDS = [
   "legalName", "gstin", "pan", "address", "city", "state", "pincode", "phone", "email",
   "invoicePrefix", "quotationPrefix", "receiptPrefix", "defaultSac", "defaultGstRate", "bankDetails", "upiId", "terms",
+  "reminderDaysBefore",
 ];
+const SWITCHES = ["autoReminders", "dailyDigest"];
 
 // What prints on the vendor's quotations, invoices and receipts.
 const BusinessProfile = ({ onBack }) => {
@@ -32,6 +34,7 @@ const BusinessProfile = ({ onBack }) => {
         const match = INDIAN_STATES.find((s) => s.toLowerCase() === values.state.trim().toLowerCase());
         if (match) values.state = match;
         values.defaultGstRate = String(Number(values.defaultGstRate || 18));
+        for (const key of SWITCHES) values[key] = profile[key] !== false;
         setForm(values);
         setLogoUrl(profile.logoUrl || "");
       })
@@ -54,7 +57,12 @@ const BusinessProfile = ({ onBack }) => {
     setError("");
     setSaving(true);
     try {
-      const result = await crmApi.saveProfile({ ...form, gstin, defaultGstRate: Number(form.defaultGstRate) });
+      const result = await crmApi.saveProfile({
+        ...form,
+        gstin,
+        defaultGstRate: Number(form.defaultGstRate),
+        reminderDaysBefore: Number(form.reminderDaysBefore),
+      });
       addToast(result.message, "success");
       onBack();
     } catch (err) {
@@ -192,6 +200,38 @@ const BusinessProfile = ({ onBack }) => {
             <div className="crm-field" style={{ marginBottom: 0 }}>
               <label className="crm-label">SAC code (optional)</label>
               <input className="crm-input" value={form.defaultSac} onChange={set("defaultSac")} placeholder="e.g. 998387" maxLength={8} />
+            </div>
+          </div>
+
+          <div className="crm-card crm-card-pad">
+            <div className="crm-card-title">Reminders</div>
+            <label className="crm-check" style={{ marginBottom: 6 }}>
+              <input type="checkbox" checked={form.autoReminders} onChange={(e) => setForm((f) => ({ ...f, autoReminders: e.target.checked }))} />
+              Email clients automatic payment reminders
+            </label>
+            <div className="crm-hint" style={{ marginTop: 0, marginBottom: 12 }}>
+              Sent at 9 am to clients with a pending balance and a due date: before it, on the day, and 3 and 10 days after if still unpaid.
+              They include your bank and UPI details. You can turn them off for a single client.
+            </div>
+            {form.autoReminders && (
+              <div className="crm-field">
+                <label className="crm-label">First reminder</label>
+                <select className="crm-input" value={form.reminderDaysBefore} onChange={set("reminderDaysBefore")}>
+                  <option value="0">Only on the due date</option>
+                  <option value="1">1 day before</option>
+                  <option value="2">2 days before</option>
+                  <option value="3">3 days before</option>
+                  <option value="5">5 days before</option>
+                  <option value="7">7 days before</option>
+                </select>
+              </div>
+            )}
+            <label className="crm-check" style={{ marginBottom: 6 }}>
+              <input type="checkbox" checked={form.dailyDigest} onChange={(e) => setForm((f) => ({ ...f, dailyDigest: e.target.checked }))} />
+              Email me a daily summary
+            </label>
+            <div className="crm-hint" style={{ marginTop: 0 }}>
+              Each morning when there's something to do: follow-ups due, payments due or overdue, and events in the next 3 days.
             </div>
           </div>
 

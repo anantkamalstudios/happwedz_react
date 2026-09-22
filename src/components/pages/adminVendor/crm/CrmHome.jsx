@@ -1,12 +1,22 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Download, Plus, Search, Settings2, Users } from "lucide-react";
+import { AlertCircle, CalendarDays, Download, List, PhoneCall, Plus, Search, Settings2, Users } from "lucide-react";
 import { crmApi, errorMessage, openFile, pdfPaths } from "./crmApi";
 import { CLIENT_STATUSES, LEAD_SOURCES, formatDate, labelOf, rupees, todayIso } from "./crmFormat";
 import { Badge, Spinner } from "./crmUi";
 import ClientFormModal from "./ClientFormModal";
+import CalendarView from "./CalendarView";
 import { useToast } from "../../../layouts/toasts/Toast";
 
 const PAGE_SIZE = 25;
+const VIEW_KEY = "crm.view";
+
+const readView = () => {
+  try {
+    return localStorage.getItem(VIEW_KEY) === "calendar" ? "calendar" : "list";
+  } catch {
+    return "list";
+  }
+};
 
 const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
   const { addToast } = useToast();
@@ -25,6 +35,17 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
   const [payment, setPayment] = useState("all");
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
+  const [followup, setFollowup] = useState("all");
+  const [view, setView] = useState(readView);
+
+  const switchView = (next) => {
+    setView(next);
+    try {
+      localStorage.setItem(VIEW_KEY, next);
+    } catch {
+      // Private mode: the choice just isn't remembered.
+    }
+  };
 
   // Wait for typing to pause before searching.
   useEffect(() => {
@@ -35,7 +56,7 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const filters = { q: query || undefined, status, source, payment, sort };
+  const filters = { q: query || undefined, status, source, payment, sort, followup: followup === "all" ? undefined : followup };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,7 +75,7 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, status, source, payment, sort, page]);
+  }, [query, status, source, payment, sort, page, followup]);
 
   useEffect(() => {
     load();
@@ -77,7 +98,18 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
   };
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const filtered = query || status !== "all" || source !== "all" || payment !== "all";
+  const filtered = query || status !== "all" || source !== "all" || payment !== "all" || followup !== "all";
+
+  // "Show all" on a home panel: the list, filtered to just those clients.
+  const showOnly = (next) => {
+    switchView("list");
+    setFollowup(next.followup || "all");
+    setPayment(next.payment || "all");
+    setStatus("all");
+    setSource("all");
+    setSearch("");
+    setPage(1);
+  };
 
   return (
     <>
@@ -124,6 +156,72 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
         </div>
       )}
 
+      {(summary?.followUps?.length > 0 || summary?.overdue?.length > 0) && (
+        <div className="crm-panels">
+          {summary.followUps.length > 0 && (
+            <div className="crm-card">
+              <div className="crm-panel-title">
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <PhoneCall size={15} style={{ color: "#2457c5" }} /> Follow-ups due
+                </span>
+                <button className="crm-link crm-small" onClick={() => showOnly({ followup: "due" })}>Show all</button>
+              </div>
+              {summary.followUps.map((f) => (
+                <button key={f.clientId} className="crm-panel-row" onClick={() => onOpenClient(f.clientId)}>
+                  <span style={{ minWidth: 0 }}>
+                    <strong>{f.clientName}</strong>
+                    {f.note ? <span className="crm-muted"> · {f.note}</span> : null}
+                  </span>
+                  <span className={f.date < todayIso() ? "crm-balance-due crm-small" : "crm-muted crm-small"} style={{ whiteSpace: "nowrap" }}>
+                    {f.date < todayIso() ? `since ${formatDate(f.date)}` : "today"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+          {summary.overdue.length > 0 && (
+            <div className="crm-card">
+              <div className="crm-panel-title">
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <AlertCircle size={15} style={{ color: "#c62828" }} /> Payments overdue
+                  {summary.overdueCount > summary.overdue.length ? <span className="crm-tab-count">{summary.overdueCount}</span> : null}
+                </span>
+                <button className="crm-link crm-small" onClick={() => showOnly({ payment: "overdue" })}>Show all</button>
+              </div>
+              {summary.overdue.map((o) => (
+                <button key={o.clientId} className="crm-panel-row" onClick={() => onOpenClient(o.clientId)}>
+                  <strong>{o.clientName}</strong>
+                  <span style={{ whiteSpace: "nowrap" }}>
+                    <span className="crm-balance-due">{rupees(o.amountPaise)}</span>
+                    <span className="crm-muted crm-small"> · due {formatDate(o.dueDate)}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="crm-head" style={{ marginBottom: 12 }}>
+        <div className="crm-switch" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={view === "list"} className={view === "list" ? "is-active" : ""} onClick={() => switchView("list")}>
+            <List size={15} /> Clients
+          </button>
+          <button role="tab" aria-selected={view === "calendar"} className={view === "calendar" ? "is-active" : ""} onClick={() => switchView("calendar")}>
+            <CalendarDays size={15} /> Calendar
+          </button>
+        </div>
+        {followup === "due" && view === "list" && (
+          <span className="crm-chip">
+            Showing follow-ups due · <button className="crm-link crm-small" onClick={() => setFollowup("all")}>clear</button>
+          </span>
+        )}
+      </div>
+
+      {view === "calendar" ? (
+        <CalendarView onOpenClient={onOpenClient} />
+      ) : (
+        <>
       {summary?.upcoming?.length > 0 && (
         <>
           <div className="crm-section-label">Events in the next 30 days</div>
@@ -168,6 +266,7 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
           <select className="crm-input" value={payment} onChange={setFilter(setPayment)} aria-label="Payment">
             <option value="all">Any payment</option>
             <option value="pending">Payment pending</option>
+            <option value="overdue">Payment overdue</option>
             <option value="cleared">Fully paid</option>
           </select>
           <select className="crm-input" value={sort} onChange={setFilter(setSort)} aria-label="Sort">
@@ -253,7 +352,18 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
                         {client.money.finalPaise === 0 && client.money.receivedPaise === 0 ? (
                           <span className="crm-muted">—</span>
                         ) : client.money.isPending ? (
-                          <span className="crm-balance-due">{rupees(client.money.balancePaise)}</span>
+                          <>
+                            <span className="crm-balance-due">{rupees(client.money.balancePaise)}</span>
+                            {client.dueDate && (
+                              <div
+                                className={`crm-small ${client.dueDate < todayIso() && !["lost", "cancelled"].includes(client.status) ? "crm-balance-due" : "crm-muted"}`}
+                                style={{ fontWeight: 400 }}
+                              >
+                                {client.dueDate < todayIso() ? "overdue since " : "due "}
+                                {formatDate(client.dueDate)}
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <span className="crm-balance-clear">Paid</span>
                         )}
@@ -284,6 +394,9 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
           </>
         )}
       </div>
+
+        </>
+      )}
 
       {adding && (
         <ClientFormModal

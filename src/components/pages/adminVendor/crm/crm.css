@@ -503,7 +503,7 @@ textarea.crm-input {
   border-right: 1px solid var(--crm-line);
 }
 
-.crm-money > div:last-child {
+.crm-money > div:nth-child(4) {
   border-right: 0;
 }
 
@@ -1003,5 +1003,361 @@ textarea.crm-input {
 
   .crm-filters select.crm-input {
     flex: 1 1 140px;
+  }
+}
+
+/* ---- Version 2: view switch, calendar, follow-ups, activity ---- */
+.crm-switch {
+  display: inline-flex;
+  border: 1px solid var(--crm-line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.crm-switch button {
+  border: 0;
+  background: transparent;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--crm-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crm-switch button.is-active {
+  background: var(--crm-brand-soft);
+  color: var(--crm-brand);
+}
+
+.crm-cal-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--crm-line);
+}
+
+.crm-cal-title {
+  font-size: 16px !important;
+  font-weight: 700;
+  margin: 0 0 0 6px !important;
+}
+
+.crm-cal-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--crm-muted);
+}
+
+.crm-cal-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 8px;
+  background: var(--crm-grey);
+}
+
+.crm-cal-dot.is-event { background: var(--crm-brand); }
+.crm-cal-dot.is-follow_up { background: var(--crm-blue); }
+.crm-cal-dot.is-payment_due { background: #d98a00; }
+
+.crm-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.crm-cal-weekday {
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--crm-muted);
+  border-bottom: 1px solid var(--crm-line);
+  text-align: center;
+}
+
+.crm-cal-day {
+  min-height: 108px;
+  border-right: 1px solid var(--crm-line);
+  border-bottom: 1px solid var(--crm-line);
+  padding: 6px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.crm-cal-day:nth-child(7n) {
+  border-right: 0;
+}
+
+.crm-cal-day.is-outside {
+  background: #fafafc;
+}
+
+.crm-cal-day.is-outside .crm-cal-date {
+  color: #b5b8c3;
+}
+
+.crm-cal-day.is-selected {
+  box-shadow: inset 0 0 0 2px var(--crm-brand);
+}
+
+.crm-cal-date {
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  border-radius: 50%;
+}
+
+.crm-cal-day.is-today .crm-cal-date {
+  background: var(--crm-brand);
+  color: #fff;
+}
+
+.crm-cal-items {
+  display: grid;
+  gap: 3px;
+}
+
+.crm-cal-item {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-size: 11.5px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.crm-cal-item.is-event { background: var(--crm-brand-soft); color: #a50d52; }
+.crm-cal-item.is-follow_up { background: var(--crm-blue-soft); color: var(--crm-blue); }
+.crm-cal-item.is-payment_due { background: var(--crm-amber-soft); color: var(--crm-amber); }
+
+.crm-cal-more {
+  font-size: 11px;
+  color: var(--crm-muted);
+  padding-left: 4px;
+}
+
+.crm-cal-dots {
+  display: none;
+  gap: 3px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.crm-cal-list {
+  padding-top: 14px;
+  border-top: 1px solid var(--crm-line);
+}
+
+.crm-cal-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--crm-line);
+  background: none;
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.crm-cal-row:hover {
+  background: #fcf7fa;
+}
+
+.crm-cal-row-date {
+  flex: 0 0 96px;
+  color: var(--crm-muted);
+  font-size: 12.5px;
+}
+
+.crm-cal-row-text {
+  min-width: 0;
+}
+
+/* Follow-up / overdue panels on the home screen */
+.crm-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.crm-panel-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--crm-line);
+  background: none;
+  padding: 9px 16px;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.crm-panel-row:hover {
+  background: #fcf7fa;
+}
+
+.crm-panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  font-weight: 700;
+}
+
+/* Client page: follow-up, reminders, activity */
+.crm-follow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: var(--crm-blue-soft);
+  color: #1d3f8f;
+}
+
+.crm-follow.is-due {
+  background: var(--crm-amber-soft);
+  color: #6f4600;
+}
+
+.crm-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.crm-remind {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  border-top: 1px solid var(--crm-line);
+  grid-column: 1 / -1;
+  font-size: 13px;
+}
+
+.crm-btn-wa {
+  color: #128c4b;
+}
+
+.crm-btn-wa:hover:not(:disabled) {
+  background: #e7f7ee;
+  border-color: #b6e3c8;
+}
+
+.crm-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.crm-timeline li {
+  display: flex;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--crm-line);
+  font-size: 13px;
+}
+
+.crm-timeline li:first-child {
+  border-top: 0;
+}
+
+.crm-timeline-icon {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--crm-grey-soft);
+  color: var(--crm-grey);
+}
+
+.crm-timeline-icon.is-note { background: #fff3dc; color: var(--crm-amber); }
+.crm-timeline-icon.is-payment, .crm-timeline-icon.is-accepted { background: var(--crm-green-soft); color: var(--crm-green); }
+.crm-timeline-icon.is-quotation, .crm-timeline-icon.is-invoice { background: var(--crm-violet-soft); color: var(--crm-violet); }
+.crm-timeline-icon.is-reminder { background: var(--crm-blue-soft); color: var(--crm-blue); }
+.crm-timeline-icon.is-rejected, .crm-timeline-icon.is-cancelled { background: var(--crm-red-soft); color: var(--crm-red); }
+
+.crm-timeline-body {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.crm-timeline-note {
+  background: #fffaf0;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.crm-timeline-when {
+  display: block;
+  color: var(--crm-muted);
+  font-size: 11.5px;
+  margin-top: 2px;
+}
+
+@media (max-width: 991px) {
+  .crm-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .crm-cal-day {
+    min-height: 54px;
+    padding: 4px 2px;
+  }
+
+  .crm-cal-date {
+    margin: 0 auto 3px;
+  }
+
+  .crm-cal-items {
+    display: none;
+  }
+
+  .crm-cal-dots {
+    display: flex;
+  }
+
+  .crm-cal-row-date {
+    flex-basis: 78px;
   }
 }

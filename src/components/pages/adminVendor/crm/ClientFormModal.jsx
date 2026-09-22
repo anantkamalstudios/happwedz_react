@@ -26,13 +26,18 @@ const ClientFormModal = ({ client, events: initialEvents, onClose, onSaved }) =>
     additionalInfo: client?.additionalInfo || "",
     paymentDueDate: client?.paymentDueDate || "",
     pendingNote: client?.pendingNote || "",
+    followUpDate: client?.followUpDate || "",
+    followUpNote: client?.followUpNote || "",
+    remindersEnabled: client ? client.remindersEnabled !== false : true,
   }));
   const [events, setEvents] = useState(() =>
     initialEvents?.length
       ? initialEvents.map((e) => ({ key: String(e.id), id: e.id, name: e.name, eventDate: e.eventDate || "", venue: e.venue || "", price: toRupeeInput(e.pricePaise) }))
       : [blankEvent("Wedding")],
   );
-  const [showMore, setShowMore] = useState(editing && !!(client.additionalNote || client.additionalInfo || client.paymentDueDate || client.pendingNote));
+  const [showMore, setShowMore] = useState(
+    editing && !!(client.additionalNote || client.additionalInfo || client.paymentDueDate || client.pendingNote || client.remindersEnabled === false),
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -61,6 +66,8 @@ const ClientFormModal = ({ client, events: initialEvents, onClose, onSaved }) =>
 
     const body = {
       ...form,
+      followUpDate: form.followUpDate || null,
+      followUpNote: form.followUpNote.trim() || null,
       events: filled.map((ev) => ({ id: ev.id, name: ev.name.trim(), eventDate: ev.eventDate || null, venue: ev.venue, pricePaise: toPaise(ev.price) })),
     };
     setSaving(true);
@@ -156,6 +163,17 @@ const ClientFormModal = ({ client, events: initialEvents, onClose, onSaved }) =>
             <Plus size={14} /> Add event
           </button>
 
+          <div className="crm-grid-2">
+            <div className="crm-field">
+              <label className="crm-label">Next follow-up</label>
+              <input className="crm-input" type="date" value={form.followUpDate} onChange={set("followUpDate")} />
+            </div>
+            <div className="crm-field">
+              <label className="crm-label">Follow-up about</label>
+              <input className="crm-input" value={form.followUpNote} onChange={set("followUpNote")} placeholder="e.g. Send the album options" maxLength={300} />
+            </div>
+          </div>
+
           <div className="crm-field">
             <label className="crm-label">Description</label>
             <textarea className="crm-input" value={form.description} onChange={set("description")} placeholder="What the client wants" maxLength={4000} />
@@ -185,6 +203,14 @@ const ClientFormModal = ({ client, events: initialEvents, onClose, onSaved }) =>
                   <input className="crm-input" value={form.pendingNote} onChange={set("pendingNote")} placeholder="e.g. Rest after the reception" maxLength={2000} />
                 </div>
               </div>
+              <label className="crm-check">
+                <input
+                  type="checkbox"
+                  checked={form.remindersEnabled}
+                  onChange={(e) => setForm((f) => ({ ...f, remindersEnabled: e.target.checked }))}
+                />
+                Send this client automatic payment reminders by email
+              </label>
             </>
           )}
 
