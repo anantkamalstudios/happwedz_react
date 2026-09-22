@@ -15,8 +15,11 @@ import {
   MessageSquare,
   CheckCircle2,
   XCircle,
+  UserPlus,
 } from "lucide-react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { crmApi, errorMessage } from "./crm/crmApi";
 import QuotationModal from "./QuotationModal";
 import { useToast } from "../../layouts/toasts/Toast";
 import axiosInstance from "../../../services/api/axiosInstance";
@@ -39,6 +42,35 @@ const EnquiryManagement = () => {
   const [filteredLeads, setFilteredLeads] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   const detailRef = useRef(null);
+  const navigate = useNavigate();
+  // enquiry (request) id → CRM client id, for enquiries already added to the CRM.
+  const [crmLinks, setCrmLinks] = useState({});
+  const [addingToCrm, setAddingToCrm] = useState(false);
+
+  useEffect(() => {
+    crmApi
+      .enquiryLinks()
+      .then((res) => setCrmLinks(res.links || {}))
+      .catch(() => {});
+  }, []);
+
+  const openInCrm = async (lead) => {
+    const requestId = lead.request?.id || lead.requestId;
+    if (!requestId) return;
+    const existing = crmLinks[requestId];
+    if (existing) return navigate(`/vendor-dashboard/vendor-crm?client=${existing}`);
+    setAddingToCrm(true);
+    try {
+      const res = await crmApi.addEnquiry(requestId);
+      setCrmLinks((links) => ({ ...links, [requestId]: res.client.id }));
+      addToast(res.message || "Added to your CRM.", "success");
+      navigate(`/vendor-dashboard/vendor-crm?client=${res.client.id}`);
+    } catch (err) {
+      addToast(errorMessage(err, "Could not add this enquiry to your CRM."), "error");
+    } finally {
+      setAddingToCrm(false);
+    }
+  };
 
   const [globalStats, setGlobalStats] = useState({
     pending: 0,
@@ -584,6 +616,21 @@ const EnquiryManagement = () => {
 
                   {/* Actions */}
                   <div className="d-flex align-items-center gap-2 flex-shrink-0">
+                    <button
+                      className="btn btn-outline-secondary btn-sm fs-13 d-flex align-items-center gap-1"
+                      onClick={() => openInCrm(selectedLead)}
+                      disabled={addingToCrm}
+                      title="Keep this client's events, quotations, invoices and payments in your CRM"
+                    >
+                      <UserPlus size={14} />
+                      <span>
+                        {crmLinks[selectedLead.request?.id || selectedLead.requestId]
+                          ? "Open in CRM"
+                          : addingToCrm
+                            ? "Adding…"
+                            : "Add to CRM"}
+                      </span>
+                    </button>
                     <button
                       className="btn btn-outline-secondary btn-sm fs-13 d-flex align-items-center gap-1"
                       onClick={() =>

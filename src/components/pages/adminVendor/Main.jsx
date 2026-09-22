@@ -14,6 +14,7 @@ import VendorMessages from "./messages/VendorMessages";
 import VendorLeadsPage from "./VendorLeadsPage";
 import MovmentsPlus from "./movments-plus/MovmentsPlus";
 import InstagramPage from "./InstagramPage";
+import CrmPage from "./crm/CrmPage";
 import { VendorAccessProvider } from "../../../context/VendorAccessContext";
 
 const Main = () => {
@@ -47,6 +48,8 @@ const Main = () => {
         return <MovmentsPlus />;
       case "vendor-instagram":
         return <InstagramPage />;
+      case "vendor-crm":
+        return <CrmPage />;
       default:
         return <HomeAdmin />;
     }

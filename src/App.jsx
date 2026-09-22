@@ -189,6 +189,9 @@ const EinviteSharePage = lazy(
 const EinviteMyCards = lazy(
   () => import("./components/layouts/einvites/EinviteMyCards"),
 );
+const PublicQuotationPage = lazy(
+  () => import("./components/pages/adminVendor/crm/PublicQuotationPage"),
+);
 const EinviteViewPage = lazy(
   () => import("./components/pages/EinviteViewPage"),
 );
@@ -690,6 +693,7 @@ function App() {
               />
               <Route path="/einvites/view/:id" element={<EinviteViewPage />} />
               <Route path="/einvites/i/:token" element={<EinviteViewPage />} />
+              <Route path="/crm/quote/:token" element={<PublicQuotationPage />} />
               <Route
                 path="/einvites/my-cards"
                 element={

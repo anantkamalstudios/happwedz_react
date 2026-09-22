@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { FaGift, FaStore, FaEnvelope, FaStar, FaCog } from "react-icons/fa";
 import { LiaHomeSolid } from "react-icons/lia";
 import { FaRegStar } from "react-icons/fa";
-import { PiInstagramLogoLight, PiOfficeChairLight } from "react-icons/pi";
+import { PiAddressBookLight, PiInstagramLogoLight, PiOfficeChairLight } from "react-icons/pi";
 import { GoMail } from "react-icons/go";
 import { IoSettingsOutline } from "react-icons/io5";
 import { IoStorefrontOutline } from "react-icons/io5";
@@ -222,6 +222,12 @@ const Navbar = () => {
         slug: "vendor-reviews",
         label: "Reviews",
         icon: "/images/vendorsDashboard/reviewico.png",
+      },
+      {
+        id: "crm",
+        slug: "vendor-crm",
+        label: "CRM",
+        Icon: PiAddressBookLight,
       },
     ];
 
