@@ -111,11 +111,6 @@ const styles = `
   flex:0 0 18px; width:18px; height:18px; border-radius:50%; background:${PINK_SOFT}; color:var(--hw-pink);
   display:inline-flex; align-items:center; justify-content:center; margin-top:1px;
 }
-.hw-unlocks-head {
-  display:flex; align-items:center; justify-content:space-between; gap:8px;
-  font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em;
-  color:#7a6470; margin-bottom:10px;
-}
 .hw-trial-note {
   font-size:.72rem; line-height:1.45; color:var(--hw-muted); text-align:center; margin:0 0 10px;
 }
@@ -214,20 +209,8 @@ const PlanCards = ({
   onStartTrial = null,
   trialAvailable = false,
 }) => {
-  // Labels for the ids a plan lists. Without them a vendor is asked to pay for
-  // "vendor-pricing" rather than "Pricing & Packages".
-  const tabLabels = storefrontTabs.reduce((acc, t) => {
-    acc[t.id] = t.label;
-    return acc;
-  }, {});
-
   // Business details is granted to everyone, so it is not something a plan sells.
   const sellableTabCount = storefrontTabs.filter((t) => t.id !== "business").length;
-
-  const unlockedSections = (plan) =>
-    (plan.allowed_tabs || [])
-      .filter((id) => id !== "business" && tabLabels[id])
-      .map((id) => tabLabels[id]);
 
   // In the storefront's own order, so the modal reads like the sidebar the vendor
   // will actually see once they are on the plan.
@@ -309,40 +292,18 @@ const PlanCards = ({
                 {/* What the money buys, as a ticked list. The sections below are
                     derived from the plan itself, so they can never drift out of step
                     with what it actually unlocks. */}
+                {/* The storefront sections a plan unlocks are no longer listed on the
+                    card — the plan's own points say what it offers. The full list is
+                    still one tap away, and it stays derived from the plan itself. */}
                 {sellableTabCount > 0 && (
-                  <div className="mb-3">
-                    <div className="hw-unlocks-head">What you can edit</div>
-
-                    {unlockedSections(plan).length === sellableTabCount ? (
-                      <div className="hw-feat">
-                        <span className="hw-tick" aria-hidden="true">
-                          <FiCheck size={11} strokeWidth={3} />
-                        </span>
-                        <span>
-                          Every storefront section &mdash; photos, videos, pricing,
-                          availability, promotions and more
-                        </span>
-                      </div>
-                    ) : (
-                      unlockedSections(plan).map((label) => (
-                        <div className="hw-feat" key={label}>
-                          <span className="hw-tick" aria-hidden="true">
-                            <FiCheck size={11} strokeWidth={3} />
-                          </span>
-                          <span>{label}</span>
-                        </div>
-                      ))
-                    )}
-
-                    <button
-                      type="button"
-                      className="hw-know-more"
-                      onClick={() => setGuidePlan(plan)}
-                    >
-                      Know more about what you&rsquo;ll get
-                      <FiArrowRight size={13} />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="hw-know-more mb-3"
+                    onClick={() => setGuidePlan(plan)}
+                  >
+                    Know more about what you&rsquo;ll get
+                    <FiArrowRight size={13} />
+                  </button>
                 )}
 
                 {/* A trial is offered only when the plan allows one, the vendor still
