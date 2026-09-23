@@ -67,6 +67,22 @@ const handle401Error = (error) => {
   }
 };
 
+// Vendor dashboard APIs accept a vendor token only; the customer APIs accept a
+// customer token only. Someone signed into both accounts in the same browser has
+// both stored, so the request path decides which token to send — sending the
+// customer one to /vendor/... came back "Forbidden: Not a vendor token".
+const VENDOR_ONLY_PATHS = /^\/(vendor|inbox|token|events)(\/|$)/;
+
+const isVendorApiCall = (config) => {
+  // The AI service has its own paths (e.g. /events/selfie) and its own auth.
+  if (config.baseURL !== API_BASE_URL) return false;
+  try {
+    return VENDOR_ONLY_PATHS.test(new URL(config.url ?? "", API_BASE_URL).pathname);
+  } catch {
+    return false;
+  }
+};
+
 const requestInterceptor = (config) => {
   // Default to sending cookies, but never override a caller that explicitly
   // opted out. The AI service (happywedzai) does not return
@@ -79,11 +95,12 @@ const requestInterceptor = (config) => {
 
   const token = localStorage.getItem("token");
   const vendorToken = localStorage.getItem("vendorToken");
+  const chosen = isVendorApiCall(config)
+    ? vendorToken || token
+    : token || vendorToken;
 
-  if (token && !config.headers.Authorization) {
-    config.headers.Authorization = `Bearer ${token}`;
-  } else if (vendorToken && !token && !config.headers.Authorization) {
-    if (isVendorTokenExpired()) {
+  if (chosen && !config.headers.Authorization) {
+    if (chosen === vendorToken && isVendorTokenExpired()) {
       store.dispatch(vendorLogout());
       toast.error("Your session has expired. Please login again.");
 
@@ -98,7 +115,7 @@ const requestInterceptor = (config) => {
       );
     }
 
-    config.headers.Authorization = `Bearer ${vendorToken}`;
+    config.headers.Authorization = `Bearer ${chosen}`;
   }
 
   return config;
