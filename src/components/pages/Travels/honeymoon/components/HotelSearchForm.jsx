@@ -13,7 +13,6 @@ import {
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {
-  fetchHotelCountries,
   searchHotels,
   suggestHotels,
 } from "../../../../../services/api/hotelApi";
@@ -661,10 +660,6 @@ export default function HotelSearchForm({
   const [selectedHotel, setSelectedHotel] = useState(
     initialIsHotel ? initialSuggestionNorm : null
   );
-  const [countryOptions, setCountryOptions] = useState([{ code: "INDIA", name: "India" }]);
-  const [selectedCountry, setSelectedCountry] = useState(
-    String(initialCriteria.countryName || "INDIA").toUpperCase()
-  );
   const [hotelCheckIn, setHotelCheckIn] = useState(
     initialSearchQuery.checkinDate || initialSearchQuery.checkInDate || ""
   );
@@ -689,7 +684,6 @@ export default function HotelSearchForm({
   const [showRatingsDropdown, setShowRatingsDropdown] = useState(false);
   const [showNationalityDropdown, setShowNationalityDropdown] = useState(false);
   const [showResidenceDropdown, setShowResidenceDropdown] = useState(false);
-  const [showSearchCountryDropdown, setShowSearchCountryDropdown] = useState(false);
   const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
   const [hotelSearchLoading, setHotelSearchLoading] = useState(false);
   // In compact mode (results / detail pages) the "More options" row is hidden
@@ -705,31 +699,6 @@ export default function HotelSearchForm({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    const loadCountries = async () => {
-      try {
-        const response = await fetchHotelCountries();
-        if (!active) return;
-        const countries = Array.isArray(response?.countries) ? response.countries : [];
-        if (!countries.length) return;
-        const mapped = countries.map((item) => ({
-          code: item?.countryName || item?.id,
-          name: item?.label || item?.countryName || item?.id,
-        }));
-        setCountryOptions(mapped);
-        // Do not override a prefilled country (results / detail pages);
-        // the hero on /honeymoon already initializes to "INDIA".
-      } catch (error) {
-        console.error("Unable to load TripJack country list", error);
-      }
-    };
-    loadCountries();
-    return () => {
-      active = false;
-    };
   }, []);
 
   useEffect(() => {
@@ -753,8 +722,10 @@ export default function HotelSearchForm({
       setHotelSuggestLoading(true);
       try {
         // One call, one ranked list of places and properties — the backend orders it.
+        // No country filter: typing "New York" or "Dubai" must find those cities,
+        // exactly as the TripJack portal's single destination box does.
         const response = await suggestHotels(
-          { keyword, selectedCountry, limit: 20 },
+          { keyword, limit: 20 },
           { signal: abortController.signal },
         );
         if (!active) return;
@@ -806,7 +777,7 @@ export default function HotelSearchForm({
       abortController.abort();
       window.clearTimeout(timer);
     };
-  }, [hotelLocation, selectedCountry]);
+  }, [hotelLocation]);
 
   const totalNights = useMemo(
     () => calculateNights(hotelCheckIn, hotelCheckOut),
@@ -828,9 +799,6 @@ export default function HotelSearchForm({
       : `${selectedRatings.length} selected`
     : "Select";
   const selectedSuggestion = selectedHotel || selectedDestination;
-  const selectedCountryLabel =
-    countryOptions.find((country) => String(country.code || "").toUpperCase() === selectedCountry)?.name ||
-    "India";
 
   const handleSearchHotels = async () => {
     if (!selectedSuggestion?.displayName) {
@@ -887,7 +855,7 @@ export default function HotelSearchForm({
             !isHotelSearch && selectedDestination?.id ? [String(selectedDestination.id)] : [],
           regionIds:
             !isHotelSearch && selectedDestination?.id ? [String(selectedDestination.id)] : [],
-          countryName: selectedCountry,
+          countryName: selectedSuggestion.countryName || "",
           tjids: effectiveTjids,
           nationality,
           countryOfResidence,
@@ -1127,7 +1095,6 @@ export default function HotelSearchForm({
                 setShowRatingsDropdown(false);
                 setShowNationalityDropdown(false);
                 setShowResidenceDropdown(false);
-                setShowSearchCountryDropdown(false);
               }}
             >
               <User size={17} className="hotel-field-icon" />
@@ -1195,49 +1162,10 @@ export default function HotelSearchForm({
                     type="button"
                     className="hotel-more-option-button"
                     onClick={() => {
-                      setShowSearchCountryDropdown((prev) => !prev);
-                      setShowGuestsDropdown(false);
-                      setShowRatingsDropdown(false);
-                      setShowNationalityDropdown(false);
-                      setShowResidenceDropdown(false);
-                    }}
-                  >
-                    <span className="hotel-more-option-label">Search Country:</span>
-                    <span className="hotel-more-option-value">
-                      {selectedCountryLabel}
-                      <ChevronDown size={12} />
-                    </span>
-                  </button>
-
-                  {showSearchCountryDropdown ? (
-                    <CountryDropdown
-                      value={selectedCountry}
-                      label="Select search country"
-                      options={countryOptions}
-                      onChange={(countryCode) => {
-                        const next = String(countryCode || "").toUpperCase();
-                        setSelectedCountry(next);
-                        setSelectedDestination(null);
-                        setSelectedHotel(null);
-                        setHotelLocation("");
-                        setHotelSuggestions([]);
-                        setShowHotelSuggestions(false);
-                      }}
-                      onClose={() => setShowSearchCountryDropdown(false)}
-                    />
-                  ) : null}
-                </div>
-
-                <div className="hotel-more-option-item">
-                  <button
-                    type="button"
-                    className="hotel-more-option-button"
-                    onClick={() => {
                       setShowRatingsDropdown((prev) => !prev);
                       setShowGuestsDropdown(false);
                       setShowNationalityDropdown(false);
                       setShowResidenceDropdown(false);
-                      setShowSearchCountryDropdown(false);
                     }}
                   >
                     <span className="hotel-more-option-label">Rating:</span>
@@ -1267,7 +1195,6 @@ export default function HotelSearchForm({
                       setShowGuestsDropdown(false);
                       setShowRatingsDropdown(false);
                       setShowResidenceDropdown(false);
-                      setShowSearchCountryDropdown(false);
                     }}
                   >
                     <span className="hotel-more-option-label">Nationality:</span>
@@ -1296,7 +1223,6 @@ export default function HotelSearchForm({
                       setShowGuestsDropdown(false);
                       setShowRatingsDropdown(false);
                       setShowNationalityDropdown(false);
-                      setShowSearchCountryDropdown(false);
                     }}
                   >
                     <span className="hotel-more-option-label">Country of Residence:</span>
