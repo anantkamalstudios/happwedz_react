@@ -29,6 +29,13 @@ export const SHADI_AI_API_BASE_URL =
 export const STORE_ORIGIN =
   import.meta.env.VITE_STORE_ORIGIN || "https://store.happywedz.com";
 
+// The store's own API. Read straight from the browser for the few public,
+// cached things the store answers for itself — a vendor's products on their
+// profile page — so happywedz.com isn't proxying the shop's catalogue.
+export const STORE_API_URL = (
+  import.meta.env.VITE_STORE_API_URL || "https://api.store.happywedz.com/api"
+).replace(/\/+$/, "");
+
 // Legacy vendor media rows store absolute URLs against the S3 bucket's REST
 // endpoint, and that bucket is the origin that actually holds the files — so the
 // URL is passed through untouched by default. Point VITE_IMAGE_CDN_URL at a

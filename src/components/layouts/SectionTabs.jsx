@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./SectionTabs.css";
 
-const SectionTabs = ({ scrollToSection, hasMenus = false, hasPricing = false }) => {
+const SectionTabs = ({ scrollToSection, hasMenus = false, hasPricing = false, hasShop = false }) => {
   const [active, setActive] = useState("");
   const isProgrammaticScroll = useRef(false);
   const scrollTimer = useRef(null);
@@ -15,6 +15,7 @@ const SectionTabs = ({ scrollToSection, hasMenus = false, hasPricing = false }) 
     ...(hasMenus ? [{ id: "menus", label: "Menus" }] : []),
     { id: "venue-faq", label: "FAQ" },
     { id: "reviews", label: "Reviews" },
+    ...(hasShop ? [{ id: "shop", label: "Shop" }] : []),
     { id: "map", label: "Map" },
   ];
 

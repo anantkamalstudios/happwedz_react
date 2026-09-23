@@ -110,6 +110,7 @@ import { subVenuesData } from "../../data/subVenuesData";
 import { subVendorsData } from "../../data/subVendorsData";
 import Swal from "sweetalert2";
 import SectionTabs from "./SectionTabs";
+import VendorStoreProducts from "./VendorStoreProducts";
 import ShimmerVendorDetail from "../ui/ShimmerVendorDetail";
 import { TbView360Number } from "react-icons/tb";
 import { hasView360 } from "../../utils/view360Helper";
@@ -159,6 +160,9 @@ const getYouTubeVideoId = (url) => {
 
 const Detailed = () => {
   const { city, slug, section } = useParams();
+  // Whether this vendor also sells on the HappyWedz Store; the shop answers
+  // for itself (VendorStoreProducts), and the tab waits for that answer.
+  const [hasStoreShop, setHasStoreShop] = useState(false);
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
   const [venueData, setVenueData] = useState(null);
@@ -7037,6 +7041,15 @@ const Detailed = () => {
     ? `/wedding-venues/${citySlug}`
     : `/vendors/${subCatSlug}/${citySlug}`;
 
+  // The vendor's own id (vendors.id), which is what the HappyWedz Store knows
+  // them by. The same fallback chain the FAQ fetch uses.
+  const storeVendorId =
+    venueData?.vendor?.id ||
+    venueData?.vendor_id ||
+    venueData?.attributes?.vendor_id ||
+    activeVendor?.vendor_id ||
+    null;
+
   return (
     <div className="venue-detail-page">
       <SEO
@@ -7356,6 +7369,7 @@ const Detailed = () => {
               scrollToSection={scrollToSection}
               hasMenus={menusData.hasAny}
               hasPricing={pricingDetails.hasAny}
+              hasShop={hasStoreShop}
             />
 
             <div id="about" className="venue-description mb-5 p-2">
@@ -8123,6 +8137,16 @@ const Detailed = () => {
 
             <div id="reviews" className="py-2">
               <ReviewSection vendor={venueData || activeVendor} />
+            </div>
+
+            {/* What this vendor sells on the HappyWedz Store. Renders nothing
+                for a vendor who doesn't sell there. */}
+            <div className="py-2">
+              <VendorStoreProducts
+                vendorId={storeVendorId}
+                vendorName={venueData?.attributes?.name || activeVendor?.name}
+                onLoaded={setHasStoreShop}
+              />
             </div>
 
             {activeDeal && (
