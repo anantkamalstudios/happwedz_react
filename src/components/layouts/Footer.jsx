@@ -375,6 +375,15 @@ const Footer = () => {
               </li>
               <li className="mx-3">
                 <Link
+                  to="/privacy"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-16"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li className="mx-3">
+                <Link
                   to="/cancellation"
                   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                   className="fs-16"
