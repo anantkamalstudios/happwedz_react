@@ -159,7 +159,7 @@ const PlanPickerModal = ({ show, onClose, onPurchased }) => {
           onClick={onClose}
           disabled={processing}
           className="btn btn-light"
-          style={{ minWidth: 110 }}
+          style={{ minWidth: 110, width: "auto", flex: "0 0 auto" }}
         >
           Close
         </button>

@@ -76,11 +76,10 @@ const styles = `
 }
 .hw-cycle button:focus-visible { outline:2px solid var(--hw-pink); outline-offset:2px; }
 
-/* Each card is as tall as its own content. Stretching them all to the tallest
-   left a plan with few points showing a large empty gap above its button. */
-.hw-plans .row { align-items:flex-start; }
+/* All cards in a row are the same height, so their buttons line up. */
+.hw-plans .row { align-items:stretch; }
 .hw-card {
-  position:relative; display:flex; flex-direction:column;
+  position:relative; display:flex; flex-direction:column; height:100%;
   background:#fff; border:1px solid var(--hw-line); border-radius:14px; padding:26px 24px 24px;
   transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
