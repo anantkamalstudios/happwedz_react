@@ -262,9 +262,24 @@ const PlanCards = ({
 
                 <div className="hw-rule" />
 
-                {/* What the money buys, as a ticked list. This replaces the free-text
-                    bullets an admin used to type, which could say anything and drift
-                    out of step with what the plan actually unlocked. These cannot. */}
+                {/* The plan's own points, written by the admin (e.g. "Priority
+                    support"), for what the storefront sections below can't say. */}
+                {Array.isArray(plan.features) && plan.features.length > 0 && (
+                  <div className="mb-3">
+                    {plan.features.map((point, index) => (
+                      <div className="hw-feat" key={index}>
+                        <span className="hw-tick" aria-hidden="true">
+                          <FiCheck size={11} strokeWidth={3} />
+                        </span>
+                        <span>{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* What the money buys, as a ticked list. The sections below are
+                    derived from the plan itself, so they can never drift out of step
+                    with what it actually unlocks. */}
                 {sellableTabCount > 0 && (
                   <div className="mb-3">
                     <div className="hw-unlocks-head">What you can edit</div>
