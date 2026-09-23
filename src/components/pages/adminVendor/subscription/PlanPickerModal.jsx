@@ -51,7 +51,14 @@ const PlanPickerModal = ({ show, onClose, onPurchased }) => {
 
   // Two plans in a 960px dialog would each be ~450px wide, which reads as a banner
   // rather than a price card. The dialog narrows to suit how many there are.
-  const dialogWidth = visiblePlans.length <= 1 ? 460 : visiblePlans.length === 2 ? 720 : 980;
+  const dialogWidth =
+    visiblePlans.length <= 1
+      ? 460
+      : visiblePlans.length === 2
+        ? 720
+        : visiblePlans.length === 3
+          ? 980
+          : 1300;
 
   return (
     <CenteredModal

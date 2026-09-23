@@ -225,7 +225,12 @@ const PlanCards = ({
   // of them stretch to ~600px each and stop looking like prices at all — so the grid
   // is capped to what the number of plans actually needs, and centred.
   const gridMaxWidth =
-    plans.length <= 1 ? 380 : plans.length === 2 ? 700 : 1020;
+    plans.length <= 1 ? 380 : plans.length === 2 ? 700 : plans.length === 3 ? 1020 : 1340;
+
+  // Four or more plans go four to a row on a wide screen, two on a tablet — three
+  // to a row left the fourth plan stranded on a line of its own.
+  const manyPlans = plans.length >= 4;
+  const columnClass = manyPlans ? "col-12 col-sm-6 col-xl-3" : "col-md-6 col-lg-4";
 
   return (
     <div className="hw-plans">
@@ -258,7 +263,11 @@ const PlanCards = ({
           const perMonth = monthlyEquivalent(plan);
 
           return (
-            <div className="col-md-6 col-lg-4" style={{ maxWidth: 340, flex: "1 1 300px" }} key={plan.id}>
+            <div
+              className={columnClass}
+              style={{ maxWidth: manyPlans ? 320 : 340, flex: `1 1 ${manyPlans ? 260 : 300}px` }}
+              key={plan.id}
+            >
               <div
                 className={`hw-card ${plan.is_popular && !isCurrent ? "hw-card--featured" : ""} ${
                   isCurrent ? "hw-card--current" : ""
