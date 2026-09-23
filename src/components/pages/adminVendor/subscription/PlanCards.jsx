@@ -76,8 +76,11 @@ const styles = `
 }
 .hw-cycle button:focus-visible { outline:2px solid var(--hw-pink); outline-offset:2px; }
 
+/* Each card is as tall as its own content. Stretching them all to the tallest
+   left a plan with few points showing a large empty gap above its button. */
+.hw-plans .row { align-items:flex-start; }
 .hw-card {
-  position:relative; display:flex; flex-direction:column; height:100%;
+  position:relative; display:flex; flex-direction:column;
   background:#fff; border:1px solid var(--hw-line); border-radius:14px; padding:26px 24px 24px;
   transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
@@ -98,7 +101,12 @@ const styles = `
 .hw-per { font-size:.92rem; font-weight:500; color:var(--hw-muted); }
 .hw-desc { font-size:.9rem; color:var(--hw-muted); line-height:1.55; margin:12px 0 0; }
 .hw-rule { height:1px; background:var(--hw-line); margin:20px 0 18px; }
-.hw-feat { display:flex; gap:10px; align-items:flex-start; font-size:.9rem; color:#3b2c34; line-height:1.5; margin-bottom:11px; }
+.hw-feat { display:flex; gap:9px; align-items:flex-start; font-size:.88rem; color:#3b2c34; line-height:1.45; margin-bottom:8px; }
+.hw-more {
+  background:none; border:0; padding:0; margin:2px 0 0 27px;
+  font-size:.8rem; font-weight:600; color:var(--hw-pink); cursor:pointer;
+}
+.hw-more:hover { text-decoration:underline; }
 .hw-tick {
   flex:0 0 18px; width:18px; height:18px; border-radius:50%; background:${PINK_SOFT}; color:var(--hw-pink);
   display:inline-flex; align-items:center; justify-content:center; margin-top:1px;
@@ -157,6 +165,38 @@ const styles = `
 @media (max-width:520px) { .hw-guide__foot { flex-direction:column; align-items:stretch; } }
 @media (prefers-reduced-motion: reduce) { .hw-card, .hw-btn, .hw-cycle button { transition:none; } }
 `;
+
+// Admins often type their own numbering or dashes ("1. ", "- "). The ✓ marks
+// already number the list, so the prefix is dropped rather than shown twice.
+const cleanPoint = (text) => String(text ?? "").replace(/^\s*(?:\d+[.)]|[-–—•*])\s+/, "").trim();
+
+// Enough to sell the plan without one long card stretching every other card.
+const VISIBLE_POINTS = 5;
+
+const PlanPoints = ({ points }) => {
+  const [showAll, setShowAll] = useState(false);
+  const cleaned = (points || []).map(cleanPoint).filter(Boolean);
+  if (!cleaned.length) return null;
+
+  const shown = showAll ? cleaned : cleaned.slice(0, VISIBLE_POINTS);
+  return (
+    <div className="mb-3">
+      {shown.map((point, index) => (
+        <div className="hw-feat" key={index}>
+          <span className="hw-tick" aria-hidden="true">
+            <FiCheck size={11} strokeWidth={3} />
+          </span>
+          <span>{point}</span>
+        </div>
+      ))}
+      {cleaned.length > VISIBLE_POINTS && (
+        <button type="button" className="hw-more" onClick={() => setShowAll(!showAll)}>
+          {showAll ? "Show less" : `+${cleaned.length - VISIBLE_POINTS} more`}
+        </button>
+      )}
+    </div>
+  );
+};
 
 const PlanCards = ({
   plans = [],
@@ -264,18 +304,7 @@ const PlanCards = ({
 
                 {/* The plan's own points, written by the admin (e.g. "Priority
                     support"), for what the storefront sections below can't say. */}
-                {Array.isArray(plan.features) && plan.features.length > 0 && (
-                  <div className="mb-3">
-                    {plan.features.map((point, index) => (
-                      <div className="hw-feat" key={index}>
-                        <span className="hw-tick" aria-hidden="true">
-                          <FiCheck size={11} strokeWidth={3} />
-                        </span>
-                        <span>{point}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <PlanPoints points={plan.features} />
 
                 {/* What the money buys, as a ticked list. The sections below are
                     derived from the plan itself, so they can never drift out of step
