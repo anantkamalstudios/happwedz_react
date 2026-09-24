@@ -71,6 +71,15 @@ export const crmApi = {
   updateTeamMember: (id, body) => data(axiosInstance.put(`${BASE}/team/${id}`, body)),
   removeTeamMember: (id) => data(axiosInstance.delete(`${BASE}/team/${id}`)),
 
+  // WhatsApp. The vendor connects their provider once in Settings; after that
+  // these send for them instead of opening wa.me in a tab.
+  whatsapp: () => data(axiosInstance.get(`${BASE}/whatsapp`)),
+  connectWhatsapp: (body) => data(axiosInstance.put(`${BASE}/whatsapp`, body)),
+  disconnectWhatsapp: () => data(axiosInstance.delete(`${BASE}/whatsapp`)),
+  whatsappQuotation: (id) => data(axiosInstance.post(`${BASE}/quotations/${id}/whatsapp`)),
+  whatsappInvoice: (id) => data(axiosInstance.post(`${BASE}/invoices/${id}/whatsapp`)),
+  whatsappReceipt: (id) => data(axiosInstance.post(`${BASE}/payments/${id}/whatsapp`)),
+
   // Public quotation page (no login).
   publicQuotation: (token) => data(axiosInstance.get(`/crm/public/quotations/${token}`)),
   respondToQuotation: (token, decision) => data(axiosInstance.post(`/crm/public/quotations/${token}/respond`, { decision })),

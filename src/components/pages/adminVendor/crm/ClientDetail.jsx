@@ -192,6 +192,9 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
     }
   };
 
+  const [waConnected, setWaConnected] = useState(false);
+  const [waSending, setWaSending] = useState(null);
+
   const load = useCallback(async () => {
     try {
       setData(await crmApi.client(clientId));
@@ -204,6 +207,20 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Whether this vendor has connected WhatsApp decides what the WhatsApp
+  // buttons below do. Asked once per page; if the question fails we assume
+  // not connected, which falls back to the link that has always worked.
+  useEffect(() => {
+    let cancelled = false;
+    crmApi
+      .whatsapp()
+      .then((res) => !cancelled && setWaConnected(Boolean(res?.whatsapp?.connected)))
+      .catch(() => !cancelled && setWaConnected(false));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const close = () => setModal(null);
   const closeAndReload = (message) => {
@@ -279,6 +296,29 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
       addToast(errorMessage(err, "Could not prepare the message."), "error");
     }
   };
+  // A WhatsApp button. When the vendor has connected their provider we send
+  // the message ourselves and say so; when they haven't, this is exactly the
+  // wa.me link it has always been, so nobody loses a button they had.
+  const whatsappAction = (kind, doc, makeText, prepare) => {
+    if (!waConnected) return () => shareOnWhatsApp(makeText, prepare);
+    const send = { quotation: crmApi.whatsappQuotation, invoice: crmApi.whatsappInvoice, receipt: crmApi.whatsappReceipt }[kind];
+    return async () => {
+      const busyKey = `${kind}:${doc.id}`;
+      setWaSending(busyKey);
+      try {
+        const result = await send(doc.id);
+        addToast(result.message || "Sent on WhatsApp.", "success");
+        load();
+      } catch (err) {
+        addToast(errorMessage(err, "Could not send it on WhatsApp."), "error");
+      } finally {
+        setWaSending(null);
+      }
+    };
+  };
+  const waBusy = (kind, doc) => waSending === `${kind}:${doc.id}`;
+  const waTitle = waConnected ? "Send on WhatsApp" : "Share on WhatsApp";
+
   const liveInvoices = invoices.filter((i) => i.status !== "cancelled");
   const counts = { quotations: quotations.length, invoices: invoices.length, payments: payments.length };
 
@@ -560,19 +600,20 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
                   <button className="crm-btn crm-btn-sm" onClick={() => open(pdfPaths.quotation(q.id))}>PDF</button>
                   <button
                     className="crm-btn crm-btn-sm crm-btn-wa"
-                    aria-label="Share on WhatsApp"
-                    title="Share on WhatsApp"
-                    onClick={() =>
-                      shareOnWhatsApp(
-                        () => whatsappText.quotation({ client, seller, quotation: q }),
-                        q.status === "draft" || q.status === "rejected"
-                          ? async () => {
-                              await crmApi.sendQuotation(q.id, { sendEmail: false });
-                              load();
-                            }
-                          : null,
-                      )
-                    }
+                    aria-label={waTitle}
+                    title={waTitle}
+                    disabled={waBusy("quotation", q)}
+                    onClick={whatsappAction(
+                      "quotation",
+                      q,
+                      () => whatsappText.quotation({ client, seller, quotation: q }),
+                      q.status === "draft" || q.status === "rejected"
+                        ? async () => {
+                            await crmApi.sendQuotation(q.id, { sendEmail: false });
+                            load();
+                          }
+                        : null,
+                    )}
                   >
                     <WhatsAppIcon size={13} />
                   </button>
@@ -663,9 +704,10 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
                 {inv.status !== "cancelled" && (
                   <button
                     className="crm-btn crm-btn-sm crm-btn-wa"
-                    aria-label="Share on WhatsApp"
-                    title="Share on WhatsApp"
-                    onClick={() => shareOnWhatsApp(() => whatsappText.invoice({ client, seller, invoice: inv }))}
+                    aria-label={waTitle}
+                    title={waTitle}
+                    disabled={waBusy("invoice", inv)}
+                    onClick={whatsappAction("invoice", inv, () => whatsappText.invoice({ client, seller, invoice: inv }))}
                   >
                     <WhatsAppIcon size={13} />
                   </button>
@@ -761,7 +803,8 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
                           className="crm-btn crm-btn-sm crm-btn-ghost crm-btn-wa"
                           aria-label="Send receipt on WhatsApp"
                           title="Send receipt on WhatsApp"
-                          onClick={() => shareOnWhatsApp(() => whatsappText.receipt({ client, seller, payment: p }))}
+                          disabled={waBusy("receipt", p)}
+                          onClick={whatsappAction("receipt", p, () => whatsappText.receipt({ client, seller, payment: p }))}
                         >
                           <WhatsAppIcon size={14} />
                         </button>

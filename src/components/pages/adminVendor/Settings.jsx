@@ -25,6 +25,7 @@ import {
   FiLink,
 } from "react-icons/fi";
 import InstagramConnect from "./subVendors/InstagramConnect";
+import WhatsAppConnect from "./crm/WhatsAppConnect";
 import SubscriptionSettings from "./subscription/SubscriptionSettings";
 import { useVendorAccess } from "../../../context/VendorAccessContext";
 
@@ -33,7 +34,12 @@ const Settings = () => {
   const [searchParams] = useSearchParams();
   // Instagram Connect is sold with a plan, so Integrations is only offered when
   // the vendor's plan includes it.
-  const hasInstagram = Boolean(useVendorAccess()?.hasModule?.("instagram"));
+  const vendorAccess = useVendorAccess();
+  const hasInstagram = Boolean(vendorAccess?.hasModule?.("instagram"));
+  // WhatsApp is connected here too, and that belongs to the CRM - so the tab
+  // is offered to either plan rather than Instagram's alone.
+  const hasCrm = Boolean(vendorAccess?.hasModule?.("crm"));
+  const hasIntegrations = hasInstagram || hasCrm;
   const [activeTab, setActiveTab] = useState(() => {
     const requested = searchParams.get("tab");
     return ["notifications", "billing", "integrations"].includes(requested)
@@ -134,7 +140,7 @@ const Settings = () => {
                       Payments &amp; Subscription
                     </Nav.Link>
                   </Nav.Item>
-                  {hasInstagram && (
+                  {hasIntegrations && (
                     <Nav.Item>
                       <Nav.Link
                         active={activeTab === "integrations"}
@@ -404,7 +410,7 @@ const Settings = () => {
             )}
 
             {/* Integrations */}
-            {activeTab === "integrations" && hasInstagram && (
+            {activeTab === "integrations" && hasIntegrations && (
               <Card className="settings-card">
                 <Card.Header>
                   <div className="d-flex align-items-center">
@@ -417,12 +423,23 @@ const Settings = () => {
                   </div>
                 </Card.Header>
                 <Card.Body className="p-4">
-                  <h6 className="mb-3">Instagram</h6>
-                  <p className="text-muted small mb-3">
-                    Connect your Instagram Business account to enable direct
-                    messages, comments, and publishing from your dashboard.
-                  </p>
-                  <InstagramConnect />
+                  {hasInstagram && (
+                    <>
+                      <h6 className="mb-3">Instagram</h6>
+                      <p className="text-muted small mb-3">
+                        Connect your Instagram Business account to enable direct
+                        messages, comments, and publishing from your dashboard.
+                      </p>
+                      <InstagramConnect />
+                    </>
+                  )}
+                  {hasInstagram && hasCrm && <hr className="my-4" />}
+                  {hasCrm && (
+                    <>
+                      <h6 className="mb-3">WhatsApp</h6>
+                      <WhatsAppConnect />
+                    </>
+                  )}
                 </Card.Body>
               </Card>
             )}
