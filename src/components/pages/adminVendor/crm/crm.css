@@ -1361,3 +1361,274 @@ textarea.crm-input {
     flex-basis: 78px;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Pipeline board. The columns are the statuses the CRM already stores; a card
+   can be dragged, or moved with the select on it, which is what works on a
+   phone and with a keyboard.
+   --------------------------------------------------------------------------- */
+
+.crm-board-filters {
+  margin-bottom: 14px;
+}
+
+.crm-board {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.crm-bcol {
+  flex: 1 1 0;
+  min-width: 232px;
+  background: #f0f1f5;
+  border: 1px solid var(--crm-line);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.crm-bcol.is-closed {
+  flex: 0 0 200px;
+  min-width: 200px;
+}
+
+.crm-bcol.is-over {
+  border-color: var(--crm-brand);
+  background: #fdeef5;
+}
+
+.crm-bcol-head {
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid #e3e5eb;
+}
+
+.crm-bcol-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crm-bcol-title h2 {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.crm-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.crm-dot.crm-tone-green { background: var(--crm-green); }
+.crm-dot.crm-tone-red { background: var(--crm-red); }
+.crm-dot.crm-tone-blue { background: var(--crm-blue); }
+.crm-dot.crm-tone-violet { background: var(--crm-violet); }
+.crm-dot.crm-tone-grey { background: var(--crm-grey); }
+
+.crm-bcol-body {
+  flex-grow: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 120px;
+}
+
+.crm-bcol-empty {
+  border: 1px dashed #d6d8e0;
+  border-radius: 10px;
+  padding: 16px 10px;
+  text-align: center;
+  color: var(--crm-muted);
+  font-size: 12px;
+}
+
+.crm-bcol-more {
+  text-align: center;
+}
+
+.crm-bcard {
+  background: var(--crm-card);
+  border: 1px solid var(--crm-line);
+  border-radius: 10px;
+  padding: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  box-shadow: 0 1px 2px rgba(31, 35, 48, 0.05);
+  cursor: grab;
+}
+
+.crm-bcard.is-dragging {
+  opacity: 0.55;
+  border-style: dashed;
+  border-color: var(--crm-brand);
+}
+
+.crm-bcard.is-busy {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.crm-bcard-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.crm-bcard-name {
+  flex-grow: 1;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--crm-ink);
+  cursor: pointer;
+}
+
+.crm-bcard-name:hover {
+  color: var(--crm-brand);
+}
+
+.crm-bcard-grip {
+  color: #b9bcc7;
+  flex-shrink: 0;
+}
+
+.crm-bcard-money {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.crm-bcard-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  border-radius: 6px;
+  padding: 3px 7px;
+  font-size: 11.5px;
+  background: var(--crm-grey-soft);
+  color: var(--crm-grey);
+}
+
+.crm-bcard-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--crm-grey-soft);
+  overflow: hidden;
+}
+
+.crm-bcard-bar span {
+  display: block;
+  height: 100%;
+  background: var(--crm-green);
+}
+
+.crm-bcard-complete {
+  width: 100%;
+  justify-content: center;
+  font-size: 12px;
+  min-height: 34px;
+}
+
+.crm-btn-soft {
+  background: var(--crm-brand-soft);
+  border-color: transparent;
+  color: #b80d59;
+}
+
+.crm-bcard-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--crm-line);
+}
+
+.crm-bcard-foot > .crm-small {
+  white-space: nowrap;
+}
+
+.crm-bcard-move {
+  margin: 0 0 0 auto;
+  min-width: 0;
+}
+
+.crm-bcard-move select.crm-input {
+  min-height: 30px;
+  padding: 2px 22px 2px 8px;
+  font-size: 12px;
+}
+
+.crm-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Reason pills in the "move out of the pipeline" dialog. */
+.crm-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.crm-pill {
+  border: 1px solid var(--crm-line);
+  background: #fff;
+  border-radius: 18px;
+  padding: 7px 13px;
+  font-size: 13px;
+  color: var(--crm-ink);
+  min-height: 36px;
+  cursor: pointer;
+}
+
+.crm-pill:hover {
+  border-color: #c9ccd6;
+}
+
+.crm-pill.is-on {
+  border-color: var(--crm-brand);
+  border-width: 1.5px;
+  background: #fff6fa;
+  color: #b80d59;
+  font-weight: 500;
+}
+
+.crm-error {
+  color: var(--crm-red);
+  margin-bottom: 8px;
+}
+
+@media (max-width: 900px) {
+  /* One stage at a time, swiped sideways, rather than five squeezed columns. */
+  .crm-board {
+    scroll-snap-type: x mandatory;
+  }
+
+  .crm-bcol,
+  .crm-bcol.is-closed {
+    flex: 0 0 84%;
+    min-width: 84%;
+    scroll-snap-align: start;
+  }
+
+  .crm-bcard-grip {
+    display: none;
+  }
+}

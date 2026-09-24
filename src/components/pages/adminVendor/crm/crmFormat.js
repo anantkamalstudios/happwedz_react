@@ -22,6 +22,17 @@ export const CLIENT_STATUSES = [
   { id: "cancelled", label: "Cancelled" },
 ];
 
+// Why a client was lost. Same ids as the server (services/crm/crmPipeline.js);
+// the board uses the list the API sends and falls back to this one.
+export const LOST_REASONS = [
+  { id: "budget", label: "Budget too high" },
+  { id: "no_response", label: "No response" },
+  { id: "date_unavailable", label: "Date not available" },
+  { id: "other_vendor", label: "Chose another vendor" },
+  { id: "postponed", label: "Event postponed" },
+  { id: "other", label: "Other" },
+];
+
 export const PAYMENT_METHODS = [
   { id: "cash", label: "Cash" },
   { id: "upi", label: "UPI" },

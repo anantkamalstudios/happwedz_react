@@ -20,11 +20,14 @@ export const crmApi = {
   },
 
   summary: () => data(axiosInstance.get(`${BASE}/summary`)),
+  board: (params) => data(axiosInstance.get(`${BASE}/board`, { params })),
   clients: (params) => data(axiosInstance.get(`${BASE}/clients`, { params })),
   client: (id) => data(axiosInstance.get(`${BASE}/clients/${id}`)),
   createClient: (body) => data(axiosInstance.post(`${BASE}/clients`, body)),
   updateClient: (id, body) => data(axiosInstance.put(`${BASE}/clients/${id}`, body)),
   deleteClient: (id) => data(axiosInstance.delete(`${BASE}/clients/${id}`)),
+  // Moving a client between stages. Lost and cancelled need a reason.
+  setClientStatus: (id, body) => data(axiosInstance.post(`${BASE}/clients/${id}/status`, body)),
 
   uploadFiles: (clientId, files) => {
     const form = new FormData();

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Modal } from "react-bootstrap";
 import { Plus, Trash2 } from "lucide-react";
 import { crmApi, errorMessage } from "./crmApi";
-import { CLIENT_STATUSES, EVENT_SUGGESTIONS, INDIAN_STATES, LEAD_SOURCES, rupees, toPaise, toRupeeInput } from "./crmFormat";
+import { CLIENT_STATUSES, EVENT_SUGGESTIONS, INDIAN_STATES, LEAD_SOURCES, LOST_REASONS, rupees, toPaise, toRupeeInput } from "./crmFormat";
 import { RupeeInput } from "./crmUi";
 
 const blankEvent = (name = "") => ({ key: Math.random().toString(36).slice(2), id: null, name, eventDate: "", venue: "", price: "" });
@@ -29,6 +29,9 @@ const ClientFormModal = ({ client, events: initialEvents, onClose, onSaved }) =>
     followUpDate: client?.followUpDate || "",
     followUpNote: client?.followUpNote || "",
     remindersEnabled: client ? client.remindersEnabled !== false : true,
+    // Only sent when the status becomes lost or cancelled; the board asks the
+    // same question, so the reasons chart sees every loss wherever it happened.
+    lostReason: client?.lostReason || "",
   }));
   const [events, setEvents] = useState(() =>
     initialEvents?.length
@@ -64,8 +67,10 @@ const ClientFormModal = ({ client, events: initialEvents, onClose, onSaved }) =>
     if (filled.some((ev) => !ev.name.trim())) return setError("Give every event a name, or remove the empty row.");
     if (filled.some((ev) => Number.isNaN(toPaise(ev.price)))) return setError("Check the event prices.");
 
+    const closed = form.status === "lost" || form.status === "cancelled";
     const body = {
       ...form,
+      lostReason: closed ? form.lostReason || null : null,
       followUpDate: form.followUpDate || null,
       followUpNote: form.followUpNote.trim() || null,
       events: filled.map((ev) => ({ id: ev.id, name: ev.name.trim(), eventDate: ev.eventDate || null, venue: ev.venue, pricePaise: toPaise(ev.price) })),
@@ -132,6 +137,17 @@ const ClientFormModal = ({ client, events: initialEvents, onClose, onSaved }) =>
                   ))}
                 </select>
               </div>
+              {(form.status === "lost" || form.status === "cancelled") && (
+                <div className="crm-field">
+                  <label className="crm-label" htmlFor="crm-form-lost-reason">Why?</label>
+                  <select id="crm-form-lost-reason" className="crm-input" value={form.lostReason} onChange={set("lostReason")}>
+                    <option value="">Not sure</option>
+                    {LOST_REASONS.map((s) => (
+                      <option key={s.id} value={s.id}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 

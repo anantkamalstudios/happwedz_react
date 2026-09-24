@@ -1,18 +1,22 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CalendarDays, Download, List, PhoneCall, Plus, Search, Settings2, Users } from "lucide-react";
+import { AlertCircle, CalendarDays, Download, Kanban, List, PhoneCall, Plus, Search, Settings2, Users } from "lucide-react";
 import { crmApi, errorMessage, openFile, pdfPaths } from "./crmApi";
 import { CLIENT_STATUSES, LEAD_SOURCES, formatDate, labelOf, rupees, todayIso } from "./crmFormat";
 import { Badge, Spinner } from "./crmUi";
 import ClientFormModal from "./ClientFormModal";
 import CalendarView from "./CalendarView";
+import BoardView from "./BoardView";
 import { useToast } from "../../../layouts/toasts/Toast";
 
 const PAGE_SIZE = 25;
 const VIEW_KEY = "crm.view";
 
+const VIEWS = ["list", "board", "calendar"];
+
 const readView = () => {
   try {
-    return localStorage.getItem(VIEW_KEY) === "calendar" ? "calendar" : "list";
+    const saved = localStorage.getItem(VIEW_KEY);
+    return VIEWS.includes(saved) ? saved : "list";
   } catch {
     return "list";
   }
@@ -62,12 +66,15 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
     setLoading(true);
     setError("");
     try {
+      // The board loads its own columns; only the panels above it need the summary.
       const [list, sum] = await Promise.all([
-        crmApi.clients({ ...filters, page, limit: PAGE_SIZE }),
+        view === "board" ? Promise.resolve(null) : crmApi.clients({ ...filters, page, limit: PAGE_SIZE }),
         crmApi.summary(),
       ]);
-      setRows(list.clients || []);
-      setTotal(list.total || 0);
+      if (list) {
+        setRows(list.clients || []);
+        setTotal(list.total || 0);
+      }
       setSummary(sum.summary);
     } catch (err) {
       setError(errorMessage(err, "Could not load your clients."));
@@ -75,7 +82,7 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, status, source, payment, sort, page, followup]);
+  }, [query, status, source, payment, sort, page, followup, view]);
 
   useEffect(() => {
     load();
@@ -110,6 +117,48 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
     setSearch("");
     setPage(1);
   };
+
+  // One filter row, used by the list and by the board. The board is the status,
+  // so a status filter would only fight with it.
+  const filterBar = (
+    <div className="crm-filters">
+      <div className="crm-search">
+        <Search size={15} />
+        <input
+          className="crm-input"
+          placeholder="Search name, phone, email or event"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+      {view !== "board" && (
+        <select className="crm-input" value={status} onChange={setFilter(setStatus)} aria-label="Status">
+          <option value="all">All statuses</option>
+          {CLIENT_STATUSES.map((s) => (
+            <option key={s.id} value={s.id}>{s.label}</option>
+          ))}
+        </select>
+      )}
+      <select className="crm-input" value={source} onChange={setFilter(setSource)} aria-label="Lead source">
+        <option value="all">All sources</option>
+        {LEAD_SOURCES.map((s) => (
+          <option key={s.id} value={s.id}>{s.label}</option>
+        ))}
+      </select>
+      <select className="crm-input" value={payment} onChange={setFilter(setPayment)} aria-label="Payment">
+        <option value="all">Any payment</option>
+        <option value="pending">Payment pending</option>
+        <option value="overdue">Payment overdue</option>
+        <option value="cleared">Fully paid</option>
+      </select>
+      <select className="crm-input" value={sort} onChange={setFilter(setSort)} aria-label="Sort">
+        <option value="newest">Newest first</option>
+        <option value="event">Event date</option>
+        <option value="balance">Highest balance</option>
+        <option value="name">Name A–Z</option>
+      </select>
+    </div>
+  );
 
   return (
     <>
@@ -207,6 +256,9 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
           <button role="tab" aria-selected={view === "list"} className={view === "list" ? "is-active" : ""} onClick={() => switchView("list")}>
             <List size={15} /> Clients
           </button>
+          <button role="tab" aria-selected={view === "board"} className={view === "board" ? "is-active" : ""} onClick={() => switchView("board")}>
+            <Kanban size={15} /> Pipeline
+          </button>
           <button role="tab" aria-selected={view === "calendar"} className={view === "calendar" ? "is-active" : ""} onClick={() => switchView("calendar")}>
             <CalendarDays size={15} /> Calendar
           </button>
@@ -220,6 +272,15 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
 
       {view === "calendar" ? (
         <CalendarView onOpenClient={onOpenClient} />
+      ) : view === "board" ? (
+        <>
+          <div className="crm-card crm-board-filters">{filterBar}</div>
+          <BoardView
+            filters={{ q: query, source, payment, sort, followup: followup === "all" ? undefined : followup }}
+            onOpenClient={onOpenClient}
+            onMoved={load}
+          />
+        </>
       ) : (
         <>
       {summary?.upcoming?.length > 0 && (
@@ -241,42 +302,7 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
       )}
 
       <div className="crm-card">
-        <div className="crm-filters">
-          <div className="crm-search">
-            <Search size={15} />
-            <input
-              className="crm-input"
-              placeholder="Search name, phone, email or event"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <select className="crm-input" value={status} onChange={setFilter(setStatus)} aria-label="Status">
-            <option value="all">All statuses</option>
-            {CLIENT_STATUSES.map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
-          <select className="crm-input" value={source} onChange={setFilter(setSource)} aria-label="Lead source">
-            <option value="all">All sources</option>
-            {LEAD_SOURCES.map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
-          <select className="crm-input" value={payment} onChange={setFilter(setPayment)} aria-label="Payment">
-            <option value="all">Any payment</option>
-            <option value="pending">Payment pending</option>
-            <option value="overdue">Payment overdue</option>
-            <option value="cleared">Fully paid</option>
-          </select>
-          <select className="crm-input" value={sort} onChange={setFilter(setSort)} aria-label="Sort">
-            <option value="newest">Newest first</option>
-            <option value="event">Event date</option>
-            <option value="balance">Highest balance</option>
-            <option value="name">Name A–Z</option>
-          </select>
-        </div>
-
+        {filterBar}
         {loading && !rows.length ? (
           <Spinner />
         ) : error ? (
