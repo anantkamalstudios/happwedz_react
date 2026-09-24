@@ -63,6 +63,18 @@ const handle401Error = (error) => {
       if (!window.location.pathname.startsWith("/vendor-login")) {
         redirectWithReason("/vendor-login");
       }
+    } else if (localStorage.getItem("teamToken")) {
+      // A member who was removed, switched off or simply timed out.
+      try {
+        localStorage.removeItem("teamToken");
+        localStorage.removeItem("teamMember");
+      } catch {
+        // Nothing to clear.
+      }
+      toast.error("Your session has ended. Please sign in again.");
+      if (!window.location.pathname.startsWith("/vendor-team/login")) {
+        redirectWithReason("/vendor-team/login");
+      }
     }
   }
 };
@@ -95,8 +107,12 @@ const requestInterceptor = (config) => {
 
   const token = localStorage.getItem("token");
   const vendorToken = localStorage.getItem("vendorToken");
+  // A CRM team member holds a third kind of token. It opens the vendor CRM and
+  // nothing else, so it is only ever offered to vendor paths, and only when the
+  // browser is not already signed in as the vendor itself.
+  const teamToken = localStorage.getItem("teamToken");
   const chosen = isVendorApiCall(config)
-    ? vendorToken || token
+    ? vendorToken || teamToken || token
     : token || vendorToken;
 
   if (chosen && !config.headers.Authorization) {

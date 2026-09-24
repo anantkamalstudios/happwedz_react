@@ -99,6 +99,7 @@ const AnalyticsView = () => {
   if (!data) return null;
 
   const { kpis, funnel, lostReasons, sources } = data;
+  const teamRows = data.hasTeam ? data.team || [] : [];
 
   return (
     <div className="crm-analytics">
@@ -242,6 +243,39 @@ const AnalyticsView = () => {
           )}
         </div>
       </div>
+
+      {teamRows.length > 0 && (
+        <div className="crm-card">
+          <div className="crm-panel-title"><span>How the team is doing</span></div>
+          <div className="crm-sub" style={{ marginBottom: 6 }}>
+            The clients each person was carrying, for the clients who came in during this period.
+          </div>
+          <div className="crm-table-wrap">
+            <table className="crm-table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th className="crm-num">Clients</th>
+                  <th className="crm-num">Booked</th>
+                  <th className="crm-num">Booking rate</th>
+                  <th className="crm-num">Booked value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teamRows.map((row) => (
+                  <tr key={row.id || "unassigned"}>
+                    <td className={row.id ? "crm-strong" : "crm-muted"}>{row.name}</td>
+                    <td className="crm-num">{row.leads}</td>
+                    <td className="crm-num">{row.booked}</td>
+                    <td className={`crm-num ${row.rate >= 40 ? "is-good" : row.rate === 0 ? "is-pending" : ""}`}>{pct(row.rate)}</td>
+                    <td className="crm-num">{row.valuePaise ? rupees(row.valuePaise) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="crm-card">
         <div className="crm-panel-title"><span>Which sources actually book</span></div>

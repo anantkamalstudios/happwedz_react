@@ -1779,3 +1779,206 @@ textarea.crm-input {
     flex-wrap: wrap;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   The team: the owner badge on a card, the team screen, and the pages a member
+   signs in on.
+   --------------------------------------------------------------------------- */
+
+.crm-board-owners {
+  margin-bottom: 12px;
+}
+
+.crm-board-owners select.crm-input {
+  min-height: 34px;
+  max-width: 220px;
+}
+
+.crm-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--crm-violet-soft);
+  color: var(--crm-violet);
+  font-size: 10px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.crm-avatar.is-empty {
+  background: var(--crm-amber-soft);
+  color: var(--crm-amber);
+}
+
+/* The badge is the control: the select sits invisibly on top of it. */
+.crm-bcard-owner {
+  position: relative;
+  display: inline-flex;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.crm-avatar-select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+}
+
+.crm-avatar-select:focus-visible + .crm-avatar {
+  outline: 2px solid var(--crm-brand);
+  outline-offset: 2px;
+}
+
+.crm-invite-link {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.crm-invite-link code {
+  flex-grow: 1;
+  min-width: 240px;
+  background: var(--crm-bg);
+  border: 1px solid var(--crm-line);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 12px;
+  color: var(--crm-ink);
+  word-break: break-all;
+}
+
+/* A member's workspace: the CRM under a bar of its own. */
+.crm-team-bar {
+  background: #fff;
+  border-bottom: 1px solid var(--crm-line);
+}
+
+.crm-team-bar-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.crm-team-brand {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--crm-brand);
+  letter-spacing: -0.3px;
+}
+
+.crm-team-studio {
+  font-size: 13px;
+  color: var(--crm-muted);
+  border-left: 1px solid var(--crm-line);
+  padding-left: 12px;
+}
+
+.crm-team-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.crm-team-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--crm-brand-soft);
+  color: var(--crm-brand);
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Sign in and invitation pages. */
+.crm-auth {
+  min-height: 100vh;
+  background: var(--crm-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  color: var(--crm-ink);
+  font-size: 14px;
+}
+
+.crm-auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 1px solid var(--crm-line);
+  border-radius: 14px;
+  padding: 28px 26px;
+  box-shadow: 0 10px 30px rgba(31, 35, 48, 0.06);
+}
+
+.crm-auth-brand {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--crm-brand);
+  letter-spacing: -0.3px;
+  margin-bottom: 14px;
+}
+
+.crm-auth-card h1 {
+  font-size: 21px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.crm-auth-card .crm-sub {
+  margin-bottom: 18px;
+}
+
+.crm-auth-submit {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 4px;
+}
+
+.crm-auth-foot {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--crm-line);
+  font-size: 13px;
+  color: var(--crm-muted);
+}
+
+.crm-auth-foot a {
+  color: var(--crm-brand);
+  font-weight: 500;
+}
+
+/* An inline picker that reads as text until you use it (the owner on a client). */
+.crm-inline-select {
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 6px;
+  padding: 1px 4px;
+  font-size: 13px;
+  color: var(--crm-ink);
+  cursor: pointer;
+  max-width: 180px;
+}
+
+.crm-inline-select:hover,
+.crm-inline-select:focus {
+  border-color: var(--crm-line);
+  background: #fff;
+}

@@ -63,6 +63,14 @@ export const crmApi = {
   sendReminder: (clientId) => data(axiosInstance.post(`${BASE}/clients/${clientId}/reminders`)),
   calendar: (from, to) => data(axiosInstance.get(`${BASE}/calendar`, { params: { from, to } })),
 
+  // Who a client belongs to, and the people who can be given one.
+  setClientOwner: (id, ownerId) => data(axiosInstance.post(`${BASE}/clients/${id}/owner`, { ownerId })),
+  owners: () => data(axiosInstance.get(`${BASE}/owners`)),
+  team: () => data(axiosInstance.get(`${BASE}/team`)),
+  inviteTeamMember: (body) => data(axiosInstance.post(`${BASE}/team`, body)),
+  updateTeamMember: (id, body) => data(axiosInstance.put(`${BASE}/team/${id}`, body)),
+  removeTeamMember: (id) => data(axiosInstance.delete(`${BASE}/team/${id}`)),
+
   // Public quotation page (no login).
   publicQuotation: (token) => data(axiosInstance.get(`/crm/public/quotations/${token}`)),
   respondToQuotation: (token, decision) => data(axiosInstance.post(`/crm/public/quotations/${token}/respond`, { decision })),

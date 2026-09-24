@@ -14,7 +14,17 @@ const COLUMN_TONE = { lead: "blue", quoted: "violet", booked: "green", completed
 
 const CardChip = ({ tone = "grey", children }) => <span className={`crm-bcard-chip crm-tone-${tone}`}>{children}</span>;
 
-const BoardCard = ({ client, dragging, busy, onOpen, onDragStart, onDragEnd, onMove, onComplete }) => {
+// Two letters for the owner's badge; a dash when nobody has it yet.
+const initialsOf = (name) =>
+  (name || "")
+    .split(" ")
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "—";
+
+const BoardCard = ({ client, dragging, busy, owners, canAssign, onOpen, onDragStart, onDragEnd, onMove, onComplete, onAssign }) => {
   const today = todayIso();
   const overdueFollowUp = client.followUpDate && client.followUpDate <= today;
   const overduePayment = client.dueDate && client.dueDate < today && client.money?.isPending;
@@ -32,6 +42,29 @@ const BoardCard = ({ client, dragging, busy, onOpen, onDragStart, onDragEnd, onM
         <button type="button" className="crm-bcard-name" onClick={() => onOpen(client.id)}>
           {client.name}
         </button>
+        {canAssign ? (
+          <label className="crm-bcard-owner" title={client.ownerName || "Unassigned"}>
+            <span className="crm-sr-only">Who {client.name} belongs to</span>
+            <select
+              className="crm-avatar-select"
+              value={client.ownerId || ""}
+              disabled={busy}
+              onChange={(e) => onAssign(client, e.target.value)}
+            >
+              <option value="">Unassigned</option>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>{o.isMe ? `${o.name} (me)` : o.name}</option>
+              ))}
+            </select>
+            <span className={`crm-avatar ${client.ownerId ? "" : "is-empty"}`} aria-hidden="true">
+              {initialsOf(client.ownerName)}
+            </span>
+          </label>
+        ) : (
+          client.ownerName && (
+            <span className="crm-avatar" title={client.ownerName} aria-hidden="true">{initialsOf(client.ownerName)}</span>
+          )
+        )}
         <GripVertical size={15} className="crm-bcard-grip" aria-hidden="true" />
       </div>
 
@@ -87,7 +120,7 @@ const BoardCard = ({ client, dragging, busy, onOpen, onDragStart, onDragEnd, onM
   );
 };
 
-const BoardView = ({ filters, onOpenClient, onMoved }) => {
+const BoardView = ({ filters, owners = [], canAssign = false, owner = "all", onOwnerFilter, onOpenClient, onMoved }) => {
   const { addToast } = useToast();
   const [columns, setColumns] = useState([]);
   const [reasons, setReasons] = useState(LOST_REASONS);
@@ -106,7 +139,7 @@ const BoardView = ({ filters, onOpenClient, onMoved }) => {
     setLoading(true);
     setError("");
     try {
-      const data = await crmApi.board({ q: q || undefined, source, payment, sort, followup });
+      const data = await crmApi.board({ q: q || undefined, source, payment, sort, followup, owner });
       setColumns(data.columns || []);
       if (data.lostReasons?.length) setReasons(data.lostReasons);
     } catch (err) {
@@ -114,7 +147,7 @@ const BoardView = ({ filters, onOpenClient, onMoved }) => {
     } finally {
       setLoading(false);
     }
-  }, [q, source, payment, sort, followup]);
+  }, [q, source, payment, sort, followup, owner]);
 
   useEffect(() => {
     load();
@@ -131,6 +164,20 @@ const BoardView = ({ filters, onOpenClient, onMoved }) => {
     } catch (err) {
       addToast(errorMessage(err, "Could not move the client."), "error");
       return false;
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const assign = async (client, ownerId) => {
+    setBusyId(client.id);
+    try {
+      const result = await crmApi.setClientOwner(client.id, ownerId ? Number(ownerId) : null);
+      addToast(result.message, "success");
+      await load();
+      onMoved?.();
+    } catch (err) {
+      addToast(errorMessage(err, "Could not change who this client belongs to."), "error");
     } finally {
       setBusyId(null);
     }
@@ -202,6 +249,19 @@ const BoardView = ({ filters, onOpenClient, onMoved }) => {
 
   return (
     <>
+      {canAssign && owners.length > 1 && (
+        <div className="crm-board-owners">
+          <label className="crm-sr-only" htmlFor="board-owner">Show whose clients</label>
+          <select id="board-owner" className="crm-input" value={owner} onChange={(e) => onOwnerFilter?.(e.target.value)}>
+            <option value="all">Everyone's clients</option>
+            <option value="mine">Only mine</option>
+            <option value="unassigned">Unassigned</option>
+            {owners.map((o) => (
+              <option key={o.id} value={String(o.id)}>{o.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="crm-board">
         {columns.map((column) => (
           <section
@@ -237,6 +297,9 @@ const BoardView = ({ filters, onOpenClient, onMoved }) => {
                   client={client}
                   busy={busyId === client.id}
                   dragging={dragId === client.id}
+                  owners={owners}
+                  canAssign={canAssign}
+                  onAssign={assign}
                   onOpen={onOpenClient}
                   onDragStart={() => setDragId(client.id)}
                   onDragEnd={() => {

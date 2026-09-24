@@ -195,6 +195,16 @@ const PublicDocPage = lazy(
 const PublicQuotationPage = lazy(
   () => import("./components/pages/adminVendor/crm/PublicQuotationPage"),
 );
+// A vendor's CRM team: their own sign-in, and a workspace holding the CRM alone.
+const TeamWorkspace = lazy(
+  () => import("./components/pages/vendorTeam/TeamWorkspace"),
+);
+const TeamLoginPage = lazy(() =>
+  import("./components/pages/vendorTeam/TeamAuthPages").then((m) => ({ default: m.TeamLoginPage })),
+);
+const TeamAcceptPage = lazy(() =>
+  import("./components/pages/vendorTeam/TeamAuthPages").then((m) => ({ default: m.TeamAcceptPage })),
+);
 const EinviteViewPage = lazy(
   () => import("./components/pages/EinviteViewPage"),
 );
@@ -411,6 +421,12 @@ function App() {
               path="/widget/reviews/:vendorId"
               element={<ReviewWidgetPage />}
             />
+
+            {/* A vendor's CRM team works in a page of its own: no marketing
+                header, no footer, nothing but the studio's CRM. */}
+            <Route path="/vendor-team" element={<TeamWorkspace />} />
+            <Route path="/vendor-team/login" element={<TeamLoginPage />} />
+            <Route path="/vendor-team/accept/:token" element={<TeamAcceptPage />} />
 
             <Route element={<MainLayout />}>
               <Route path="/wedding-venues/:city" element={<MainSection />} />

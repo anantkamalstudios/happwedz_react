@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CalendarDays, Download, Kanban, LineChart, List, PhoneCall, Plus, Search, Settings2, Users } from "lucide-react";
+import { AlertCircle, CalendarDays, Download, Kanban, LineChart, List, PhoneCall, Plus, Search, Settings2, Users, UsersRound } from "lucide-react";
 import { crmApi, errorMessage, openFile, pdfPaths } from "./crmApi";
 import { CLIENT_STATUSES, LEAD_SOURCES, formatDate, labelOf, rupees, todayIso } from "./crmFormat";
 import { Badge, Spinner } from "./crmUi";
@@ -7,12 +7,13 @@ import ClientFormModal from "./ClientFormModal";
 import CalendarView from "./CalendarView";
 import BoardView from "./BoardView";
 import AnalyticsView from "./AnalyticsView";
+import TeamPage from "./TeamPage";
 import { useToast } from "../../../layouts/toasts/Toast";
 
 const PAGE_SIZE = 25;
 const VIEW_KEY = "crm.view";
 
-const VIEWS = ["list", "board", "calendar", "analytics"];
+const VIEWS = ["list", "board", "calendar", "analytics", "team"];
 
 const readView = () => {
   try {
@@ -42,6 +43,10 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
   const [page, setPage] = useState(1);
   const [followup, setFollowup] = useState("all");
   const [view, setView] = useState(readView);
+  // Who is looking: the vendor themselves, or someone they invited.
+  const [viewer, setViewer] = useState(null);
+  const [owners, setOwners] = useState([]);
+  const [owner, setOwner] = useState("all");
 
   const switchView = (next) => {
     setView(next);
@@ -69,7 +74,9 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
     try {
       // The board loads its own columns; only the panels above it need the summary.
       const [list, sum] = await Promise.all([
-        view === "board" || view === "analytics" ? Promise.resolve(null) : crmApi.clients({ ...filters, page, limit: PAGE_SIZE }),
+        view === "board" || view === "analytics" || view === "team"
+          ? Promise.resolve(null)
+          : crmApi.clients({ ...filters, page, limit: PAGE_SIZE, owner }),
         crmApi.summary(),
       ]);
       if (list) {
@@ -77,17 +84,31 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
         setTotal(list.total || 0);
       }
       setSummary(sum.summary);
+      setViewer(sum.viewer || null);
     } catch (err) {
       setError(errorMessage(err, "Could not load your clients."));
     } finally {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, status, source, payment, sort, page, followup, view]);
+  }, [query, status, source, payment, sort, page, followup, view, owner]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  // The people a client can be handed to. Empty for a staff member, who does
+  // not hand clients around, so the chips and the filter simply do not appear.
+  useEffect(() => {
+    let alive = true;
+    crmApi
+      .owners()
+      .then((data) => alive && setOwners(data.owners || []))
+      .catch(() => alive && setOwners([]));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const exportExcel = async () => {
     setExporting(true);
@@ -166,7 +187,11 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
       <div className="crm-head">
         <div>
           <h1 className="crm-title">Clients</h1>
-          <div className="crm-sub">Every booking in one place: events, quotations, invoices and payments.</div>
+          <div className="crm-sub">
+            {viewer?.role === "staff"
+              ? "The clients you are looking after: events, quotations, invoices and payments."
+              : "Every booking in one place: events, quotations, invoices and payments."}
+          </div>
         </div>
         <div className="crm-actions">
           <button className="crm-btn" onClick={onOpenBusiness}>
@@ -266,6 +291,11 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
           <button role="tab" aria-selected={view === "analytics"} className={view === "analytics" ? "is-active" : ""} onClick={() => switchView("analytics")}>
             <LineChart size={15} /> Analytics
           </button>
+          {viewer?.canManageTeam && (
+            <button role="tab" aria-selected={view === "team"} className={view === "team" ? "is-active" : ""} onClick={() => switchView("team")}>
+              <UsersRound size={15} /> Team
+            </button>
+          )}
         </div>
         {followup === "due" && view === "list" && (
           <span className="crm-chip">
@@ -278,11 +308,17 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
         <CalendarView onOpenClient={onOpenClient} />
       ) : view === "analytics" ? (
         <AnalyticsView />
+      ) : view === "team" ? (
+        <TeamPage />
       ) : view === "board" ? (
         <>
           <div className="crm-card crm-board-filters">{filterBar}</div>
           <BoardView
             filters={{ q: query, source, payment, sort, followup: followup === "all" ? undefined : followup }}
+            owners={owners}
+            canAssign={!!viewer?.canAssign && owners.length > 0}
+            owner={owner}
+            onOwnerFilter={setOwner}
             onOpenClient={onOpenClient}
             onMoved={load}
           />

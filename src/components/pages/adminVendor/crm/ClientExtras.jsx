@@ -218,7 +218,10 @@ export const ActivityCard = ({ clientId, activity, onChanged }) => {
                 <span className={item.type === "note" ? "crm-timeline-note" : undefined} style={item.type === "note" ? { display: "block" } : undefined}>
                   {item.text}
                 </span>
-                <span className="crm-timeline-when">{formatWhen(item.at)}</span>
+                <span className="crm-timeline-when">
+                  {formatWhen(item.at)}
+                  {item.by ? ` · ${item.by}` : ""}
+                </span>
               </span>
               {item.type === "note" && (
                 <button className="crm-btn crm-btn-sm crm-btn-ghost crm-btn-danger" onClick={() => remove(item.noteId)} aria-label="Delete note" style={{ alignSelf: "flex-start" }}>

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Modal } from "react-bootstrap";
-import { ArrowLeft, FileText, Mail, MapPin, Paperclip, Pencil, Phone, Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, FileText, Mail, MapPin, Paperclip, Pencil, Phone, Plus, Trash2, UserRound, X } from "lucide-react";
 import { crmApi, errorMessage, openFile, pdfPaths } from "./crmApi";
 import {
   CLIENT_STATUSES,
@@ -158,11 +158,39 @@ const SendQuotationModal = ({ quotation, client, seller, onClose, onSent }) => {
 const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
   const { addToast } = useToast();
   const [data, setData] = useState(null);
+  // The people this client can be handed to. A staff member gets none, and the
+  // picker is simply not drawn for them.
+  const [owners, setOwners] = useState([]);
+  const [assigning, setAssigning] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState("overview");
   const [modal, setModal] = useState(null); // { type, ...props }
   const [uploading, setUploading] = useState(false);
   const fileInput = useRef(null);
+
+  useEffect(() => {
+    let alive = true;
+    crmApi
+      .owners()
+      .then((result) => alive && setOwners(result.owners || []))
+      .catch(() => alive && setOwners([]));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const assign = async (ownerId) => {
+    setAssigning(true);
+    try {
+      const result = await crmApi.setClientOwner(clientId, ownerId ? Number(ownerId) : null);
+      addToast(result.message, "success");
+      await load();
+    } catch (err) {
+      addToast(errorMessage(err, "Could not change who this client belongs to."), "error");
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -234,7 +262,7 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
   }
   if (!data) return <Spinner />;
 
-  const { client, events, quotations, invoices, payments, files, money, profile, due, lastReminder, activity } = data;
+  const { client, events, quotations, invoices, payments, files, money, profile, due, lastReminder, activity, owner } = data;
   const seller = profile?.legalName || "us";
 
   // Open WhatsApp with a message ready to send. The tab is opened before any
@@ -271,6 +299,26 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
             {client.email && <span><Mail size={13} /> <a href={`mailto:${client.email}`}>{client.email}</a></span>}
             {(client.location || client.state) && <span><MapPin size={13} /> {[client.location, client.state].filter(Boolean).join(", ")}</span>}
             <span>Source: {labelOf(LEAD_SOURCES, client.leadSource)}</span>
+            {owners.length > 0 && (
+              <span>
+                <UserRound size={13} />{" "}
+                <label>
+                  <span className="crm-sr-only">Who this client belongs to</span>
+                  <select
+                    className="crm-inline-select"
+                    value={client.ownerId || ""}
+                    disabled={assigning}
+                    onChange={(e) => assign(e.target.value)}
+                  >
+                    <option value="">Unassigned</option>
+                    {owners.map((o) => (
+                      <option key={o.id} value={o.id}>{o.isMe ? `${o.name} (me)` : o.name}</option>
+                    ))}
+                  </select>
+                </label>
+              </span>
+            )}
+            {owners.length === 0 && owner && <span><UserRound size={13} /> {owner.name}</span>}
           </div>
         </div>
         <div className="crm-actions">
