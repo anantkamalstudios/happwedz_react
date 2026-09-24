@@ -26,10 +26,14 @@ import {
 } from "react-icons/fi";
 import InstagramConnect from "./subVendors/InstagramConnect";
 import SubscriptionSettings from "./subscription/SubscriptionSettings";
+import { useVendorAccess } from "../../../context/VendorAccessContext";
 
 const Settings = () => {
   // ?tab=integrations lets other pages (e.g. the Instagram page) open a section directly.
   const [searchParams] = useSearchParams();
+  // Instagram Connect is sold with a plan, so Integrations is only offered when
+  // the vendor's plan includes it.
+  const hasInstagram = Boolean(useVendorAccess()?.hasModule?.("instagram"));
   const [activeTab, setActiveTab] = useState(() => {
     const requested = searchParams.get("tab");
     return ["notifications", "billing", "integrations"].includes(requested)
@@ -130,15 +134,17 @@ const Settings = () => {
                       Payments &amp; Subscription
                     </Nav.Link>
                   </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link
-                      active={activeTab === "integrations"}
-                      onClick={() => setActiveTab("integrations")}
-                    >
-                      <FiLink className="me-2" />
-                      Integrations
-                    </Nav.Link>
-                  </Nav.Item>
+                  {hasInstagram && (
+                    <Nav.Item>
+                      <Nav.Link
+                        active={activeTab === "integrations"}
+                        onClick={() => setActiveTab("integrations")}
+                      >
+                        <FiLink className="me-2" />
+                        Integrations
+                      </Nav.Link>
+                    </Nav.Item>
+                  )}
                   {/* <Nav.Item>
                     <Nav.Link
                       active={activeTab === "security"}
@@ -398,7 +404,7 @@ const Settings = () => {
             )}
 
             {/* Integrations */}
-            {activeTab === "integrations" && (
+            {activeTab === "integrations" && hasInstagram && (
               <Card className="settings-card">
                 <Card.Header>
                   <div className="d-flex align-items-center">

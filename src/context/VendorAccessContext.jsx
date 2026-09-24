@@ -28,6 +28,7 @@ const EMPTY_ACCESS = {
   canPurchase: false,
   editableTabs: [],
   lockedTabs: [],
+  modules: [],
   allTabs: [],
   tabLabels: {},
   subscription: null,
@@ -86,6 +87,12 @@ export const VendorAccessProvider = ({ children }) => {
         if (tabId === "business") return access.canEditBusinessDetails;
         return access.editableTabs.includes(tabId);
       },
+      /**
+       * Does the vendor's plan include this dashboard feature (crm, instagram)?
+       * False while access is still loading, so a tab never flashes into view
+       * and then disappears.
+       */
+      hasModule: (moduleId) => Boolean(access) && (access.modules || []).includes(moduleId),
       isLocked: Boolean(access) && access.stage !== "active" && access.stage !== "legacy_grace",
     };
   }, [access, loading, error, refresh]);

@@ -15,7 +15,21 @@ import VendorLeadsPage from "./VendorLeadsPage";
 import MovmentsPlus from "./movments-plus/MovmentsPlus";
 import InstagramPage from "./InstagramPage";
 import CrmPage from "./crm/CrmPage";
+import PlanFeatureNotice from "./PlanFeatureNotice";
+import { useVendorAccess } from "../../../context/VendorAccessContext";
 import { VendorAccessProvider } from "../../../context/VendorAccessContext";
+
+/**
+ * A dashboard tool sold with a subscription plan. The tab is hidden when the plan
+ * doesn't include it; this covers anyone who arrives by URL or an old open tab.
+ * It lives inside VendorAccessProvider, which is why it is a component and not a
+ * check inside Main.
+ */
+const FeatureGuard = ({ module, title, description, children }) => {
+  const access = useVendorAccess();
+  if (access.loading) return null;
+  return access.hasModule(module) ? children : <PlanFeatureNotice title={title} description={description} />;
+};
 
 const Main = () => {
   const { slug } = useParams();
@@ -47,9 +61,25 @@ const Main = () => {
       case "movments-plus":
         return <MovmentsPlus />;
       case "vendor-instagram":
-        return <InstagramPage />;
+        return (
+          <FeatureGuard
+            module="instagram"
+            title="Instagram Connect"
+            description="Connect your Instagram account and show your posts and stories on your listing."
+          >
+            <InstagramPage />
+          </FeatureGuard>
+        );
       case "vendor-crm":
-        return <CrmPage />;
+        return (
+          <FeatureGuard
+            module="crm"
+            title="CRM"
+            description="Keep your clients, quotations, invoices and payments in one place."
+          >
+            <CrmPage />
+          </FeatureGuard>
+        );
       default:
         return <HomeAdmin />;
     }

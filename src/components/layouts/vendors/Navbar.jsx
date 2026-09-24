@@ -191,6 +191,10 @@ const Navbar = () => {
     return vendorTypeId === 1 || vendorTypeId === 12;
   }, [vendor?.vendor_type_id, vendor?.vendorType?.id]);
 
+  // Read outside the memo: the tab list must rebuild when access finishes loading.
+  const hasCrm = Boolean(vendorAccess?.hasModule?.("crm"));
+  const hasInstagram = Boolean(vendorAccess?.hasModule?.("instagram"));
+
   const tabs = useMemo(() => {
     const baseTabs = [
       {
@@ -223,13 +227,18 @@ const Navbar = () => {
         label: "Reviews",
         icon: "/images/vendorsDashboard/reviewico.png",
       },
-      {
+    ];
+
+    // CRM and Instagram are sold with a subscription plan. A vendor whose plan
+    // doesn't include one never sees its tab (the API refuses it too).
+    if (hasCrm) {
+      baseTabs.push({
         id: "crm",
         slug: "vendor-crm",
         label: "CRM",
         Icon: PiAddressBookLight,
-      },
-    ];
+      });
+    }
 
     // Only add Movments+ tab for photographers (vendor type id = 1 or 12)
     if (isPhotographer) {
@@ -241,12 +250,14 @@ const Navbar = () => {
       });
     }
 
-    baseTabs.push({
-      id: "instagram",
-      slug: "vendor-instagram",
-      label: "Instagram",
-      Icon: PiInstagramLogoLight,
-    });
+    if (hasInstagram) {
+      baseTabs.push({
+        id: "instagram",
+        slug: "vendor-instagram",
+        label: "Instagram",
+        Icon: PiInstagramLogoLight,
+      });
+    }
 
     baseTabs.push({
       id: "settings",
@@ -266,7 +277,7 @@ const Navbar = () => {
     });
 
     return baseTabs;
-  }, [isPhotographer]);
+  }, [isPhotographer, hasCrm, hasInstagram]);
 
   useEffect(() => {
     const foundTab = tabs.find((tab) => tab.slug === slug);
