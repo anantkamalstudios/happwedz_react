@@ -1632,3 +1632,150 @@ textarea.crm-input {
     display: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Conversion analytics.
+   --------------------------------------------------------------------------- */
+
+.crm-analytics {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.crm-range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.crm-range-dates {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crm-range-dates .crm-input {
+  min-height: 34px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.crm-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: var(--crm-brand-soft);
+  border: 1px solid #f7c7de;
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 13px;
+  color: #8d0b45;
+  line-height: 1.5;
+}
+
+.crm-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.crm-analytics-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.crm-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.crm-funnel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 7px 12px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+/* The two halves of the line stay together when it wraps on a phone. */
+.crm-funnel-side {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.crm-funnel-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  min-width: 84px;
+}
+
+.crm-funnel-bar {
+  height: 22px;
+  border-radius: 6px;
+  background: var(--crm-grey-soft);
+  overflow: hidden;
+}
+
+.crm-funnel-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.25s ease;
+}
+
+.crm-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.crm-reason .crm-funnel-bar {
+  height: 8px;
+  margin: 4px 0 3px;
+}
+
+.crm-reason-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.crm-num.is-good {
+  color: var(--crm-green);
+  font-weight: 600;
+}
+
+.crm-num.is-pending {
+  color: var(--crm-red);
+}
+
+.crm-small.is-good {
+  color: var(--crm-green);
+}
+
+.crm-small.is-pending {
+  color: var(--crm-amber);
+}
+
+@media (max-width: 900px) {
+  .crm-analytics-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .crm-range {
+    align-items: stretch;
+  }
+
+  .crm-range-dates {
+    flex-wrap: wrap;
+  }
+}

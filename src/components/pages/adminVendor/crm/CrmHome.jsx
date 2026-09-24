@@ -1,17 +1,18 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CalendarDays, Download, Kanban, List, PhoneCall, Plus, Search, Settings2, Users } from "lucide-react";
+import { AlertCircle, CalendarDays, Download, Kanban, LineChart, List, PhoneCall, Plus, Search, Settings2, Users } from "lucide-react";
 import { crmApi, errorMessage, openFile, pdfPaths } from "./crmApi";
 import { CLIENT_STATUSES, LEAD_SOURCES, formatDate, labelOf, rupees, todayIso } from "./crmFormat";
 import { Badge, Spinner } from "./crmUi";
 import ClientFormModal from "./ClientFormModal";
 import CalendarView from "./CalendarView";
 import BoardView from "./BoardView";
+import AnalyticsView from "./AnalyticsView";
 import { useToast } from "../../../layouts/toasts/Toast";
 
 const PAGE_SIZE = 25;
 const VIEW_KEY = "crm.view";
 
-const VIEWS = ["list", "board", "calendar"];
+const VIEWS = ["list", "board", "calendar", "analytics"];
 
 const readView = () => {
   try {
@@ -68,7 +69,7 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
     try {
       // The board loads its own columns; only the panels above it need the summary.
       const [list, sum] = await Promise.all([
-        view === "board" ? Promise.resolve(null) : crmApi.clients({ ...filters, page, limit: PAGE_SIZE }),
+        view === "board" || view === "analytics" ? Promise.resolve(null) : crmApi.clients({ ...filters, page, limit: PAGE_SIZE }),
         crmApi.summary(),
       ]);
       if (list) {
@@ -262,6 +263,9 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
           <button role="tab" aria-selected={view === "calendar"} className={view === "calendar" ? "is-active" : ""} onClick={() => switchView("calendar")}>
             <CalendarDays size={15} /> Calendar
           </button>
+          <button role="tab" aria-selected={view === "analytics"} className={view === "analytics" ? "is-active" : ""} onClick={() => switchView("analytics")}>
+            <LineChart size={15} /> Analytics
+          </button>
         </div>
         {followup === "due" && view === "list" && (
           <span className="crm-chip">
@@ -272,6 +276,8 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
 
       {view === "calendar" ? (
         <CalendarView onOpenClient={onOpenClient} />
+      ) : view === "analytics" ? (
+        <AnalyticsView />
       ) : view === "board" ? (
         <>
           <div className="crm-card crm-board-filters">{filterBar}</div>

@@ -21,6 +21,7 @@ export const crmApi = {
 
   summary: () => data(axiosInstance.get(`${BASE}/summary`)),
   board: (params) => data(axiosInstance.get(`${BASE}/board`, { params })),
+  analytics: (params) => data(axiosInstance.get(`${BASE}/analytics`, { params })),
   clients: (params) => data(axiosInstance.get(`${BASE}/clients`, { params })),
   client: (id) => data(axiosInstance.get(`${BASE}/clients/${id}`)),
   createClient: (body) => data(axiosInstance.post(`${BASE}/clients`, body)),
