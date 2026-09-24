@@ -13,12 +13,13 @@ const ROLE_HELP = {
   staff: "Sees only the clients given to them, and does everything with those — quotations, invoices and payments included.",
 };
 
-const InviteForm = ({ roles, onDone, onCancel }) => {
+const InviteForm = ({ roles, resent = "", onDone, onCancel }) => {
   const { addToast } = useToast();
   const [form, setForm] = useState({ name: "", email: "", role: "staff" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [link, setLink] = useState("");
+  // A resend arrives with its link already made, so the panel skips the form.
+  const [link, setLink] = useState(resent);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -41,7 +42,7 @@ const InviteForm = ({ roles, onDone, onCancel }) => {
   if (link) {
     return (
       <div className="crm-card">
-        <div className="crm-panel-title"><span>Invitation sent</span></div>
+        <div className="crm-panel-title"><span>{resent ? "Invitation sent again" : "Invitation sent"}</span></div>
         <p className="crm-sub" style={{ marginBottom: 10 }}>
           They have an email with a link to set their password. You can also send them this link yourself:
         </p>
@@ -106,6 +107,7 @@ const TeamPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [inviting, setInviting] = useState(false);
+  const [resentLink, setResentLink] = useState("");
   const [busyId, setBusyId] = useState(null);
 
   const load = useCallback(async () => {
@@ -132,6 +134,21 @@ const TeamPage = () => {
       await load();
     } catch (err) {
       addToast(errorMessage(err, "Could not save that."), "error");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const resend = async (member) => {
+    setBusyId(member.id);
+    try {
+      const result = await crmApi.inviteTeamMember({ name: member.name, email: member.email, role: member.role });
+      addToast(result.message, "success");
+      setResentLink(result.link);
+      setInviting(true);
+      await load();
+    } catch (err) {
+      addToast(errorMessage(err, "Could not send it again."), "error");
     } finally {
       setBusyId(null);
     }
@@ -171,13 +188,20 @@ const TeamPage = () => {
     <div className="crm-analytics">
       <div className="crm-head" style={{ marginBottom: 0 }}>
         <div>
-          <h2 className="crm-title" style={{ fontSize: 18 }}>Your team</h2>
+          <h2 className="crm-screen-title">Your team</h2>
           <div className="crm-sub">
             People from your studio who work on clients with you. {data.seatsUsed} of {data.seatLimit} places used.
           </div>
         </div>
         {!inviting && (
-          <button className="crm-btn crm-btn-primary" onClick={() => setInviting(true)} disabled={full}>
+          <button
+            className="crm-btn crm-btn-primary"
+            onClick={() => {
+              setResentLink("");
+              setInviting(true);
+            }}
+            disabled={full}
+          >
             <UserPlus size={15} /> Invite someone
           </button>
         )}
@@ -192,10 +216,13 @@ const TeamPage = () => {
 
       {inviting && (
         <InviteForm
+          key={resentLink || "new"}
           roles={data.roles}
+          resent={resentLink}
           onDone={() => load()}
           onCancel={() => {
             setInviting(false);
+            setResentLink("");
             load();
           }}
         />
@@ -267,7 +294,7 @@ const TeamPage = () => {
                     {!member.isOwner && (
                       <div className="crm-actions">
                         {member.status === "invited" && (
-                          <button className="crm-btn crm-btn-sm" disabled={busyId === member.id} onClick={() => setInviting(true)}>
+                          <button className="crm-btn crm-btn-sm" disabled={busyId === member.id} onClick={() => resend(member)}>
                             <Mail size={13} /> Resend
                           </button>
                         )}

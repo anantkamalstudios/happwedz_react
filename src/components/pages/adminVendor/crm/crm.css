@@ -37,11 +37,43 @@
   padding: 0 16px;
 }
 
+/* The dashboard sets h1-h3 sizes globally with !important (App.css: 48px, 40px,
+   32px), which is a page-title scale, not a working-screen one. The CRM states
+   its own, scoped to itself, and has to shout back to be heard. */
 .crm h1,
 .crm h2,
-.crm h3 {
+.crm h3,
+.crm h4,
+.crm-modal h1,
+.crm-modal h2,
+.crm-modal h3,
+.crm-modal h4 {
   color: var(--crm-ink);
   margin: 0;
+}
+
+.crm h1,
+.crm-modal h1 {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+}
+
+.crm h2,
+.crm-modal h2 {
+  font-size: 17px !important;
+  font-weight: 600 !important;
+}
+
+.crm h3,
+.crm-modal h3 {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+.crm h4,
+.crm-modal h4 {
+  font-size: 14px !important;
+  font-weight: 600 !important;
 }
 
 .crm-title {
@@ -407,8 +439,9 @@ textarea.crm-input {
   color: var(--crm-muted);
 }
 
-.crm-empty h3 {
-  font-size: 16px;
+.crm .crm-empty h3,
+.crm-modal .crm-empty h3 {
+  font-size: 16px !important;
   margin-bottom: 6px;
 }
 
@@ -701,8 +734,8 @@ textarea.crm-input {
 }
 
 .crm-modal .modal-title {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 17px !important;
+  font-weight: 700 !important;
 }
 
 .crm-modal .modal-body {
@@ -1026,6 +1059,7 @@ textarea.crm-input {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .crm-switch button.is-active {
@@ -1411,9 +1445,9 @@ textarea.crm-input {
   gap: 6px;
 }
 
-.crm-bcol-title h2 {
-  font-size: 13.5px;
-  font-weight: 600;
+.crm .crm-bcol-title h2 {
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
   margin: 0;
 }
 
@@ -1937,8 +1971,8 @@ textarea.crm-input {
 }
 
 .crm-auth-card h1 {
-  font-size: 21px;
-  font-weight: 700;
+  font-size: 21px !important;
+  font-weight: 700 !important;
   margin: 0 0 4px;
 }
 
@@ -1981,4 +2015,31 @@ textarea.crm-input {
 .crm-inline-select:focus {
   border-color: var(--crm-line);
   background: #fff;
+}
+
+/* A screen's own title where the page already has one (the Team screen). */
+.crm .crm-screen-title {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+}
+
+/* Five views do not fit across a phone. The strip scrolls sideways rather than
+   hiding the last two behind the edge of the screen. */
+@media (max-width: 720px) {
+  .crm-head .crm-switch {
+    display: flex;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .crm-head .crm-switch::-webkit-scrollbar {
+    display: none;
+  }
+
+  .crm-switch button {
+    padding: 7px 12px;
+    flex: 0 0 auto;
+  }
 }
