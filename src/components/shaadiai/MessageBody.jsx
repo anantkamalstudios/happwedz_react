@@ -96,6 +96,25 @@ const MessageBody = ({ msg, compact = false, onFeatureComplete }) => {
                                 <h4>{vendor.name}</h4>
                                 <span className={styles.vendorCategory}>{vendor.category}</span>
                             </div>
+                            {/* Vendors whose plan includes ShaadiAI are shown first; couples are told so. */}
+                            {vendor.promoted && (
+                                <span
+                                    style={{
+                                        display: "inline-block",
+                                        alignSelf: "flex-start",
+                                        background: "#fde7f1",
+                                        color: "#c2185b",
+                                        borderRadius: 999,
+                                        padding: "2px 9px",
+                                        fontSize: "0.68rem",
+                                        fontWeight: 700,
+                                        letterSpacing: "0.05em",
+                                        textTransform: "uppercase",
+                                    }}
+                                >
+                                    Promoted
+                                </span>
+                            )}
                             <div className={styles.vendorDetails}>
                                 <p><FaMapMarkerAlt /> {vendor.location}</p>
                                 <p className={styles.price}>{vendor.price_range}</p>
