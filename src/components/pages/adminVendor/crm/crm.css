@@ -2043,3 +2043,33 @@ textarea.crm-input {
     flex: 0 0 auto;
   }
 }
+
+/* The range said in words, because the browser draws the date boxes in its own
+   locale (04/01/2026 for 1 April) and the screen should not be ambiguous. */
+.crm-range-said {
+  white-space: nowrap;
+}
+
+/* Lost work is red; work still going is simply grey - it is not a problem. */
+.crm-small.is-lost {
+  color: var(--crm-red);
+}
+
+/* The funnel and the reasons beside it read as one row, not as one tall card
+   and one short one. */
+.crm-analytics-row {
+  align-items: stretch;
+}
+
+.crm-analytics-row > .crm-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.crm-analytics-row .crm-empty {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}

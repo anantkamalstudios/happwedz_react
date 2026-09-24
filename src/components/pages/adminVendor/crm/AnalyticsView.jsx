@@ -116,6 +116,9 @@ const AnalyticsView = () => {
           <input id="crm-from" type="date" className="crm-input" value={range.from} max={range.to} onChange={setCustom("from")} />
           <label className="crm-small crm-muted" htmlFor="crm-to">to</label>
           <input id="crm-to" type="date" className="crm-input" value={range.to} min={range.from} onChange={setCustom("to")} />
+          <span className="crm-muted crm-small crm-range-said">
+            {formatDate(data.range.from)} – {formatDate(data.range.to)}
+          </span>
         </div>
       </div>
 
@@ -147,7 +150,9 @@ const AnalyticsView = () => {
         </div>
         <div className="crm-card crm-stat">
           <div className="crm-stat-label">Days from enquiry to booking</div>
-          <div className="crm-stat-value">{kpis.daysToBook.value === null ? "—" : kpis.daysToBook.value}</div>
+          <div className="crm-stat-value">
+            {kpis.daysToBook.value === null ? "—" : kpis.daysToBook.value === 0 ? "Same day" : kpis.daysToBook.value}
+          </div>
           <div className="crm-stat-note">
             {kpis.daysToBook.value === null ? (
               "No bookings closed in this period"
@@ -162,7 +167,7 @@ const AnalyticsView = () => {
           <div className="crm-stat-label">Booked value</div>
           <div className="crm-stat-value is-good">{rupees(kpis.bookedValuePaise.value)}</div>
           <div className="crm-stat-note">
-            {kpis.booked.value > 0 ? `${rupees(kpis.averageBookingPaise.value)} on average · ` : ""}
+            {kpis.booked.value > 1 ? `${rupees(kpis.averageBookingPaise.value)} on average · ` : ""}
             {rupees(kpis.collectedPaise.value)} collected in this period
           </div>
         </div>
@@ -171,7 +176,7 @@ const AnalyticsView = () => {
       <div className="crm-analytics-row">
         <div className="crm-card">
           <div className="crm-panel-title">
-            <span>Where these {kpis.leads.value} client{kpis.leads.value === 1 ? "" : "s"} got to</span>
+            <span>{kpis.leads.value === 1 ? "Where this client got to" : `Where these ${kpis.leads.value} clients got to`}</span>
           </div>
           <div className="crm-sub" style={{ marginBottom: 14 }}>
             Every client who came in between {formatDate(data.range.from)} and {formatDate(data.range.to)}, and the furthest stage they reached.
@@ -194,9 +199,8 @@ const AnalyticsView = () => {
                       )}
                     </span>
                     <span className="crm-funnel-side">
-                      {step.droppedFromPrevious > 0 && (
-                        <span className="crm-small is-pending">{step.droppedFromPrevious} stopped here</span>
-                      )}
+                      {step.lostBefore > 0 && <span className="crm-small is-lost">{step.lostBefore} lost</span>}
+                      {step.stillOpen > 0 && <span className="crm-small crm-muted">{step.stillOpen} still going</span>}
                       <span className="crm-muted crm-small">{rupees(step.valuePaise)}</span>
                     </span>
                   </div>

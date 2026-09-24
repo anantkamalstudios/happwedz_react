@@ -140,6 +140,11 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
     setPage(1);
   };
 
+  // Analytics works out its own numbers over the period the vendor picks, and
+  // the team screen is not about clients at all: the all-time strip and the
+  // follow-up panels would only repeat or contradict what those screens say.
+  const showClientContext = view !== "analytics" && view !== "team";
+
   // One filter row, used by the list and by the board. The board is the status,
   // so a status filter would only fight with it.
   const filterBar = (
@@ -206,7 +211,7 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
         </div>
       </div>
 
-      {summary && (
+      {summary && showClientContext && (
         <div className="crm-stats">
           <div className="crm-card crm-stat">
             <div className="crm-stat-label">Booked value</div>
@@ -224,14 +229,16 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
             <div className="crm-stat-note">from {summary.pendingClients} client{summary.pendingClients === 1 ? "" : "s"}</div>
           </div>
           <div className="crm-card crm-stat">
-            <div className="crm-stat-label">New leads</div>
+            <div className="crm-stat-label">Open leads</div>
             <div className="crm-stat-value">{summary.newLeads}</div>
-            <div className="crm-stat-note">{summary.clients} clients in total</div>
+            <div className="crm-stat-note">
+              {summary.clients} client{summary.clients === 1 ? "" : "s"} in total
+            </div>
           </div>
         </div>
       )}
 
-      {(summary?.followUps?.length > 0 || summary?.overdue?.length > 0) && (
+      {showClientContext && (summary?.followUps?.length > 0 || summary?.overdue?.length > 0) && (
         <div className="crm-panels">
           {summary.followUps.length > 0 && (
             <div className="crm-card">
