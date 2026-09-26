@@ -726,6 +726,12 @@ textarea.crm-input {
 .crm-modal .modal-content {
   border-radius: 14px;
   border: 0;
+  /* The dashboard has hand-rolled dialogs that borrow Bootstrap class names.
+     If one of those stylesheets loads unscoped it caps .modal-content, and an
+     xl dialog ends up with its white box against the left edge. Bootstrap
+     sizes the dialog, not the content, so these stay as Bootstrap sets them. */
+  max-width: none;
+  width: 100%;
 }
 
 .crm-modal .modal-header {
