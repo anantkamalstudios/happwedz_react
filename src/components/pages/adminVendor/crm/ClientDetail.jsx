@@ -798,19 +798,20 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
                       <td>{p.invoiceNumber || <span className="crm-muted">—</span>}</td>
                       <td className="crm-small" style={{ maxWidth: 240 }}>{p.note || <span className="crm-muted">—</span>}</td>
                       <td className="crm-num crm-strong">{rupees(p.amountPaise)}</td>
-                      <td style={{ whiteSpace: "nowrap" }}>
+                      <td>
+                        <div className="crm-actions" style={{ flexWrap: "nowrap" }}>
                         {/* The receipt number above is already a link to this,
                             but nobody finds it there - quotations and invoices
                             both carry a plain PDF button, so this one does too. */}
                         <button
-                          className="crm-btn crm-btn-sm crm-btn-ghost"
+                          className="crm-btn crm-btn-sm"
                           title="Open the receipt"
                           onClick={() => open(pdfPaths.receipt(p.id))}
                         >
                           PDF
                         </button>
                         <button
-                          className="crm-btn crm-btn-sm crm-btn-ghost crm-btn-wa"
+                          className="crm-btn crm-btn-sm crm-btn-wa"
                           aria-label="Send receipt on WhatsApp"
                           title="Send receipt on WhatsApp"
                           disabled={waBusy("receipt", p)}
@@ -819,7 +820,7 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
                           <WhatsAppIcon size={14} />
                         </button>
                         <button
-                          className="crm-btn crm-btn-sm crm-btn-ghost crm-btn-danger"
+                          className="crm-btn crm-btn-sm crm-btn-danger"
                           aria-label="Remove payment"
                           onClick={() =>
                             setModal({
@@ -834,6 +835,7 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
                         >
                           <Trash2 size={14} />
                         </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
