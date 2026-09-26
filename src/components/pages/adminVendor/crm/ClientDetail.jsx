@@ -799,6 +799,16 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
                       <td className="crm-small" style={{ maxWidth: 240 }}>{p.note || <span className="crm-muted">—</span>}</td>
                       <td className="crm-num crm-strong">{rupees(p.amountPaise)}</td>
                       <td style={{ whiteSpace: "nowrap" }}>
+                        {/* The receipt number above is already a link to this,
+                            but nobody finds it there - quotations and invoices
+                            both carry a plain PDF button, so this one does too. */}
+                        <button
+                          className="crm-btn crm-btn-sm crm-btn-ghost"
+                          title="Open the receipt"
+                          onClick={() => open(pdfPaths.receipt(p.id))}
+                        >
+                          PDF
+                        </button>
                         <button
                           className="crm-btn crm-btn-sm crm-btn-ghost crm-btn-wa"
                           aria-label="Send receipt on WhatsApp"
