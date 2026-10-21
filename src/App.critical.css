@@ -2481,6 +2481,7 @@ label {
   font-weight: 400;
   position: relative;
   padding-left: 0;
+  display: inline-block;
 }
 .footer-list a::before {
   content: "";
@@ -2493,9 +2494,11 @@ label {
   background: #fff;
   transition: width 0.3s ease;
 }
+/* Slide right with transform, not padding: padding made the link wider and pushed the
+   footer links on the same row (and wrapped the last one). */
 .footer-list a:hover {
   color: #fff;
-  padding-left: 8px;
+  transform: translateX(8px);
 }
 .footer-list a:hover::before {
   width: 8px;
