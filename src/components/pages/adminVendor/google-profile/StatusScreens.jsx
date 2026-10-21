@@ -2,7 +2,7 @@ import React from "react";
 import { Spinner } from "react-bootstrap";
 import { FiMail } from "react-icons/fi";
 import { AsideCard, Callout, FixLink, GrowthosLink, ProfileHead, RefreshButton } from "./GpParts";
-import { STOREFRONT_PATH, formatClock } from "./gpFormat";
+import { SETTINGS_PATH, formatClock } from "./gpFormat";
 
 // Screens 2 to 5 and the "email already in GrowthOS" error. Each one is told the
 // view, the GrowthOS address, and what to do on its buttons.
@@ -220,12 +220,12 @@ export function TakenScreen({ view, loginUrl, onTryAgain }) {
         <h2 className="gp-h2">Use your existing GrowthOS account</h2>
         <p className="gp-lead">
           Sign in to GrowthOS with this email and connect Google from there. If you'd like a separate account for this
-          business, change the email in your Storefront and try again.
+          business, change your login email in Settings and try again.
         </p>
         <div className="gp-btns">
           <GrowthosLink href={loginUrl}>Sign in to GrowthOS</GrowthosLink>
-          <FixLink to={STOREFRONT_PATH} className="gp-btn gp-btn-ghost">
-            Change email in Storefront
+          <FixLink to={SETTINGS_PATH} className="gp-btn gp-btn-ghost">
+            Change email in Settings
           </FixLink>
           <button type="button" className="gp-btn gp-btn-ghost" onClick={onTryAgain}>
             Try again
