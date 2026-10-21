@@ -15,6 +15,7 @@ import VendorLeadsPage from "./VendorLeadsPage";
 import MovmentsPlus from "./movments-plus/MovmentsPlus";
 import InstagramPage from "./InstagramPage";
 import CrmPage from "./crm/CrmPage";
+import GoogleProfilePage from "./GoogleProfilePage";
 import PlanFeatureNotice from "./PlanFeatureNotice";
 import { useVendorAccess } from "../../../context/VendorAccessContext";
 import { VendorAccessProvider } from "../../../context/VendorAccessContext";
@@ -78,6 +79,16 @@ const Main = () => {
             description="Keep your clients, quotations, invoices and payments in one place."
           >
             <CrmPage />
+          </FeatureGuard>
+        );
+      case "vendor-google-profile":
+        return (
+          <FeatureGuard
+            module="google_profile"
+            title="Google Profile"
+            description="Show up when couples search on Google and Maps. Available on plans that include Google Profile."
+          >
+            <GoogleProfilePage />
           </FeatureGuard>
         );
       default:

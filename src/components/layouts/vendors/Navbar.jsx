@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { FaGift, FaStore, FaEnvelope, FaStar, FaCog } from "react-icons/fa";
 import { LiaHomeSolid } from "react-icons/lia";
 import { FaRegStar } from "react-icons/fa";
-import { PiAddressBookLight, PiInstagramLogoLight, PiOfficeChairLight } from "react-icons/pi";
+import { PiAddressBookLight, PiInstagramLogoLight, PiMapPinLight, PiOfficeChairLight } from "react-icons/pi";
 import { GoMail } from "react-icons/go";
 import { IoSettingsOutline } from "react-icons/io5";
 import { IoStorefrontOutline } from "react-icons/io5";
@@ -194,6 +194,7 @@ const Navbar = () => {
   // Read outside the memo: the tab list must rebuild when access finishes loading.
   const hasCrm = Boolean(vendorAccess?.hasModule?.("crm"));
   const hasInstagram = Boolean(vendorAccess?.hasModule?.("instagram"));
+  const hasGoogleProfile = Boolean(vendorAccess?.hasModule?.("google_profile"));
 
   const tabs = useMemo(() => {
     const baseTabs = [
@@ -240,6 +241,16 @@ const Navbar = () => {
       });
     }
 
+    // Google Profile (set up through GrowthOS AI) is also a plan module.
+    if (hasGoogleProfile) {
+      baseTabs.push({
+        id: "google-profile",
+        slug: "vendor-google-profile",
+        label: "Google Profile",
+        Icon: PiMapPinLight,
+      });
+    }
+
     // Only add Movments+ tab for photographers (vendor type id = 1 or 12)
     if (isPhotographer) {
       baseTabs.push({
@@ -277,7 +288,7 @@ const Navbar = () => {
     });
 
     return baseTabs;
-  }, [isPhotographer, hasCrm, hasInstagram]);
+  }, [isPhotographer, hasCrm, hasInstagram, hasGoogleProfile]);
 
   useEffect(() => {
     const foundTab = tabs.find((tab) => tab.slug === slug);
