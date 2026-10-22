@@ -4,7 +4,7 @@
 // API: gpManageApi.posts / deletePost / unschedulePost (the editor is PostEditor.jsx). Shapes: GrowthOS postSchema.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import { FiAlertTriangle, FiArrowUpRight, FiCalendar, FiEdit2, FiFileText, FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiAlertTriangle, FiArrowUpRight, FiCalendar, FiEdit2, FiFileText, FiPlus, FiRefreshCw, FiTrash2 } from "react-icons/fi";
 import { gpManageApi } from "../../../../../services/api/googleProfileApi";
 import { Callout } from "../GpParts";
 import { formatWhen } from "../gpFormat";
@@ -32,6 +32,7 @@ const DONE = {
   scheduled: "Post scheduled. It goes on Google at the time you chose.",
   updated: "Post updated on Google. Google may take a few minutes to show the change.",
   unscheduled: "Schedule cancelled. The post is a draft again.",
+  synced: "Read from Google. Posts made on Google now show here too.",
   deleted: "Post deleted.",
 };
 
@@ -85,6 +86,23 @@ export default function PostsTab() {
       const target = returnFocus.current && document.body.contains(returnFocus.current) ? returnFocus.current : listTop.current;
       target?.focus();
     });
+  };
+
+  // "Refresh from Google": GrowthOS reads the profile and its posts now (once every 5 minutes).
+  const [syncing, setSyncing] = useState(false);
+  const syncGoogle = async () => {
+    setSyncing(true);
+    setRowError(null);
+    setDone("");
+    try {
+      await gpManageApi.syncGoogle();
+      setDone(DONE.synced);
+      await load(filter, true);
+    } catch (error) {
+      setRowError(error);
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const unschedule = async (post) => {
@@ -159,7 +177,10 @@ export default function PostsTab() {
           const status = STATUS[post.status] || STATUS.draft;
           const rejected = post.status === "published" && post.google_state === "REJECTED";
           const reviewing = post.status === "published" && post.google_state === "PROCESSING";
-          const canEdit = post.status === "draft" || post.status === "published";
+          // A post made on Google (not in GrowthOS) can be seen and deleted, not changed.
+          const fromGoogle = post.imported_from_google === true;
+          const canEdit = !fromGoogle && (post.status === "draft" || post.status === "published");
+          const canDelete = canEdit || fromGoogle;
           const busy = rowBusy === post.id;
           return (
             <li key={post.id} className="gp-e-item">
@@ -175,6 +196,7 @@ export default function PostsTab() {
                   <span className="gp-e-item-title">{post.topic}</span>
                   <span className={`gp-chip ${status.chip}`}>{status.label}</span>
                   <span className="gp-chip gp-chip-pink">{POST_TYPE_LABELS[post.post_type] || post.post_type}</span>
+                  {fromGoogle && <span className="gp-chip gp-e-chip-muted">Made on Google</span>}
                   {post.ai_generated && <span className="gp-chip gp-e-chip-muted">AI text</span>}
                   {rejected && <span className="gp-chip gp-e-chip-bad">Rejected by Google</span>}
                   {reviewing && <span className="gp-chip gp-chip-warn">Google is reviewing it</span>}
@@ -247,7 +269,7 @@ export default function PostsTab() {
                         Edit<span className="visually-hidden">: {post.topic}</span>
                       </button>
                     )}
-                    {canEdit && (
+                    {canDelete && (
                       <button
                         type="button"
                         className="gp-btn gp-btn-ghost gp-e-btn-sm"
@@ -300,6 +322,9 @@ export default function PostsTab() {
             {f.label}
           </button>
         ))}
+        <button type="button" className="gp-e-filter" onClick={syncGoogle} disabled={syncing} aria-busy={syncing || undefined}>
+          <FiRefreshCw size={14} aria-hidden="true" /> {syncing ? "Reading Google…" : "Refresh from Google"}
+        </button>
         {reloading && (
           <span role="status" className="gp-note gp-e-inline">
             <Spinner animation="border" size="sm" aria-hidden="true" /> Refreshing…

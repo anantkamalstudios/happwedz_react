@@ -60,6 +60,9 @@ export const gpManageApi = {
     view(axiosInstance.put(`${BASE}/reviews/${enc(reviewId)}/published-reply`, { reply })),
   deleteReply: (reviewId) => view(axiosInstance.delete(`${BASE}/reviews/${enc(reviewId)}/reply`)),
 
+  // Read the profile, photos and posts from Google now (once every 5 minutes).
+  syncGoogle: () => view(axiosInstance.post(`${BASE}/sync`)),
+
   // Posts
   posts: (status) => page(axiosInstance.get(`${BASE}/posts`, { params: status ? { status } : {} })),
   generatePost: (body) => view(axiosInstance.post(`${BASE}/posts/generate`, body)),
