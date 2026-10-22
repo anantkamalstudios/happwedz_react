@@ -745,3 +745,50 @@
     animation: none !important;
   }
 }
+
+/* Dashboard (RD-21): six tabs under the Live screen. Tab styles of helpers D and E live in dashboard/. */
+.gp-dash {
+  padding: 0;
+  overflow: hidden;
+}
+
+.gp-dash-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--gp-line);
+  padding: 0 12px;
+  scrollbar-width: thin;
+}
+
+.gp-dash-tab {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--gp-muted);
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.gp-dash-tab:hover {
+  color: var(--gp-ink);
+}
+
+.gp-dash-tab.is-active {
+  color: var(--gp-pink-deep);
+  border-bottom-color: var(--gp-pink);
+}
+
+.gp-dash-panel {
+  padding: 20px;
+}
+
+@media (max-width: 575px) {
+  .gp-dash-panel {
+    padding: 16px;
+  }
+}

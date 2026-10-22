@@ -3,6 +3,7 @@ import { Spinner } from "react-bootstrap";
 import { FiMail } from "react-icons/fi";
 import { AsideCard, Callout, FixLink, GrowthosLink, ProfileHead, RefreshButton } from "./GpParts";
 import { SETTINGS_PATH, formatClock } from "./gpFormat";
+import Dashboard from "./dashboard/Dashboard";
 
 // Screens 2 to 5 and the "email already in GrowthOS" error. Each one is told the
 // view, the GrowthOS address, and what to do on its buttons.
@@ -168,8 +169,6 @@ export function VerifyScreen({ view, loginUrl, busy, onRefresh }) {
   );
 }
 
-const LATER_BOXES = ["Views on Google", "Calls and direction requests", "Rating and new reviews"];
-
 export function LiveScreen({ view, loginUrl }) {
   return (
     <section className="gp-stack">
@@ -178,33 +177,17 @@ export function LiveScreen({ view, loginUrl }) {
           <ProfileHead name={businessName(view)} line={profileLine(view)}>
             <div className="gp-chips">
               <span className="gp-chip gp-chip-ok">Verified by Google</span>
-              <span className="gp-chip gp-chip-pink">Managed in GrowthOS</span>
+              <span className="gp-chip gp-chip-pink">Managed with GrowthOS</span>
             </div>
           </ProfileHead>
-          <GrowthosLink href={loginUrl}>Manage in GrowthOS</GrowthosLink>
+          <GrowthosLink href={loginUrl} primary={false}>Open GrowthOS</GrowthosLink>
         </div>
         <Callout tone="ok">
-          Your profile can now appear on Google Search and Maps. Reviews, posts and profile edits are handled in
-          GrowthOS.
+          Your profile can now appear on Google Search and Maps. See your numbers, answer reviews, write posts and edit
+          your profile below.
         </Callout>
       </div>
-      <div className="gp-card">
-        <div className="gp-later-head">
-          <h3 className="gp-h3">Google numbers inside HappyWedz</h3>
-          <span className="gp-chip gp-chip-warn">Coming later</span>
-        </div>
-        <div className="gp-later">
-          {LATER_BOXES.map((title) => (
-            <div key={title} className="gp-later-box">
-              <b>{title}</b>
-              <span>Coming later</span>
-            </div>
-          ))}
-        </div>
-        <p className="gp-note">
-          Google numbers will show here in a later update. Until then, you can see them in GrowthOS.
-        </p>
-      </div>
+      <Dashboard view={view} />
     </section>
   );
 }
