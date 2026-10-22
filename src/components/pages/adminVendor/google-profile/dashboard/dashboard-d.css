@@ -1,1 +1,592 @@
 /* Google Profile dashboard — styles of helper D's tabs (GrowthOS plan RD-21). */
+/* Overview (gp-ov-*) and Reviews (gp-rv-*). Colours come from the --gp-* variables in GoogleProfile.css. */
+
+/* ── Shared: segmented buttons, skeletons, empty ─────────────────────────── */
+.gp-ov-head,
+.gp-rv-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gp-ov-head-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.gp-ov-seg,
+.gp-rv-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gp-ov-seg-btn {
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--gp-ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.gp-ov-seg-btn:hover {
+  border-color: var(--gp-pink);
+}
+
+.gp-ov-seg-btn.is-on {
+  background: var(--gp-pink-strong);
+  border-color: var(--gp-pink-strong);
+  color: #fff;
+}
+
+.gp-ov-skel {
+  min-height: 132px;
+  border: 1px solid var(--gp-line);
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--gp-paper-soft) 0%, var(--gp-line) 50%, var(--gp-paper-soft) 100%);
+  background-size: 200% 100%;
+  animation: gp-ov-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes gp-ov-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.gp-ov-empty {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  padding: 24px;
+  border: 1px dashed #d0d5dd;
+  border-radius: 14px;
+  background: var(--gp-paper-soft);
+}
+
+.gp-ov-empty-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gp-ink);
+}
+
+/* ── Overview: figures ──────────────────────────────────────────────────── */
+.gp-ov-perf.is-busy .gp-ov-figs,
+.gp-rv-list.is-busy {
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.gp-ov-figs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.gp-ov-fig {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--gp-line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.gp-ov-fig-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gp-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gp-ov-fig-label svg {
+  color: var(--gp-pink-strong);
+  flex: none;
+}
+
+.gp-ov-fig-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--gp-ink);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.gp-ov-fig-none {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--gp-muted);
+}
+
+.gp-ov-trend {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.gp-ov-trend svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.gp-ov-trend.is-up {
+  color: var(--gp-ok);
+}
+
+.gp-ov-trend.is-down {
+  color: var(--gp-bad);
+}
+
+.gp-ov-trend.is-flat {
+  color: var(--gp-muted);
+}
+
+/* ── Overview: daily chart ──────────────────────────────────────────────── */
+.gp-ov-chart {
+  gap: 12px;
+}
+
+.gp-ov-chart-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gp-ov-readout {
+  margin: 0;
+  min-height: 1.4em;
+  color: var(--gp-ink);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.gp-ov-plot {
+  position: relative;
+  padding-top: 18px;
+}
+
+.gp-ov-axis-max {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 12px;
+  color: var(--gp-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.gp-ov-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 160px;
+  border-top: 1px dashed var(--gp-line);
+  border-bottom: 1px solid #d0d5dd;
+}
+
+.gp-ov-bars.is-dense {
+  gap: 1px;
+}
+
+.gp-ov-bar-slot {
+  display: flex;
+  align-items: flex-end;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  border-radius: 4px 4px 0 0;
+}
+
+.gp-ov-bar-slot:hover,
+.gp-ov-bar-slot.is-active {
+  background: var(--gp-pink-soft);
+}
+
+.gp-ov-bar {
+  display: block;
+  width: 100%;
+  background: var(--gp-pink);
+  border-radius: 4px 4px 0 0;
+}
+
+.gp-ov-bars.is-dense .gp-ov-bar,
+.gp-ov-bars.is-dense .gp-ov-bar-slot {
+  border-radius: 2px 2px 0 0;
+}
+
+.gp-ov-bar-slot.is-active .gp-ov-bar {
+  background: var(--gp-pink-deep);
+}
+
+.gp-ov-axis-x {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--gp-muted);
+}
+
+.gp-ov-table-wrap summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--gp-pink-strong);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.gp-ov-table-scroll {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--gp-line);
+  border-radius: 10px;
+}
+
+.gp-ov-table {
+  width: 100%;
+  min-width: 30rem;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.gp-ov-table th,
+.gp-ov-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--gp-line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.gp-ov-table th[scope="row"],
+.gp-ov-table thead th:first-child {
+  text-align: left;
+}
+
+.gp-ov-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--gp-paper-soft);
+  color: var(--gp-muted);
+  font-weight: 600;
+}
+
+.gp-ov-table th[scope="row"] {
+  font-weight: 600;
+}
+
+/* ── Overview: rating ───────────────────────────────────────────────────── */
+.gp-ov-rating-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.gp-ov-rating-num {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--gp-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.gp-ov-rating-meta {
+  display: grid;
+  gap: 4px;
+}
+
+/* ── Reviews ────────────────────────────────────────────────────────────── */
+.gp-rv-filter-count {
+  font-weight: 500;
+}
+
+.gp-rv-list {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.gp-rv-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--gp-line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.gp-rv-card:focus {
+  outline: none;
+}
+
+.gp-rv-card:focus-visible {
+  outline: 2px solid var(--gp-pink);
+  outline-offset: 2px;
+}
+
+.gp-rv-skel {
+  min-height: 150px;
+}
+
+.gp-rv-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.gp-rv-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gp-pink-soft);
+  color: var(--gp-pink-deep);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.gp-rv-who {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+/* App.css forces h4 to 22px with !important; the review name takes the card's own size. */
+.gp-page .gp-rv-name {
+  margin: 0;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.35;
+  color: var(--gp-ink);
+  overflow-wrap: anywhere;
+}
+
+.gp-rv-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.gp-rv-stars {
+  display: inline-flex;
+  gap: 2px;
+  color: var(--gp-pink-strong);
+}
+
+.gp-rv-chips {
+  justify-content: flex-end;
+}
+
+.gp-rv-chip-neutral {
+  background: var(--gp-paper-soft);
+  color: var(--gp-muted);
+  box-shadow: inset 0 0 0 1px var(--gp-line);
+}
+
+.gp-rv-chip-bad {
+  background: var(--gp-bad-soft);
+  color: var(--gp-bad);
+}
+
+.gp-rv-text,
+.gp-rv-reply-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.gp-rv-reply {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--gp-pink-line);
+  border-radius: 0 10px 10px 0;
+  background: var(--gp-paper-soft);
+}
+
+.gp-rv-reply.is-published {
+  border-left-color: var(--gp-ok);
+}
+
+.gp-rv-reply-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--gp-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.gp-rv-ai {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--gp-pink-soft);
+  color: var(--gp-pink-deep);
+  font-weight: 700;
+}
+
+.gp-rv-editor {
+  display: grid;
+  gap: 6px;
+}
+
+.gp-rv-textarea.gp-input {
+  height: auto;
+  min-height: 120px;
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.gp-rv-textarea.gp-input[readonly] {
+  background: var(--gp-paper-soft);
+}
+
+.gp-rv-count.is-over {
+  color: var(--gp-bad);
+  font-weight: 600;
+}
+
+.gp-rv-btn {
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.gp-rv-confirm {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--gp-pink-line);
+  border-radius: 10px;
+  background: var(--gp-pink-soft);
+}
+
+.gp-rv-confirm-text {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gp-ink);
+}
+
+.gp-rv-hint {
+  display: block;
+  margin-top: 4px;
+}
+
+.gp-rv-notice {
+  margin: 0;
+  color: var(--gp-ok);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gp-rv-notice:empty {
+  display: none;
+}
+
+.gp-rv-more {
+  justify-content: center;
+}
+
+/* ── Small screens (390 px) ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .gp-ov-figs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .gp-ov-fig {
+    padding: 12px;
+  }
+
+  .gp-ov-fig-value {
+    font-size: 24px;
+  }
+
+  .gp-ov-seg {
+    width: 100%;
+  }
+
+  .gp-ov-head .gp-ov-seg .gp-ov-seg-btn {
+    flex: 1 1 0;
+  }
+
+  .gp-rv-card {
+    padding: 14px;
+  }
+
+  .gp-rv-chips {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .gp-rv-top .gp-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .gp-ov-figs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gp-ov-skel {
+    animation: none;
+    background: var(--gp-paper-soft);
+  }
+
+  .gp-ov-perf.is-busy .gp-ov-figs,
+  .gp-rv-list.is-busy {
+    transition: none;
+  }
+}
