@@ -1755,6 +1755,13 @@ const Storefront = ({ setCompletion }) => {
   useEffect(() => {
     try {
       let stored = localStorage.getItem(storageKey);
+      // A link may name the section to open (e.g. the Google Profile tab's "Address" fix link:
+      // ?section=vendor-location). It wins over the remembered one, and becomes the remembered one.
+      const linked = new URLSearchParams(window.location.search).get("section");
+      if (linked && menuItems.some((m) => m.id === linked)) {
+        stored = linked;
+        localStorage.setItem(storageKey, stored);
+      }
       const legacyMasterTabs = new Set([
         "venue-master",
         "caterer-master",

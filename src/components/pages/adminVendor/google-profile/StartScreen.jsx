@@ -4,6 +4,12 @@ import { FiArrowRight, FiLock, FiMapPin, FiSearch, FiStar, FiTrendingUp } from "
 import { Callout, FixLink } from "./GpParts";
 import { GROWTHOS_PRIVACY_URL, STOREFRONT_PATH, WEEKDAYS, toTimeInput } from "./gpFormat";
 
+/** A Storefront link that opens the section to fix (Storefront reads ?section=), e.g. vendor-location. */
+const withSection = (url, tab) => {
+  if (!tab || !url || !url.includes("/vendor-dashboard/vendor-store-front")) return url;
+  return `${url}${url.includes("?") ? "&" : "?"}section=${encodeURIComponent(tab)}`;
+};
+
 const ANSWERS = [
   {
     id: "yes",
@@ -152,7 +158,7 @@ export default function StartScreen({ view, busy, problem, onSubmit }) {
             <ul className="gp-list">
               {missing.map((item) => (
                 <li key={item.field || item.label}>
-                  <FixLink to={item.fix_url || STOREFRONT_PATH} className="gp-link">
+                  <FixLink to={withSection(item.fix_url || STOREFRONT_PATH, item.tab)} className="gp-link">
                     {item.label || item.field}
                   </FixLink>
                 </li>
@@ -300,7 +306,7 @@ function SetupProblem({ problem }) {
               {field.fix_url && (
                 <>
                   {" "}
-                  <FixLink to={field.fix_url} className="gp-link">
+                  <FixLink to={withSection(field.fix_url, field.tab)} className="gp-link">
                     Fix it in Storefront
                   </FixLink>
                 </>
