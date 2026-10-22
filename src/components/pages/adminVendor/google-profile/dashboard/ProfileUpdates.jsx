@@ -33,15 +33,36 @@ const FIELD_LABELS = {
 
 const labelOf = (path) => FIELD_LABELS[path] || FIELD_LABELS[String(path).split(".")[0]] || path;
 
-/** A raw Google value as short readable text. */
+const DAYS = { MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun" };
+const OPEN_STATUS = { OPEN: "Open", CLOSED_TEMPORARILY: "Temporarily closed", CLOSED_PERMANENTLY: "Permanently closed" };
+const clock = (t) => (t ? `${String(t.hours ?? 0).padStart(2, "0")}:${String(t.minutes ?? 0).padStart(2, "0")}` : "");
+
+/**
+ * A raw Google value as short readable text (phone numbers, address, categories, hours, description…), or null when
+ * there is nothing. Never shows code: an unknown shape is read field by field.
+ */
 const readable = (value) => {
   if (value === null || value === undefined || value === "") return null;
-  if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
-  if (Array.isArray(value) && value.every((v) => typeof v === "string")) return value.join(", ");
-  if (typeof value === "object" && typeof value.displayName === "string") return value.displayName;
-  const json = JSON.stringify(value);
-  return json.length > 300 ? `${json.slice(0, 300)}…` : json;
+  if (typeof value === "string") return value.trim() || null;
+  if (typeof value === "number") return String(value);
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (Array.isArray(value)) {
+    const parts = value.map(readable).filter(Boolean);
+    return parts.length ? parts.join(", ") : null;
+  }
+  if (typeof value !== "object" || Object.keys(value).length === 0) return null;
+  if (typeof value.displayName === "string") return value.displayName;
+  if ("primaryPhone" in value || "additionalPhones" in value)
+    return [value.primaryPhone, ...(value.additionalPhones || [])].filter(Boolean).join(", ") || null;
+  if (value.addressLines || value.locality || value.postalCode)
+    return [...(value.addressLines || []), value.locality, value.administrativeArea, value.postalCode].filter(Boolean).join(", ") || null;
+  if ("primaryCategory" in value || "additionalCategories" in value)
+    return [value.primaryCategory?.displayName, ...(value.additionalCategories || []).map((c) => c?.displayName)].filter(Boolean).join(", ") || null;
+  if (Array.isArray(value.periods))
+    return value.periods.map((p) => `${DAYS[p.openDay] || p.openDay} ${clock(p.openTime)}–${clock(p.closeTime)}`).join(", ") || null;
+  if (typeof value.status === "string") return OPEN_STATUS[value.status] || value.status;
+  const parts = Object.values(value).map(readable).filter(Boolean);
+  return parts.length ? parts.join(" · ") : null;
 };
 
 /** `onChanged` reloads the profile after an answer. */
@@ -123,7 +144,7 @@ export default function ProfileUpdates({ onChanged }) {
               </div>
               <div>
                 <dt>Google's version</dt>
-                <dd>{readable(f.google) ?? <span className="gp-muted">Not set</span>}</dd>
+                <dd>{readable(f.google) ?? <span className="gp-muted">{f.pending ? "Not shown yet" : "Not set"}</span>}</dd>
               </div>
             </dl>
           </li>
@@ -142,7 +163,10 @@ export default function ProfileUpdates({ onChanged }) {
           </button>
         </div>
       ) : (
-        <p className="gp-note">Google is still reviewing these. Nothing to choose yet.</p>
+        <p className="gp-note">
+          Google is checking {state.fields.length > 1 ? "these changes" : "this change"}. You don't need to do
+          anything: this box goes away when Google has finished.
+        </p>
       )}
       {doneLine}
     </section>

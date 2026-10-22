@@ -508,6 +508,151 @@ legend.gp-e-label {
   gap: 12px;
 }
 
+@media (min-width: 900px) {
+  .gp-e-sections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gp-e-sec.is-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Profile groups: Basics, Contact and location, Hours, Services and extras. */
+.gp-e-group {
+  display: grid;
+  gap: 10px;
+}
+
+.gp-page .gp-e-group-title {
+  margin: 8px 0 0;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gp-muted);
+}
+
+.gp-page .gp-e-sec-title {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.gp-e-sec-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--gp-pink-soft);
+  color: var(--gp-pink-deep);
+  flex: 0 0 auto;
+}
+
+.gp-e-sec-flag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gp-warn-soft);
+  color: var(--gp-warn);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.gp-e-sec:not(.is-editing):hover {
+  border-color: var(--gp-pink-line);
+}
+
+/* Tags (categories, services) */
+.gp-e-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gp-e-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--gp-line);
+  border-radius: 999px;
+  background: var(--gp-paper-soft);
+  color: var(--gp-ink);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.gp-e-tag.is-main {
+  border-color: var(--gp-pink-line);
+  background: var(--gp-pink-soft);
+  color: var(--gp-pink-deep);
+  font-weight: 600;
+}
+
+.gp-e-tag-note {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 11px;
+}
+
+.gp-e-tag-more {
+  color: var(--gp-muted);
+}
+
+/* Phone and website, address */
+.gp-e-facts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.gp-e-facts > div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+}
+
+.gp-e-facts dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--gp-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gp-e-facts dd {
+  margin: 0;
+  font-size: 14px;
+  color: var(--gp-ink);
+  overflow-wrap: anywhere;
+}
+
+.gp-e-link {
+  color: var(--gp-pink-deep);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.gp-e-address {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  font-style: normal;
+  font-size: 14px;
+  color: var(--gp-ink);
+}
+
 .gp-e-sec {
   display: grid;
   gap: 8px;
@@ -920,5 +1065,16 @@ legend.gp-e-label {
     transition: none !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+@media (max-width: 575px) {
+  .gp-e-compare {
+    grid-template-columns: 1fr;
+  }
+
+  .gp-e-facts > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 }

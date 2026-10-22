@@ -5,7 +5,22 @@
 // Google's suggested changes can be accepted or rejected above the cards.
 // API: gpManageApi.profile (GrowthOS profileEditSchema) and the forms in ProfileSections.jsx.
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FiEdit2 } from "react-icons/fi";
+import {
+  FiAlignLeft,
+  FiBriefcase,
+  FiCalendar,
+  FiCheckCircle,
+  FiClock,
+  FiEdit2,
+  FiGlobe,
+  FiList,
+  FiMap,
+  FiMapPin,
+  FiPhone,
+  FiSliders,
+  FiTag,
+  FiWatch,
+} from "react-icons/fi";
 import { gpManageApi } from "../../../../../services/api/googleProfileApi";
 import { Callout } from "../GpParts";
 import { WEEKDAYS } from "../gpFormat";
@@ -27,21 +42,47 @@ import { TabError, TabLoading } from "./ProfileShared";
 import ProfileUpdates from "./ProfileUpdates";
 import { formatDay } from "./ProfileUtils";
 
-// GrowthOS's order and section names (PROFILE_SECTIONS), with plain titles.
+// GrowthOS's section names (PROFILE_SECTIONS), with plain titles. `wide` cards take the full row.
 const SECTIONS = [
-  { id: "name", title: "Business name", Form: NameForm },
-  { id: "categories", title: "Categories", Form: CategoriesForm },
-  { id: "description", title: "Description", Form: DescriptionForm },
-  { id: "contact", title: "Phone and website", Form: ContactForm },
-  { id: "address", title: "Address", Form: AddressForm },
-  { id: "service_area", title: "Service area", Form: ServiceAreaForm },
-  { id: "hours", title: "Opening hours", Form: HoursForm },
-  { id: "special_hours", title: "Special hours", Form: SpecialHoursForm },
-  { id: "more_hours", title: "More hours", Form: MoreHoursForm },
-  { id: "open_status", title: "Open status", Form: OpenStatusForm },
-  { id: "services", title: "Services", Form: ServicesForm },
-  { id: "attributes", title: "Attributes", Form: AttributesForm },
+  { id: "name", title: "Business name", Form: NameForm, Icon: FiBriefcase },
+  { id: "categories", title: "Categories", Form: CategoriesForm, Icon: FiTag },
+  { id: "description", title: "Description", Form: DescriptionForm, Icon: FiAlignLeft, wide: true },
+  { id: "contact", title: "Phone and website", Form: ContactForm, Icon: FiPhone },
+  { id: "address", title: "Address", Form: AddressForm, Icon: FiMapPin },
+  { id: "service_area", title: "Service area", Form: ServiceAreaForm, Icon: FiMap, wide: true },
+  { id: "hours", title: "Opening hours", Form: HoursForm, Icon: FiClock },
+  { id: "special_hours", title: "Special hours", Form: SpecialHoursForm, Icon: FiCalendar },
+  { id: "more_hours", title: "More hours", Form: MoreHoursForm, Icon: FiWatch },
+  { id: "open_status", title: "Open status", Form: OpenStatusForm, Icon: FiCheckCircle },
+  { id: "services", title: "Services", Form: ServicesForm, Icon: FiList, wide: true },
+  { id: "attributes", title: "Attributes", Form: AttributesForm, Icon: FiSliders, wide: true },
 ];
+
+// The cards in four groups, so the profile reads the way Google shows it.
+const GROUPS = [
+  { id: "basics", title: "Basics", sections: ["name", "categories", "description"] },
+  { id: "contact", title: "Contact and location", sections: ["contact", "address", "service_area"] },
+  { id: "hours", title: "Hours", sections: ["hours", "special_hours", "more_hours", "open_status"] },
+  { id: "extras", title: "Services and extras", sections: ["services", "attributes"] },
+];
+
+const MAX_TAGS = 10;
+
+/** Short labels as tags; the rest counted ("+3 more"). */
+function Tags({ items, empty }) {
+  if (!items.length) return <p className="gp-e-summary gp-muted">{empty}</p>;
+  return (
+    <ul className="gp-e-tags">
+      {items.slice(0, MAX_TAGS).map((item) => (
+        <li key={item.key} className={`gp-e-tag${item.main ? " is-main" : ""}`}>
+          {item.label}
+          {item.main && <span className="gp-e-tag-note">Main</span>}
+        </li>
+      ))}
+      {items.length > MAX_TAGS && <li className="gp-e-tag gp-e-tag-more">+{items.length - MAX_TAGS} more</li>}
+    </ul>
+  );
+}
 
 const RISKY = ["name", "categories", "address", "service_area"];
 
@@ -62,17 +103,58 @@ function Summary({ section, data }) {
     case "name":
       return text(p.title);
     case "categories":
-      return text(
-        [p.primary_category?.display_name ? `${p.primary_category.display_name} (main)` : null, ...p.additional_categories.map((c) => c.display_name)]
-          .filter(Boolean)
-          .join(", "),
+      return (
+        <Tags
+          empty="Not set"
+          items={[
+            ...(p.primary_category?.display_name ? [{ key: "main", label: p.primary_category.display_name, main: true }] : []),
+            ...p.additional_categories.map((c, i) => ({ key: `${c.name || i}`, label: c.display_name })),
+          ]}
+        />
       );
     case "description":
       return text(p.description);
-    case "contact":
-      return text([p.primary_phone, ...(p.additional_phones || []), p.website].filter(Boolean).join(" · "));
-    case "address":
-      return text(p.address ? [...(p.address.address_lines || []), p.address.locality, p.address.administrative_area, p.address.postal_code].filter(Boolean).join(", ") : "");
+    case "contact": {
+      const phones = [p.primary_phone, ...(p.additional_phones || [])].filter(Boolean);
+      return (
+        <dl className="gp-e-facts">
+          <div>
+            <dt>
+              <FiPhone size={14} aria-hidden="true" /> Phone
+            </dt>
+            <dd>{phones.length ? phones.join(", ") : <span className="gp-muted">Not set</span>}</dd>
+          </div>
+          <div>
+            <dt>
+              <FiGlobe size={14} aria-hidden="true" /> Website
+            </dt>
+            <dd>
+              {p.website ? (
+                <a href={p.website} target="_blank" rel="noopener noreferrer" className="gp-e-link">
+                  {p.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                </a>
+              ) : (
+                <span className="gp-muted">Not set</span>
+              )}
+            </dd>
+          </div>
+        </dl>
+      );
+    }
+    case "address": {
+      const a = p.address;
+      const lines = a
+        ? [...(a.address_lines || []), [a.locality, a.administrative_area, a.postal_code].filter(Boolean).join(", ")].filter(Boolean)
+        : [];
+      if (!lines.length) return text("");
+      return (
+        <address className="gp-e-address">
+          {lines.map((line) => (
+            <span key={line}>{line}</span>
+          ))}
+        </address>
+      );
+    }
     case "service_area":
       return text(
         p.service_area
@@ -119,10 +201,8 @@ function Summary({ section, data }) {
           .join(" · "),
       );
     case "services":
-      return text(
-        p.services_on_google.length
-          ? `${plural(p.services_on_google.length, "service", "services")} on Google: ${p.services_on_google.map((s) => s.label).join(", ")}`
-          : "No services on Google",
+      return (
+        <Tags empty="No services on Google yet" items={p.services_on_google.map((s, i) => ({ key: `${s.label}-${i}`, label: s.label }))} />
       );
     case "attributes":
       if (!data.attributes.meta.length) return text("Google offers no attributes for your category.");
@@ -222,18 +302,31 @@ export default function ProfileTab() {
         </Callout>
       )}
 
-      <div className="gp-e-sections">
-        {SECTIONS.map((section) => {
-          const { id, title } = section;
-          const Form = section.Form;
-          const editing = open === id;
-          return (
-            <section key={id} className={`gp-e-sec${editing ? " is-editing" : ""}`} aria-labelledby={`gp-e-sec-${id}`}>
+      {GROUPS.map((group) => (
+        <div key={group.id} className="gp-e-group" role="group" aria-labelledby={`gp-e-group-${group.id}`}>
+          <h3 className="gp-e-group-title" id={`gp-e-group-${group.id}`}>
+            {group.title}
+          </h3>
+          <div className="gp-e-sections">
+            {group.sections.map((sid) => {
+              const section = SECTIONS.find((s) => s.id === sid);
+              const { id, title, Icon } = section;
+              const Form = section.Form;
+              const editing = open === id;
+              return (
+            <section
+              key={id}
+              className={`gp-e-sec${editing ? " is-editing" : ""}${section.wide || editing ? " is-wide" : ""}`}
+              aria-labelledby={`gp-e-sec-${id}`}
+            >
               <div className="gp-e-sec-head">
-                <h3 className="gp-e-sec-title" id={`gp-e-sec-${id}`}>
+                <h4 className="gp-e-sec-title" id={`gp-e-sec-${id}`}>
+                  <span className="gp-e-sec-icon" aria-hidden="true">
+                    <Icon size={16} />
+                  </span>
                   {title}
-                  {RISKY.includes(id) && <span className="visually-hidden"> (Google may review changes)</span>}
-                </h3>
+                  {RISKY.includes(id) && <span className="gp-e-sec-flag">Google reviews changes</span>}
+                </h4>
                 {!editing && !noEditor(id, data) && (
                   <button
                     type="button"
@@ -258,9 +351,11 @@ export default function ProfileTab() {
                 <Summary section={id} data={data} />
               )}
             </section>
-          );
-        })}
-      </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
       {open !== null && <p className="gp-note">Finish or cancel the section you're editing to edit another.</p>}
     </div>
   );
