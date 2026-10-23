@@ -15,6 +15,8 @@ import { listOf, suggestionsOf } from "./ImproveUtils";
 // GrowthOS serviceSchema limits.
 const LIMITS = { service_name: 150, category: 100, description: 2000 };
 
+const EMPTY_SERVICE = { service_name: "", category: "", description: "" };
+
 const same = (a, b) => String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
 
 /** Why a suggestion can't be added yet, per field. */
@@ -90,6 +92,10 @@ export default function ImproveServices({ services }) {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null); // { tone, text }
   const [showProblems, setShowProblems] = useState(false);
+  // A service the vendor types (works when the AI is down too).
+  const ownId = useId();
+  const [own, setOwn] = useState(EMPTY_SERVICE);
+  const [ownChecked, setOwnChecked] = useState(false);
 
   if (services.status === "loading") return <TabLoading label="Loading your services…" />;
   if (services.status === "error") {
@@ -191,6 +197,27 @@ export default function ImproveServices({ services }) {
 
   const showIdeas = Array.isArray(ideas) && ideas.length > 0;
 
+  const ownProblems = problemsOf(own);
+  const addOwn = async (event) => {
+    event.preventDefault();
+    setOwnChecked(true);
+    if (Object.keys(ownProblems).length > 0) return;
+    setBusy("own");
+    setError(null);
+    setMessage(null);
+    try {
+      await gpManageApi.addService({ service_name: own.service_name.trim(), category: own.category.trim(), description: own.description.trim() });
+      setOwn(EMPTY_SERVICE);
+      setOwnChecked(false);
+      await services.reload(true);
+      setMessage({ tone: "ok", text: `Added “${own.service_name.trim()}”.` });
+    } catch (err) {
+      setError(err);
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <div className="gp-e-stack">
       <p className="gp-note">Your services tell couples what you offer. The AI then adds them to your Google profile.</p>
@@ -244,6 +271,63 @@ export default function ImproveServices({ services }) {
           </button>
         </div>
       )}
+
+      <form className="gp-i-own gp-e-stack-sm" onSubmit={addOwn} noValidate>
+        <p className="gp-e-label">Or add your own service</p>
+        {[
+          ["service_name", "Service name", "e.g. Wedding reception hall"],
+          ["category", "Category", "e.g. Venue"],
+        ].map(([key, label, placeholder]) => (
+          <div key={key} className="gp-e-stack-sm">
+            <label htmlFor={`${ownId}-${key}`} className="gp-note">
+              {label}
+            </label>
+            <input
+              id={`${ownId}-${key}`}
+              className="form-control"
+              value={own[key]}
+              maxLength={LIMITS[key]}
+              placeholder={placeholder}
+              onChange={(e) => setOwn((cur) => ({ ...cur, [key]: e.target.value }))}
+              disabled={working}
+              aria-invalid={ownChecked && ownProblems[key] ? true : undefined}
+              aria-describedby={ownChecked && ownProblems[key] ? `${ownId}-${key}-err` : undefined}
+            />
+            {ownChecked && ownProblems[key] && (
+              <span className="gp-e-error" id={`${ownId}-${key}-err`}>
+                {ownProblems[key]}
+              </span>
+            )}
+          </div>
+        ))}
+        <div className="gp-e-stack-sm">
+          <label htmlFor={`${ownId}-description`} className="gp-note">
+            Short description
+          </label>
+          <textarea
+            id={`${ownId}-description`}
+            className="form-control"
+            rows={2}
+            value={own.description}
+            maxLength={LIMITS.description}
+            onChange={(e) => setOwn((cur) => ({ ...cur, description: e.target.value }))}
+            disabled={working}
+            aria-invalid={ownChecked && ownProblems.description ? true : undefined}
+            aria-describedby={ownChecked && ownProblems.description ? `${ownId}-description-err` : undefined}
+          />
+          {ownChecked && ownProblems.description && (
+            <span className="gp-e-error" id={`${ownId}-description-err`}>
+              {ownProblems.description}
+            </span>
+          )}
+        </div>
+        <div className="gp-btns">
+          <button type="submit" className="gp-btn gp-btn-ghost" disabled={working} aria-busy={busy === "own" || undefined}>
+            {busy === "own" ? <Spinner animation="border" size="sm" aria-hidden="true" /> : <FiPlus size={18} aria-hidden="true" />}
+            Add service
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

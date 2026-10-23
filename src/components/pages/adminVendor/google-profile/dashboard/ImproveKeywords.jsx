@@ -21,6 +21,7 @@ export default function ImproveKeywords({ keywords }) {
   const [busy, setBusy] = useState(null); // "suggest" | "add" | "remove:<id>" | "resume:<id>"
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null); // { tone, text }
+  const [own, setOwn] = useState(""); // a keyword the vendor types (works when the AI is down too)
 
   if (keywords.status === "loading") return <TabLoading label="Loading your keywords…" />;
   if (keywords.status === "error") {
@@ -95,6 +96,30 @@ export default function ImproveKeywords({ keywords }) {
         .join(" "),
     });
     setBusy(null);
+  };
+
+  const addOwn = async (event) => {
+    event.preventDefault();
+    const keyword = own.trim();
+    if (!keyword) return;
+    if (saved.some((k) => same(k.keyword, keyword))) {
+      setError(null);
+      setMessage({ tone: "warn", text: `“${keyword}” is already in your keywords.` });
+      return;
+    }
+    setBusy("own");
+    setError(null);
+    setMessage(null);
+    try {
+      await gpManageApi.addKeyword({ keyword, source: "manual" });
+      setOwn("");
+      await keywords.reload(true);
+      setMessage({ tone: "ok", text: `Added “${keyword}”.` });
+    } catch (err) {
+      setError(err);
+    } finally {
+      setBusy(null);
+    }
   };
 
   const remove = async (k) => {
@@ -215,6 +240,27 @@ export default function ImproveKeywords({ keywords }) {
           </button>
         </div>
       )}
+
+      <form className="gp-i-own" onSubmit={addOwn}>
+        <label htmlFor={`${id}-own`} className="gp-e-label">
+          Or add your own keyword
+        </label>
+        <div className="gp-i-own-row">
+          <input
+            id={`${id}-own`}
+            className="form-control"
+            value={own}
+            maxLength={80}
+            onChange={(e) => setOwn(e.target.value)}
+            placeholder="e.g. banquet hall in Nashik"
+            disabled={working}
+          />
+          <button type="submit" className="gp-btn gp-btn-ghost" disabled={working || !own.trim()} aria-busy={busy === "own" || undefined}>
+            {busy === "own" ? <Spinner animation="border" size="sm" aria-hidden="true" /> : <FiPlus size={18} aria-hidden="true" />}
+            Add
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

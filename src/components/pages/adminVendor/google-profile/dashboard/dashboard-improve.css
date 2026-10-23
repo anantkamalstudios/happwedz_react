@@ -337,3 +337,22 @@
     transition: none;
   }
 }
+
+/* "Or add your own" forms (keywords, services): work when the AI is down too. */
+.gp-i-own {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--gp-line);
+}
+
+.gp-i-own-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gp-i-own-row .form-control {
+  flex: 1 1 220px;
+  min-width: 0;
+}

@@ -36,7 +36,7 @@ export const useLoad = (fetcher) => {
 /** A short extra line for the error codes the vendor can do something about. */
 const CODE_HINTS = {
   ai_limit_reached: "The AI allowance is used up for now. You can still add these yourself.",
-  ai_unavailable: "The AI is busy right now. Please try again in a moment.",
+  ai_unavailable: "You can still add them yourself below.",
   feature_disabled: "This is switched off for your profile right now.",
   rate_limited: "Too many tries at once. Please wait a moment and try again.",
   network: "Check your internet connection and try again.",
