@@ -61,6 +61,9 @@ function Empty({ title, children, action }) {
   );
 }
 
+/** The automatic check on opening runs when the last sync is older than this (GrowthOS allows one every 5 minutes). */
+const AUTO_SYNC_MS = 5 * 60 * 1000;
+
 export default function ReviewsTab() {
   const status = useOverviewLoad(() => gpManageApi.reviewsStatus(), "reviews-status");
   const info = status.data;
@@ -127,21 +130,35 @@ export default function ReviewsTab() {
     }
   };
 
-  const syncNow = async () => {
-    setSync({ busy: true, error: null, notice: "" });
+  // `quiet`: the automatic check when the tab opens — it only speaks up when new reviews came in, and a refusal
+  // (e.g. the 5-minute limit) is not shown; the list already on screen stays.
+  const syncNow = async ({ quiet = false } = {}) => {
+    setSync({ busy: true, error: null, notice: "", quiet });
     try {
       const result = await gpManageApi.syncReviews();
       const found = typeof result?.new_reviews === "number" ? result.new_reviews : null;
       const drafted = typeof result?.drafted === "number" ? result.drafted : 0;
       let notice = found === null ? "Synced with Google." : found === 0 ? "Synced. No new reviews." : `Synced. ${plural(found, "new review", "new reviews")}.`;
       if (drafted > 0) notice += ` AI wrote ${plural(drafted, "draft reply", "draft replies")} for you to check.`;
-      setSync({ busy: false, error: null, notice });
+      if (quiet && !(found > 0) && drafted === 0) notice = "";
+      setSync({ busy: false, error: null, notice, quiet: false });
       status.reload();
       setReload((n) => n + 1);
     } catch (error) {
-      setSync({ busy: false, error: errorInfo(error), notice: "" });
+      setSync({ busy: false, error: quiet ? null : errorInfo(error), notice: "", quiet: false });
     }
   };
+
+  // Opening the tab checks Google for new reviews by itself when the last sync is older than AUTO_SYNC_MS (once per
+  // visit), so the vendor never has to press Sync now first.
+  const autoSynced = useRef(false);
+  useEffect(() => {
+    if (autoSynced.current || status.status !== "ready" || !info?.sync_available) return;
+    autoSynced.current = true;
+    const last = info.last_synced_at ? new Date(info.last_synced_at).getTime() : 0;
+    if (Date.now() - last > AUTO_SYNC_MS) syncNow({ quiet: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status.status, info?.sync_available, info?.last_synced_at]);
 
   // A review changed on its card: keep it in the list and keep the "need a reply" count right.
   const onReviewChange = (next, before) => {
@@ -282,9 +299,9 @@ export default function ReviewsTab() {
           {info && <p className="gp-note">{line.join(" · ")}</p>}
         </div>
         {info?.sync_available && (
-          <button type="button" className="gp-btn gp-btn-ghost" onClick={syncNow} disabled={sync.busy} aria-busy={sync.busy || undefined}>
+          <button type="button" className="gp-btn gp-btn-ghost" onClick={() => syncNow()} disabled={sync.busy} aria-busy={sync.busy || undefined}>
             {sync.busy ? <Spinner animation="border" size="sm" aria-hidden="true" /> : <FiRefreshCw size={18} aria-hidden="true" />}
-            Sync now
+            {sync.busy && sync.quiet ? "Checking Google…" : "Sync now"}
           </button>
         )}
       </div>
