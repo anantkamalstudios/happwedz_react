@@ -43,6 +43,9 @@ const upload = (path, file, fields = {}) => {
 
 const enc = encodeURIComponent;
 
+// AI writing and "sync now" can take up to a minute on GrowthOS; the default 30 s is too short.
+const SLOW = { timeout: 100000 };
+
 export const gpManageApi = {
   // Overview and numbers
   overview: () => view(axiosInstance.get(`${BASE}/overview`)),
@@ -52,8 +55,8 @@ export const gpManageApi = {
   reviewsStatus: () => view(axiosInstance.get(`${BASE}/reviews/status`)),
   reviews: ({ filter = "all", page: p = 1, page_size = 20 } = {}) =>
     page(axiosInstance.get(`${BASE}/reviews`, { params: { filter, page: p, page_size } })),
-  syncReviews: () => view(axiosInstance.post(`${BASE}/reviews/sync`)),
-  draftReply: (reviewId) => view(axiosInstance.post(`${BASE}/reviews/${enc(reviewId)}/draft`)),
+  syncReviews: () => view(axiosInstance.post(`${BASE}/reviews/sync`, {}, SLOW)),
+  draftReply: (reviewId) => view(axiosInstance.post(`${BASE}/reviews/${enc(reviewId)}/draft`, {}, SLOW)),
   saveReply: (reviewId, reply) => view(axiosInstance.put(`${BASE}/reviews/${enc(reviewId)}/reply`, { reply })),
   publishReply: (reviewId, reply) => view(axiosInstance.post(`${BASE}/reviews/${enc(reviewId)}/publish`, { reply })),
   editPublishedReply: (reviewId, reply) =>
@@ -61,11 +64,11 @@ export const gpManageApi = {
   deleteReply: (reviewId) => view(axiosInstance.delete(`${BASE}/reviews/${enc(reviewId)}/reply`)),
 
   // Read the profile, photos and posts from Google now (once every 5 minutes).
-  syncGoogle: () => view(axiosInstance.post(`${BASE}/sync`)),
+  syncGoogle: () => view(axiosInstance.post(`${BASE}/sync`, {}, SLOW)),
 
   // Posts
   posts: (status) => page(axiosInstance.get(`${BASE}/posts`, { params: status ? { status } : {} })),
-  generatePost: (body) => view(axiosInstance.post(`${BASE}/posts/generate`, body)),
+  generatePost: (body) => view(axiosInstance.post(`${BASE}/posts/generate`, body, SLOW)),
   createPost: (body) => view(axiosInstance.post(`${BASE}/posts`, body)),
   updatePost: (postId, body) => view(axiosInstance.put(`${BASE}/posts/${enc(postId)}`, body)),
   deletePost: (postId) => view(axiosInstance.delete(`${BASE}/posts/${enc(postId)}`)),
@@ -77,7 +80,7 @@ export const gpManageApi = {
   // Profile
   profile: () => view(axiosInstance.get(`${BASE}/profile`)),
   saveProfileSection: (section, body) => view(axiosInstance.put(`${BASE}/profile/${enc(section)}`, body)),
-  generateDescription: (body = {}) => view(axiosInstance.post(`${BASE}/profile/description/generate`, body)),
+  generateDescription: (body = {}) => view(axiosInstance.post(`${BASE}/profile/description/generate`, body, SLOW)),
   categories: (q, region) =>
     view(axiosInstance.get(`${BASE}/profile/categories`, { params: { q, ...(region ? { region } : {}) } })),
   places: (q) => view(axiosInstance.get(`${BASE}/profile/places`, { params: { q } })),
@@ -93,7 +96,7 @@ export const gpManageApi = {
   agent: () => view(axiosInstance.get(`${BASE}/agent`)),
   setAgent: (on) => view(axiosInstance.put(`${BASE}/agent`, { on })),
   keywords: () => page(axiosInstance.get(`${BASE}/keywords`)),
-  suggestKeywords: (body = {}) => view(axiosInstance.post(`${BASE}/keywords/suggest`, body)),
+  suggestKeywords: (body = {}) => view(axiosInstance.post(`${BASE}/keywords/suggest`, body, SLOW)),
   addKeyword: (body) => view(axiosInstance.post(`${BASE}/keywords`, body)),
   setKeywordStatus: (keywordId, status) => view(axiosInstance.patch(`${BASE}/keywords/${enc(keywordId)}`, { status })),
   deleteKeyword: (keywordId) => view(axiosInstance.delete(`${BASE}/keywords/${enc(keywordId)}`)),
@@ -101,14 +104,14 @@ export const gpManageApi = {
   facts: () => view(axiosInstance.get(`${BASE}/facts`)),
   useStorefront: () => view(axiosInstance.post(`${BASE}/storefront/use`)),
   services: () => page(axiosInstance.get(`${BASE}/services`)),
-  suggestServices: () => view(axiosInstance.post(`${BASE}/services/suggest`)),
+  suggestServices: () => view(axiosInstance.post(`${BASE}/services/suggest`, {}, SLOW)),
   addService: (body) => view(axiosInstance.post(`${BASE}/services`, body)),
   deleteService: (serviceId) => view(axiosInstance.delete(`${BASE}/services/${enc(serviceId)}`)),
   sendStorefrontPhotos: (items) => view(axiosInstance.post(`${BASE}/storefront/photos`, { items })),
 
   // Fixes
   fixes: () => view(axiosInstance.get(`${BASE}/fixes`)),
-  prepareFixes: () => view(axiosInstance.post(`${BASE}/fixes/prepare`)),
+  prepareFixes: () => view(axiosInstance.post(`${BASE}/fixes/prepare`, {}, SLOW)),
   approveFix: (actionId) => view(axiosInstance.post(`${BASE}/fixes/${enc(actionId)}/approve`)),
   rejectFix: (actionId) => view(axiosInstance.post(`${BASE}/fixes/${enc(actionId)}/reject`)),
 };
