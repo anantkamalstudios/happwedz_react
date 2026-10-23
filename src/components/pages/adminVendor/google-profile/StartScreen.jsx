@@ -2,7 +2,7 @@ import React, { useId, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import { FiArrowRight, FiLock, FiMapPin, FiSearch, FiStar, FiTrendingUp } from "react-icons/fi";
 import { Callout, FixLink } from "./GpParts";
-import { GROWTHOS_PRIVACY_URL, STOREFRONT_PATH, WEEKDAYS, toTimeInput } from "./gpFormat";
+import { EMAIL_MAX, GROWTHOS_PRIVACY_URL, STOREFRONT_PATH, WEEKDAYS, isEmail, sameEmail, toTimeInput } from "./gpFormat";
 
 /** A Storefront link that opens the section to fix (Storefront reads ?section=), e.g. vendor-location. */
 const withSection = (url, tab) => {
@@ -66,8 +66,13 @@ function Fact({ label, value, note }) {
 /**
  * Screen 1: what will be sent, the working hours (HappyWedz does not keep them), the
  * vendor's answer about an existing Google profile, and consent.
+ *
+ * RD-23 "Use a different email for this business": with `askOwnerEmail` the form also asks
+ * for the email of the new GrowthOS account (sent as owner_email). It must differ from
+ * every email in `blockedEmails` (the login email, and one already found taken).
+ * `onBack` returns to the choices.
  */
-export default function StartScreen({ view, busy, problem, onSubmit }) {
+export default function StartScreen({ view, busy, problem, onSubmit, askOwnerEmail = false, blockedEmails = [], onBack }) {
   const ids = useId();
   const storefront = view?.storefront || {};
   const missing = Array.isArray(storefront.missing) ? storefront.missing : [];
@@ -80,6 +85,8 @@ export default function StartScreen({ view, busy, problem, onSubmit }) {
   );
   const [answer, setAnswer] = useState(() => view?.answer?.has_google_profile || "no");
   const [consent, setConsent] = useState(false);
+  const [ownerEmail, setOwnerEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
 
   const toggleDay = (day) =>
     setClosedDays((days) => (days.includes(day) ? days.filter((d) => d !== day) : [...days, day]));
@@ -87,9 +94,20 @@ export default function StartScreen({ view, busy, problem, onSubmit }) {
   const hoursMissing = !openingTime || !closingTime;
   const allClosed = closedDays.length === WEEKDAYS.length;
 
+  const cleanEmail = ownerEmail.trim();
+  let emailError = "";
+  if (askOwnerEmail) {
+    const blocked = blockedEmails.find((email) => sameEmail(email, cleanEmail));
+    if (!cleanEmail) emailError = "Enter the email for GrowthOS.";
+    else if (!isEmail(cleanEmail)) emailError = "Enter a valid email, like name@example.com.";
+    else if (blocked) emailError = `Use a different email from ${blocked}.`;
+  }
+  const showEmailError = Boolean(emailError) && emailTouched;
+
   // The first reason the button is off, shown beside it.
   let hint = "";
   if (missing.length > 0) hint = "Add the missing details in Storefront first.";
+  else if (emailError) hint = emailError;
   else if (hoursMissing) hint = "Add your opening and closing time.";
   else if (allClosed) hint = "Leave at least one day open.";
   else if (!consent) hint = "Tick the box above to continue.";
@@ -106,6 +124,7 @@ export default function StartScreen({ view, busy, problem, onSubmit }) {
       // Kept in week order, whatever order they were ticked in.
       weekly_off: WEEKDAYS.map((w) => w.id).filter((d) => closedDays.includes(d)),
       consent: true,
+      ...(askOwnerEmail ? { owner_email: cleanEmail } : {}),
     });
   };
 
@@ -116,12 +135,17 @@ export default function StartScreen({ view, busy, problem, onSubmit }) {
   return (
     <section className="gp-grid2">
       <form className="gp-card gp-card-tint" onSubmit={submit} noValidate aria-labelledby={`${ids}-title`}>
+        {view?.disconnected === true && (
+          <Callout tone="alert" role="status">
+            Your GrowthOS connection was removed. Set it up again below.
+          </Callout>
+        )}
         <div className="gp-row">
           <span className="gp-icon-badge" aria-hidden="true">
             <FiMapPin size={26} />
           </span>
           <div className="gp-stack-sm">
-            <span className="gp-eyebrow">New on HappyWedz</span>
+            <span className="gp-eyebrow">{askOwnerEmail ? "Use a different email" : "New on HappyWedz"}</span>
             <h2 className="gp-h2" id={`${ids}-title`}>
               Show up when couples search on Google and Maps
             </h2>
@@ -141,7 +165,13 @@ export default function StartScreen({ view, busy, problem, onSubmit }) {
             <Fact
               label="Email"
               value={storefront.email}
-              note={storefront.email ? "GrowthOS sends the set-password link here" : null}
+              note={
+                !storefront.email
+                  ? null
+                  : askOwnerEmail
+                    ? "Your HappyWedz login. It does not change."
+                    : "GrowthOS sends the set-password link here"
+              }
             />
             <Fact label="Mobile" value={storefront.mobile} />
             <Fact label="Address" value={storefront.address} />
@@ -151,6 +181,34 @@ export default function StartScreen({ view, busy, problem, onSubmit }) {
             Something wrong? Edit it in Storefront first.
           </FixLink>
         </div>
+
+        {askOwnerEmail && (
+          <div className="gp-field">
+            <label htmlFor={`${ids}-owner-email`}>Email for GrowthOS</label>
+            <input
+              id={`${ids}-owner-email`}
+              type="email"
+              className="gp-input"
+              autoComplete="email"
+              inputMode="email"
+              maxLength={EMAIL_MAX}
+              value={ownerEmail}
+              onChange={(e) => setOwnerEmail(e.target.value)}
+              onBlur={() => setEmailTouched(true)}
+              required
+              aria-invalid={showEmailError || undefined}
+              aria-describedby={`${ids}-owner-email-help${showEmailError ? ` ${ids}-owner-email-error` : ""}`}
+            />
+            <small id={`${ids}-owner-email-help`} className="gp-note gp-field-help">
+              GrowthOS creates a new account for this business with this email and sends the set-password link there.
+            </small>
+            {showEmailError && (
+              <small id={`${ids}-owner-email-error`} className="gp-field-error">
+                {emailError}
+              </small>
+            )}
+          </div>
+        )}
 
         {missing.length > 0 && (
           <Callout tone="alert" role="alert">
@@ -263,6 +321,11 @@ export default function StartScreen({ view, busy, problem, onSubmit }) {
             {busy ? <Spinner animation="border" size="sm" aria-hidden="true" /> : <FiArrowRight size={18} aria-hidden="true" />}
             Set up my Google profile
           </button>
+          {onBack && (
+            <button type="button" className="gp-btn gp-btn-ghost" onClick={onBack} disabled={busy}>
+              Back to the choices
+            </button>
+          )}
           {hint && !busy && <span className="gp-note">{hint}</span>}
         </div>
       </form>

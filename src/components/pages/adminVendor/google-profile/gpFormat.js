@@ -19,6 +19,8 @@ export const STEPS = [
 export const STEP_FOR_SCREEN = {
   start: 0,
   taken: 0,
+  // RD-23: the Owner of an existing GrowthOS account approves by email (in place of setting a password).
+  approve: 1,
   invited: 1,
   expired: 1,
   connect: 2,
@@ -78,6 +80,13 @@ export const msUntil = (iso) => {
   if (!date) return 0;
   return Math.max(0, date.getTime() - Date.now());
 };
+
+// "Use a different email" (RD-23): the same rule the server checks (a valid email, at most 254 characters).
+export const EMAIL_MAX = 254;
+export const isEmail = (value) =>
+  typeof value === "string" && value.length <= EMAIL_MAX && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+export const sameEmail = (a, b) =>
+  typeof a === "string" && typeof b === "string" && a.trim().toLowerCase() === b.trim().toLowerCase();
 
 export const initials = (name) => {
   const words = String(name || "").trim().split(/\s+/).filter(Boolean);

@@ -6,6 +6,7 @@ import { useToast } from "../../layouts/toasts/Toast";
 import PlanFeatureNotice from "./PlanFeatureNotice";
 import StartScreen from "./google-profile/StartScreen";
 import {
+  ApproveScreen,
   ConnectScreen,
   ExpiredScreen,
   InvitedScreen,
@@ -25,6 +26,8 @@ const NETWORK_MESSAGE = "Could not reach HappyWedz. Check your internet connecti
 const LOCKED_TITLE = "Google Profile";
 const LOCKED_TEXT =
   "Show up when couples search on Google and Maps. Available on plans that include Google Profile.";
+// GrowthOS sends the approval email again at most once every 5 minutes (RD-23).
+const LINK_RESEND_EVERY_MS = 5 * 60 * 1000;
 
 export default function GoogleProfilePage() {
   const { addToast } = useToast();
@@ -33,9 +36,14 @@ export default function GoogleProfilePage() {
   const [status, setStatus] = useState("loading"); // loading | failed | locked | ready
   const [loadError, setLoadError] = useState({ network: false, message: "" });
   const [view, setView] = useState(null);
-  const [busy, setBusy] = useState(null); // null | "refresh" | "resend" | "setup"
+  const [busy, setBusy] = useState(null); // null | "refresh" | "resend" | "setup" | "link"
   const [problem, setProblem] = useState(null); // why the last "Set up" failed
-  const [retrying, setRetrying] = useState(false); // "Try again" pressed on the email-taken screen
+  // RD-23, on the email-taken screen: "Use a different email" opens the setup form with an email field.
+  const [otherEmail, setOtherEmail] = useState(false);
+  const [triedEmail, setTriedEmail] = useState(null); // a "different email" that was taken too
+  const [linkProblem, setLinkProblem] = useState(null); // why "Connect my existing account" failed
+  // The approval email may be sent again once every 5 minutes; kept here when the View has no time.
+  const [linkResendAt, setLinkResendAt] = useState(null);
   const [, setTick] = useState(0);
 
   // Move the reader to the top of the new screen after a button changed it.
@@ -73,7 +81,7 @@ export default function GoogleProfilePage() {
   }, [load]);
 
   // Re-draw when the resend wait is over, so the button turns back on by itself.
-  const resendAt = view?.resend_available_at;
+  const resendAt = view?.resend_available_at || (view?.screen === "approve" ? linkResendAt : null);
   useEffect(() => {
     const wait = msUntil(resendAt);
     if (!wait) return undefined;
@@ -98,6 +106,7 @@ export default function GoogleProfilePage() {
       const next = await googleProfileApi.refresh();
       const changed = next?.screen !== view?.screen;
       setView(next);
+      setLinkProblem(null);
       if (changed) {
         addToast("Status updated from GrowthOS.");
         showNewScreen();
@@ -137,13 +146,84 @@ export default function GoogleProfilePage() {
     }
   };
 
+  // "Wait until ..." from a too-soon answer: its own time, the View's, or retry_after_seconds.
+  const waitFrom = (body) => {
+    const at = body.resend_available_at || body.data?.resend_available_at;
+    if (at) return at;
+    const seconds = Number(body.retry_after_seconds || body.data?.retry_after_seconds);
+    return Number.isFinite(seconds) && seconds > 0 ? new Date(Date.now() + seconds * 1000).toISOString() : null;
+  };
+
+  const holdLinkResend = () => setLinkResendAt(new Date(Date.now() + LINK_RESEND_EVERY_MS).toISOString());
+
+  // (1) "Connect my existing GrowthOS account": GrowthOS emails the Owner to approve.
+  const handleLinkExisting = async () => {
+    setBusy("link");
+    setLinkProblem(null);
+    try {
+      const next = await googleProfileApi.linkExisting();
+      setView(next);
+      setOtherEmail(false);
+      setTriedEmail(null);
+      if (next?.screen === "approve") {
+        // GrowthOS has just sent the approval email.
+        holdLinkResend();
+        addToast(`GrowthOS emailed ${next?.link_request?.email || next?.storefront?.email || "you"} to approve.`);
+      } else {
+        addToast("Status updated from GrowthOS.");
+      }
+      showNewScreen();
+    } catch (err) {
+      const code = errorCode(err);
+      const answer = err?.response?.data || {};
+      if (code === "PLAN_MODULE_LOCKED") {
+        setStatus("locked");
+        return;
+      }
+      if (answer.data?.screen) setView(answer.data);
+      setLinkProblem(
+        code === "network" ? NETWORK_MESSAGE : errorMessage(err, "Could not ask GrowthOS. Please try again.")
+      );
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleResendLink = async () => {
+    setBusy("resend");
+    try {
+      const next = await googleProfileApi.resendLink();
+      setView(next);
+      holdLinkResend();
+      addToast(`A new email was sent to ${next?.link_request?.email || next?.storefront?.email || "you"}.`);
+      if (next?.screen !== view?.screen) showNewScreen();
+    } catch (err) {
+      const code = errorCode(err);
+      const body = err?.response?.data || {};
+      if (code === "too_soon" || code === "rate_limited") {
+        if (body.data?.screen) setView(body.data);
+        const at = waitFrom(body);
+        if (at) setLinkResendAt(at);
+        addToast(errorMessage(err, "Please wait a few minutes before sending it again."), "error");
+      } else if (code === "invalid_state") {
+        addToast(errorMessage(err, "Your status has moved on. Showing the latest."), "error");
+        load({ silent: true });
+      } else {
+        actionFailed(err, "Could not send the email. Please try again.");
+      }
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const handleSetup = async (body) => {
     setBusy("setup");
     setProblem(null);
     try {
       const next = await googleProfileApi.setup(body);
       setView(next);
-      setRetrying(false);
+      setOtherEmail(false);
+      setTriedEmail(null);
       addToast(`Sent to GrowthOS. Check ${next?.growthos?.owner_email || next?.storefront?.email || "your email"}.`);
       showNewScreen();
     } catch (err) {
@@ -153,7 +233,9 @@ export default function GoogleProfilePage() {
         setStatus("locked");
       } else if (code === "email_taken" && answer.data?.screen) {
         setView(answer.data);
-        setRetrying(false);
+        setOtherEmail(false);
+        setTriedEmail(body.owner_email || null);
+        setLinkProblem(null);
         showNewScreen();
       } else if (code === "network") {
         setProblem({ message: NETWORK_MESSAGE });
@@ -168,11 +250,17 @@ export default function GoogleProfilePage() {
     }
   };
 
-  const tryAgainFromTaken = () => {
+  // (2) "Use a different email for this business": the setup form, with an email field.
+  const useOtherEmail = () => {
     setProblem(null);
-    setRetrying(true);
-    // Fresh storefront details, in case the email was just changed there.
-    load({ silent: true });
+    setLinkProblem(null);
+    setOtherEmail(true);
+    showNewScreen();
+  };
+
+  const backToChoices = () => {
+    setProblem(null);
+    setOtherEmail(false);
     showNewScreen();
   };
 
@@ -180,7 +268,8 @@ export default function GoogleProfilePage() {
     return <PlanFeatureNotice title={LOCKED_TITLE} description={LOCKED_TEXT} />;
   }
 
-  const screen = retrying && view?.screen === "taken" ? "start" : view?.screen;
+  const askOwnerEmail = otherEmail && view?.screen === "taken";
+  const screen = askOwnerEmail ? "start" : view?.screen;
   const loginUrl = view?.growthos_login_url || GROWTHOS_LOGIN_FALLBACK;
   const known = Object.prototype.hasOwnProperty.call(STEP_FOR_SCREEN, screen || "");
 
@@ -214,11 +303,14 @@ export default function GoogleProfilePage() {
       case "start":
         return (
           <StartScreen
-            key={retrying ? "retry" : "first"}
+            key={askOwnerEmail ? "other-email" : "first"}
             view={view}
             busy={busy === "setup"}
             problem={problem}
             onSubmit={handleSetup}
+            askOwnerEmail={askOwnerEmail}
+            blockedEmails={[view?.storefront?.email, triedEmail].filter(Boolean)}
+            onBack={askOwnerEmail ? backToChoices : undefined}
           />
         );
       case "invited":
@@ -231,8 +323,18 @@ export default function GoogleProfilePage() {
         return <VerifyScreen {...common} />;
       case "live":
         return <LiveScreen {...common} />;
+      case "approve":
+        return <ApproveScreen {...common} resendWait={resendWait} onResend={handleResendLink} />;
       case "taken":
-        return <TakenScreen {...common} onTryAgain={tryAgainFromTaken} />;
+        return (
+          <TakenScreen
+            {...common}
+            takenEmail={triedEmail}
+            problem={linkProblem}
+            onLinkExisting={handleLinkExisting}
+            onUseOtherEmail={useOtherEmail}
+          />
+        );
       default:
         return null;
     }

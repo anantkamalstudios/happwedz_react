@@ -22,8 +22,15 @@ export const errorCode = (error) => {
 export const googleProfileApi = {
   get: () => view(axiosInstance.get(BASE)),
   refresh: () => view(axiosInstance.post(`${BASE}/refresh`)),
+  // body { has_google_profile, opening_time, closing_time, weekly_off, consent: true, owner_email? }.
+  // owner_email (RD-23): a different email for the new GrowthOS account; the login email stays.
   setup: (body) => view(axiosInstance.post(`${BASE}/setup`, body)),
   resend: () => view(axiosInstance.post(`${BASE}/resend`)),
+
+  // RD-23: the login email already has a GrowthOS account. GrowthOS emails its Owner to
+  // approve linking that business to HappyWedz (View screen "approve"), and sends it again.
+  linkExisting: () => view(axiosInstance.post(`${BASE}/link-existing`)),
+  resendLink: () => view(axiosInstance.post(`${BASE}/link-existing/resend`)),
 };
 
 // ── Managing the live profile (RD-21) ───────────────────────────────────────

@@ -792,3 +792,97 @@
     padding: 16px;
   }
 }
+
+/* RD-23: the two choices on the "email already in GrowthOS" screen, and the extra email field. */
+.gp-picks {
+  display: grid;
+  gap: 10px;
+}
+
+.gp-pick {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 14px 16px;
+  border: 1px solid var(--gp-line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--gp-ink);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gp-pick:hover {
+  border-color: var(--gp-pink);
+  background: var(--gp-pink-soft);
+}
+
+.gp-pick:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.gp-pick:disabled:hover {
+  border-color: var(--gp-line);
+  background: #fff;
+}
+
+.gp-pick-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gp-pink-soft);
+  color: var(--gp-pink-deep);
+}
+
+.gp-pick-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.gp-pick-text b {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.gp-pick-text span {
+  color: var(--gp-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.gp-pick-go {
+  color: var(--gp-pink-deep);
+}
+
+.gp-field-help {
+  font-weight: 400;
+}
+
+.gp-field-error {
+  color: var(--gp-bad);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gp-input[aria-invalid="true"] {
+  border-color: var(--gp-bad);
+}
+
+@media (max-width: 560px) {
+  .gp-pick {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .gp-pick-go {
+    display: none;
+  }
+}
