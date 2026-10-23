@@ -1,0 +1,339 @@
+/* Google Profile dashboard — "Improve with AI" tab (GrowthOS plan RD-22, helper D; contract §4.4).
+   Every class starts with gp-i-. Colours come from the --gp-* variables of GoogleProfile.css (WCAG AA there). */
+
+.gp-i-tab {
+  gap: 20px;
+}
+
+.gp-i-error {
+  display: grid;
+  gap: 6px;
+}
+
+/* Top card: score and the AI helper switch */
+.gp-i-top {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.gp-i-score {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.gp-i-score-wait {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gp-muted);
+}
+
+.gp-i-top-helper {
+  min-width: 0;
+}
+
+.gp-i-agent-wait {
+  justify-content: flex-start;
+  padding: 8px 0;
+}
+
+.gp-i-switch-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.gp-i-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 12px 6px 6px;
+  border: 1px solid var(--gp-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--gp-ink);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gp-i-switch:hover {
+  border-color: var(--gp-pink-line);
+}
+
+.gp-i-switch:focus-visible,
+.gp-i-step-toggle:focus-visible {
+  outline: 2px solid var(--gp-pink);
+  outline-offset: 2px;
+}
+
+.gp-i-switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.gp-i-switch-track {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--gp-muted);
+  transition: background-color 0.15s ease;
+}
+
+.gp-i-switch-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.gp-i-switch.is-on .gp-i-switch-track {
+  background: var(--gp-pink-strong);
+}
+
+.gp-i-switch.is-on .gp-i-switch-knob {
+  transform: translateX(18px);
+}
+
+.gp-i-switch-text {
+  min-width: 0;
+}
+
+/* Next steps */
+.gp-i-steps {
+  display: grid;
+  gap: 12px;
+}
+
+.gp-i-step {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 16px 16px;
+  border: 1px solid var(--gp-line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.gp-i-step.is-current {
+  border-color: var(--gp-pink);
+  box-shadow: 0 0 0 1px var(--gp-pink);
+}
+
+.gp-page .gp-i-step-h {
+  margin: 0;
+}
+
+.gp-i-step-toggle {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 0 0;
+  border: 0;
+  background: none;
+  color: var(--gp-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gp-i-step-num {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--gp-pink-line);
+  color: var(--gp-pink-deep);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.gp-i-step.is-done .gp-i-step-num {
+  border-color: var(--gp-ok);
+  background: var(--gp-ok-soft);
+  color: var(--gp-ok);
+}
+
+.gp-i-step.is-current .gp-i-step-num {
+  border-color: var(--gp-pink-strong);
+  background: var(--gp-pink-strong);
+  color: #fff;
+}
+
+.gp-i-step-title {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+.gp-i-step-flags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gp-i-step-chev {
+  flex: none;
+  color: var(--gp-muted);
+  transition: transform 0.15s ease;
+}
+
+.gp-i-step-toggle[aria-expanded="true"] .gp-i-step-chev {
+  transform: rotate(180deg);
+}
+
+.gp-i-step-summary {
+  padding-left: 42px;
+}
+
+.gp-i-step-body {
+  padding-top: 8px;
+  border-top: 1px solid var(--gp-line);
+}
+
+.gp-i-step-body[hidden] {
+  display: none;
+}
+
+/* Tick lists (keywords, services) */
+.gp-page .gp-i-fieldset {
+  min-width: 0;
+  margin: 0;
+}
+
+.gp-i-tick {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.gp-i-tick input {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 3px;
+  accent-color: var(--gp-pink-strong);
+}
+
+.gp-i-tag-paused {
+  background: var(--gp-line);
+  color: var(--gp-ink);
+}
+
+.gp-i-tag-note {
+  margin-left: 4px;
+  font-weight: 400;
+  color: var(--gp-muted);
+}
+
+.gp-i-idea {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--gp-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.gp-i-idea.is-checked {
+  border-color: var(--gp-pink-line);
+}
+
+.gp-i-idea .gp-e-check {
+  align-items: flex-start;
+  overflow-wrap: anywhere;
+}
+
+.gp-i-idea .gp-e-check input {
+  margin-top: 2px;
+}
+
+.gp-page .gp-i-textarea {
+  min-height: 90px;
+}
+
+.gp-i-rows {
+  border: 1px solid var(--gp-line);
+  border-radius: 12px;
+}
+
+.gp-i-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 12px;
+}
+
+.gp-i-row + .gp-i-row {
+  border-top: 1px solid var(--gp-line);
+}
+
+.gp-i-row-title {
+  overflow-wrap: anywhere;
+}
+
+/* Photos */
+.gp-i-photo.is-picked {
+  border-color: var(--gp-pink);
+  box-shadow: 0 0 0 1px var(--gp-pink);
+}
+
+.gp-i-photo-foot {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px 10px;
+}
+
+.gp-page .gp-i-select {
+  width: 100%;
+  min-height: 40px;
+  font-size: 14px;
+}
+
+@media (max-width: 700px) {
+  .gp-i-top {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .gp-i-step {
+    padding: 4px 12px 12px;
+  }
+
+  .gp-i-step-summary {
+    padding-left: 0;
+  }
+
+  .gp-i-photos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gp-i-switch {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gp-i-switch-track,
+  .gp-i-switch-knob,
+  .gp-i-step-chev {
+    transition: none;
+  }
+}

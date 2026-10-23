@@ -98,6 +98,7 @@ export const gpManageApi = {
   setKeywordStatus: (keywordId, status) => view(axiosInstance.patch(`${BASE}/keywords/${enc(keywordId)}`, { status })),
   deleteKeyword: (keywordId) => view(axiosInstance.delete(`${BASE}/keywords/${enc(keywordId)}`)),
   storefront: () => view(axiosInstance.get(`${BASE}/storefront`)),
+  facts: () => view(axiosInstance.get(`${BASE}/facts`)),
   useStorefront: () => view(axiosInstance.post(`${BASE}/storefront/use`)),
   services: () => page(axiosInstance.get(`${BASE}/services`)),
   suggestServices: () => view(axiosInstance.post(`${BASE}/services/suggest`)),

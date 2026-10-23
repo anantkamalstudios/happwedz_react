@@ -4,6 +4,8 @@
 // what needs the vendor (opens the Photos, Reviews or Profile tab), and Check again (runs in the background; the plan
 // refreshes until its checked_at changes). API: gpManageApi.fixes / prepareFixes / approveFix / rejectFix.
 // Shape: GrowthOS fixPlanSchema, isOpenFix and gainOf (growthos-web/src/contracts/ai-commands.ts).
+// RD-22: also shown inside "Improve with AI" (`embedded`): no title, score card or "Needs you" there (the Improve tab
+// shows them), and `onReport({ status, plan, after })` tells it the plan and the score after the selected fixes.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import { FiCheck, FiImage, FiLock, FiStar, FiTool, FiX } from "react-icons/fi";
@@ -166,7 +168,7 @@ function ScoreCard({ plan, picked, after }) {
   );
 }
 
-export default function FixesTab({ onOpenTab }) {
+export default function FixesTab({ onOpenTab, embedded = false, onReport }) {
   const [state, setState] = useState({ status: "loading", plan: null, error: null });
   const [selected, setSelected] = useState(null); // null = every open fix
   const [busy, setBusy] = useState(null); // { id, kind } | { id: "all" }
@@ -195,6 +197,21 @@ export default function FixesTab({ onOpenTab }) {
 
   const plan = state.plan;
   const checkedAt = plan?.checked_at ?? null;
+
+  // Embedded in "Improve with AI": tell it the plan and the score after the selected fixes.
+  useEffect(() => {
+    if (!onReport) return;
+    const p = state.plan;
+    if (state.status !== "ready" || !p?.available) {
+      onReport({ status: state.status, plan: p, after: null });
+      return;
+    }
+    const open = (Array.isArray(p.fixes) ? p.fixes : []).filter(isOpenFix);
+    const chosen = selected ?? open.map((f) => f.action_id);
+    const picked = open.filter((f) => chosen.includes(f.action_id));
+    const max = p.audit?.max_score ?? 100;
+    onReport({ status: "ready", plan: p, after: p.audit ? Math.min(max, p.audit.score + gainOf(p, picked)) : null });
+  }, [onReport, state.status, state.plan, selected]);
   const finished = waiting && checkedAt !== waiting.checked;
   const polling = state.status === "ready" && ((waiting && !finished) || plan?.rechecking) && tries.current < POLL_TRIES;
 
@@ -237,7 +254,7 @@ export default function FixesTab({ onOpenTab }) {
   const header = (
     <div className="gp-e-head">
       <div className="gp-e-stack-sm">
-        <h2 className="gp-h3">Fixes for your Google profile</h2>
+        {!embedded && <h2 className="gp-h3">Fixes for your Google profile</h2>}
         <p className="gp-note">
           {plan?.checked_at ? `Last checked ${formatWhen(plan.checked_at)}.` : plan?.prepared_at ? `Prepared ${formatWhen(plan.prepared_at)}.` : "Not checked yet."}
         </p>
@@ -288,6 +305,7 @@ export default function FixesTab({ onOpenTab }) {
   const doneToday = fixes.filter((f) => f.status === "executed" || f.status === "failed");
   const needsCategory = (plan.checklist || []).some((row) => row.result === "need:primary_category");
   const working = Boolean(busy);
+  const SubHeading = embedded ? "h4" : "h3";
 
   const runOne = async (fix, kind) => {
     setBusy({ id: fix.action_id, kind });
@@ -390,10 +408,10 @@ export default function FixesTab({ onOpenTab }) {
       {status}
       <ErrorNote error={prepareError} />
 
-      <div className="gp-e-fix-layout">
+      <div className={embedded ? "gp-e-stack" : "gp-e-fix-layout"}>
         <div className="gp-e-stack gp-e-grow">
           <div className="gp-e-head">
-            <h3 className="gp-h3">AI can do these for you now</h3>
+            <SubHeading className="gp-h3">AI can do these for you now</SubHeading>
             {open.length > 1 && (
               <button
                 type="button"
@@ -408,9 +426,19 @@ export default function FixesTab({ onOpenTab }) {
           <ErrorNote error={actionError} />
           {open.length === 0 ? (
             plan.level < 2 ? (
-              <EmptyBox icon={FiTool} title="The Growth Agent is off">
-                GrowthOS's Growth Agent prepares these fixes. It is switched off for your profile; it can be switched on in
-                GrowthOS under Autopilot.
+              embedded ? (
+                <EmptyBox icon={FiTool} title="The AI helper is off">
+                  Turn on the AI helper so it can prepare fixes.
+                </EmptyBox>
+              ) : (
+                <EmptyBox icon={FiTool} title="The Growth Agent is off">
+                  GrowthOS's Growth Agent prepares these fixes. It is switched off for your profile; it can be switched on in
+                  GrowthOS under Autopilot.
+                </EmptyBox>
+              )
+            ) : embedded && (!plan.checked_at || plan.rechecking || waiting) ? (
+              <EmptyBox icon={FiTool} title="The AI helper is checking your profile…">
+                Fixes it prepares show up here, and each one waits for your Apply.
               </EmptyBox>
             ) : (
               <EmptyBox icon={FiCheck} title="No fixes waiting">
@@ -435,7 +463,18 @@ export default function FixesTab({ onOpenTab }) {
             </ul>
           )}
 
-          {needs.length > 0 && (
+          {embedded && open.length > 0 && (
+            <button type="button" className="gp-btn gp-btn-primary gp-e-wide" disabled={working || picked.length === 0} onClick={applySelected} aria-busy={busy?.id === "all" || undefined}>
+              {busy?.id === "all" ? <Spinner animation="border" size="sm" aria-hidden="true" /> : <FiCheck size={18} aria-hidden="true" />}
+              {busy?.id === "all"
+                ? "Sending to Google…"
+                : picked.length === 0
+                  ? "Select at least one fix"
+                  : `Apply ${picked.length} selected ${picked.length === 1 ? "fix" : "fixes"}`}
+            </button>
+          )}
+
+          {!embedded && needs.length > 0 && (
             <>
               <h3 className="gp-h3">Needs you</h3>
               <ul className="gp-e-plain gp-e-needs">
@@ -474,24 +513,32 @@ export default function FixesTab({ onOpenTab }) {
           )}
         </div>
 
-        <div className="gp-e-stack gp-e-fix-side">
-          <ScoreCard plan={plan} picked={picked} after={after} />
-          {open.length > 0 && (
-            <button type="button" className="gp-btn gp-btn-primary gp-e-wide" disabled={working || picked.length === 0} onClick={applySelected} aria-busy={busy?.id === "all" || undefined}>
-              {busy?.id === "all" ? <Spinner animation="border" size="sm" aria-hidden="true" /> : <FiCheck size={18} aria-hidden="true" />}
-              {busy?.id === "all"
-                ? "Sending to Google…"
-                : picked.length === 0
-                  ? "Select at least one fix"
-                  : `Apply ${picked.length} selected ${picked.length === 1 ? "fix" : "fixes"}`}
-            </button>
-          )}
-          <p className="gp-note gp-e-inline">
-            <FiLock size={14} aria-hidden="true" /> AI never changes your name, address, main category or phone. Google checks every
-            change before showing it.
-          </p>
-        </div>
+        {!embedded && (
+          <div className="gp-e-stack gp-e-fix-side">
+            <ScoreCard plan={plan} picked={picked} after={after} />
+            {open.length > 0 && (
+              <button type="button" className="gp-btn gp-btn-primary gp-e-wide" disabled={working || picked.length === 0} onClick={applySelected} aria-busy={busy?.id === "all" || undefined}>
+                {busy?.id === "all" ? <Spinner animation="border" size="sm" aria-hidden="true" /> : <FiCheck size={18} aria-hidden="true" />}
+                {busy?.id === "all"
+                  ? "Sending to Google…"
+                  : picked.length === 0
+                    ? "Select at least one fix"
+                    : `Apply ${picked.length} selected ${picked.length === 1 ? "fix" : "fixes"}`}
+              </button>
+            )}
+            <p className="gp-note gp-e-inline">
+              <FiLock size={14} aria-hidden="true" /> AI never changes your name, address, main category or phone. Google checks every
+              change before showing it.
+            </p>
+          </div>
+        )}
       </div>
+      {embedded && (
+        <p className="gp-note gp-e-inline">
+          <FiLock size={14} aria-hidden="true" /> AI never changes your name, address, main category or phone. Google checks every
+          change before showing it.
+        </p>
+      )}
     </div>
   );
 }
