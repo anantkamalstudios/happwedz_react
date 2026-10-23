@@ -7,7 +7,7 @@ import { Spinner } from "react-bootstrap";
 import { FiArrowUpRight, FiUploadCloud } from "react-icons/fi";
 import { gpManageApi } from "../../../../../services/api/googleProfileApi";
 import { Callout, FixLink, RefreshButton } from "../GpParts";
-import { STOREFRONT_PATH } from "../gpFormat";
+import { storefrontSection } from "../gpFormat";
 import { TabLoading } from "./ProfileShared";
 import { ImproveError } from "./ImproveParts";
 
@@ -41,7 +41,7 @@ export default function ImproveStorefront({ storefront, facts, onUsed }) {
           Your storefront has no About us text or FAQs yet. Add them to your storefront first, then come back here.
         </Callout>
         <div className="gp-btns">
-          <FixLink to={STOREFRONT_PATH} className="gp-btn gp-btn-ghost">
+          <FixLink to={storefrontSection("vendor-basic")} className="gp-btn gp-btn-ghost">
             Open my storefront
             <FiArrowUpRight size={18} aria-hidden="true" />
           </FixLink>
@@ -91,7 +91,7 @@ export default function ImproveStorefront({ storefront, facts, onUsed }) {
           {busy ? <Spinner animation="border" size="sm" aria-hidden="true" /> : <FiUploadCloud size={18} aria-hidden="true" />}
           {busy ? "Sending…" : used ? "Update from my storefront" : "Use my storefront"}
         </button>
-        <FixLink to={STOREFRONT_PATH} className="gp-link">
+        <FixLink to={storefrontSection("vendor-basic")} className="gp-link">
           Edit my storefront
         </FixLink>
       </div>

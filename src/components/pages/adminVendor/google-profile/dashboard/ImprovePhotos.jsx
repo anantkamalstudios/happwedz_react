@@ -8,7 +8,7 @@ import { Spinner } from "react-bootstrap";
 import { FiArrowUpRight, FiCheck, FiSend, FiX } from "react-icons/fi";
 import { gpManageApi } from "../../../../../services/api/googleProfileApi";
 import { Callout, FixLink, RefreshButton } from "../GpParts";
-import { STOREFRONT_PATH } from "../gpFormat";
+import { storefrontSection } from "../gpFormat";
 import { AuthImage, TabLoading } from "./ProfileShared";
 import { ImproveError } from "./ImproveParts";
 import { DEFAULT_PHOTO_CATEGORY, PHOTOS_MAX, PHOTO_CATEGORIES } from "./ImproveUtils";
@@ -93,7 +93,7 @@ export default function ImprovePhotos({ storefront, onSent }) {
       <div className="gp-e-stack-sm">
         <Callout tone="warn">Your storefront has no photos yet. Add real photos of your work to your storefront, then come back here.</Callout>
         <div className="gp-btns">
-          <FixLink to={STOREFRONT_PATH} className="gp-btn gp-btn-ghost">
+          <FixLink to={storefrontSection("photos")} className="gp-btn gp-btn-ghost">
             Open my storefront
             <FiArrowUpRight size={18} aria-hidden="true" />
           </FixLink>

@@ -4,7 +4,7 @@
 // ChooseLocation (growthos-web/src/features/integrations/google-card.tsx).
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import { FiArrowUpRight, FiCheck, FiMapPin, FiPlus, FiRefreshCw, FiUserPlus } from "react-icons/fi";
+import { FiArrowUpRight, FiCheck, FiLogOut, FiMapPin, FiPlus, FiRefreshCw, FiUserPlus } from "react-icons/fi";
 import googleProfileApi, { errorCode, errorMessage } from "../../../../services/api/googleProfileApi";
 import { AsideCard, Callout } from "./GpParts";
 import { GOOGLE_BUSINESS_URL } from "./gpFormat";
@@ -78,6 +78,9 @@ export default function SetupPick({ connecting, connectProblem, onConnect, onDon
   const [location, setLocation] = useState("");
   const [picking, setPicking] = useState(false);
   const [pickError, setPickError] = useState(null);
+  // "Disconnect Google": removes GrowthOS's access to this Google account so the vendor can connect again (e.g. after
+  // pressing Continue on Google without ticking the Business Profile permission).
+  const [unlink, setUnlink] = useState({ confirm: false, busy: false, error: null });
   const request = useRef(0);
 
   const loadAccounts = useCallback(async () => {
@@ -156,10 +159,49 @@ export default function SetupPick({ connecting, connectProblem, onConnect, onDon
     );
   }
 
+  const disconnect = async () => {
+    setUnlink({ confirm: true, busy: true, error: null });
+    try {
+      await googleProfileApi.disconnectGoogle();
+      setUnlink({ confirm: false, busy: false, error: null });
+      onDone("Google disconnected. Press Connect Google to connect again.");
+    } catch (error) {
+      setUnlink({ confirm: true, busy: false, error });
+    }
+  };
+
   const otherAccount = (
-    <ConnectAgainButton busy={connecting} onClick={onConnect}>
-      Use a different Google account
-    </ConnectAgainButton>
+    <>
+      <ConnectAgainButton busy={connecting} onClick={onConnect}>
+        Use a different Google account
+      </ConnectAgainButton>
+      {!unlink.confirm ? (
+        <button type="button" className="gp-btn gp-btn-ghost" onClick={() => setUnlink({ confirm: true, busy: false, error: null })}>
+          <FiLogOut size={18} aria-hidden="true" />
+          Disconnect Google
+        </button>
+      ) : (
+        <div className="gp-stack-sm" role="group" aria-label="Disconnect Google">
+          <p className="gp-note">
+            Disconnect this Google account from HappyWedz? Nothing on Google changes. You can connect again straight away.
+          </p>
+          {unlink.error && (
+            <Callout tone="bad" role="alert">
+              {errorMessage(unlink.error, "Google could not be disconnected. Please try again.")}
+            </Callout>
+          )}
+          <div className="gp-btns">
+            <button type="button" className="gp-btn gp-btn-primary" onClick={disconnect} disabled={unlink.busy} aria-busy={unlink.busy || undefined}>
+              {unlink.busy && <Spinner animation="border" size="sm" aria-hidden="true" />}
+              Yes, disconnect
+            </button>
+            <button type="button" className="gp-btn gp-btn-ghost" onClick={() => setUnlink({ confirm: false, busy: false, error: null })} disabled={unlink.busy}>
+              Not now
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 
   const renderLocations = () => {

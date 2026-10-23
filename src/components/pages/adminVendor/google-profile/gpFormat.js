@@ -2,6 +2,8 @@
 // those export components only.
 
 export const STOREFRONT_PATH = "/vendor-dashboard/vendor-store-front";
+/** The Storefront opened on one section (Storefront reads ?section=): "vendor-basic" (About us), "faq", "photos"… */
+export const storefrontSection = (section) => `${STOREFRONT_PATH}?section=${encodeURIComponent(section)}`;
 // The login email (sent to GrowthOS as the owner email) is changed in Settings, not in the Storefront.
 export const SETTINGS_PATH = "/vendor-dashboard/vendor-setting";
 export const GROWTHOS_PRIVACY_URL = "https://gmb.aslai.cloud/legal/privacy";
