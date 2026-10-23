@@ -4,6 +4,8 @@
 // Google that look the same (Google asks not to create duplicates). "Create my Google profile" creates it in the
 // vendor's own Google account; Google then asks to verify it. Same rules as GrowthOS's own CreateForm
 // (growthos-web/src/features/integrations/google-create.tsx, contracts/google.ts profileFormSchema).
+// RD-24 follow-up: when Google needs the map location first (prefill map_pin false, or a create refused with
+// pin_drop_required) the "Map location" box (SetupPin) comes before Create; Create waits until it is saved.
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import { FiAlertTriangle, FiArrowLeft, FiArrowUpRight, FiCheck, FiPlus, FiRefreshCw, FiSearch } from "react-icons/fi";
@@ -12,9 +14,13 @@ import { AsideCard, Callout } from "./GpParts";
 import { PROFILE_LIMITS, checkProfileForm, profileBody, profileFormFrom, serverFieldErrors } from "./gpFormat";
 import SetupCategory from "./SetupCategory";
 import SetupHours from "./SetupHours";
+import SetupPin from "./SetupPin";
 
 const NETWORK_MESSAGE = "Could not reach HappyWedz. Check your internet connection and try again.";
 const messageOf = (error, fallback) => (errorCode(error) === "network" ? NETWORK_MESSAGE : errorMessage(error, fallback));
+/** Google refused the create because it could not place the address on the map. */
+const isPinDropRequired = (error) =>
+  errorCode(error) === "google_rejected" && error?.response?.data?.details?.reason === "pin_drop_required";
 
 // The order fields are checked and focused in.
 const FIELD_ORDER = [
@@ -150,6 +156,7 @@ function CheckResult({ result, busy, onCreate, onClose }) {
 export default function SetupCreate({ headRef, accounts, account, onBack, onCreated }) {
   const ids = useId();
   const confirmRef = useRef(null);
+  const pinRef = useRef(null);
   const [locationId, setLocationId] = useState(null);
   const [prefill, setPrefill] = useState({ status: "loading", data: null, error: null });
   const [values, setValues] = useState(null);
@@ -161,6 +168,8 @@ export default function SetupCreate({ headRef, accounts, account, onBack, onCrea
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(null); // null | "check" | "create" | "continue"
   const [created, setCreated] = useState(false);
+  const [pinRejected, setPinRejected] = useState(false); // the last create came back with pin_drop_required
+  const [pinSaved, setPinSaved] = useState(false); // the map location was saved here
   const request = useRef(0);
 
   const loadPrefill = useCallback(
@@ -178,6 +187,8 @@ export default function SetupCreate({ headRef, accounts, account, onBack, onCrea
         setServerErrors({});
         setCheck(null);
         setConfirm(false);
+        setPinRejected(false);
+        setPinSaved(false);
       } catch (error) {
         if (mine === request.current) setPrefill({ status: "error", data: null, error });
       }
@@ -192,6 +203,21 @@ export default function SetupCreate({ headRef, accounts, account, onBack, onCrea
   useEffect(() => {
     if (confirm) requestAnimationFrame(() => confirmRef.current?.focus());
   }, [confirm]);
+
+  // The map location was saved: read the prefill again for map_pin, keeping what the vendor typed.
+  const pinDone = useCallback(async () => {
+    setPinSaved(true);
+    setPinRejected(false);
+    setProblem(null);
+    const mine = request.current;
+    try {
+      const fresh = await googleProfileApi.prefill(locationId);
+      if (mine !== request.current || !fresh || !fresh.form) return;
+      setPrefill((current) => ({ ...current, data: { ...current.data, ...fresh, map_pin: true } }));
+    } catch {
+      // GrowthOS already said the location is saved; the form keeps its details.
+    }
+  }, [locationId]);
 
   const heading = (
     <div className="gp-setup-head">
@@ -289,6 +315,8 @@ export default function SetupCreate({ headRef, accounts, account, onBack, onCrea
   const bodyKey = JSON.stringify(body);
   const currentCheck = check && check.key === bodyKey ? check : null;
   const working = Boolean(busy);
+  // Google needs the map location before Create (until it is saved here).
+  const pinNeeded = pinRejected || (data.map_pin === false && !pinSaved);
 
   // A field's message: the server's for that field, else the form's own once touched or after a press.
   const errorOf = (field) => serverErrors[field] || ((tried || touched[field]) && clientErrors[field]) || "";
@@ -329,6 +357,18 @@ export default function SetupCreate({ headRef, accounts, account, onBack, onCrea
   };
 
   const failed = (error, fallback) => {
+    if (isPinDropRequired(error)) {
+      // The Map location box says what to do; GrowthOS's own message points at GrowthOS screens.
+      setServerErrors({});
+      setProblem(null);
+      setPinSaved(false);
+      setPinRejected(true);
+      requestAnimationFrame(() => {
+        pinRef.current?.focus();
+        pinRef.current?.scrollIntoView?.({ block: "center" });
+      });
+      return;
+    }
     const fields = serverFieldErrors(error);
     setServerErrors(fields);
     setProblem({ message: messageOf(error, fallback) });
@@ -368,6 +408,10 @@ export default function SetupCreate({ headRef, accounts, account, onBack, onCrea
 
   // "Create my Google profile": check first (unless these exact details were checked), then ask to confirm.
   const pressCreate = async () => {
+    if (pinNeeded) {
+      requestAnimationFrame(() => pinRef.current?.focus());
+      return;
+    }
     if (!ready() || working) return;
     if (!currentCheck) {
       const result = await runCheck();
@@ -409,13 +453,6 @@ export default function SetupCreate({ headRef, accounts, account, onBack, onCrea
         <p className="gp-lead">
           We filled this in from your HappyWedz details. Check every value: it appears on Google Search and Maps.
         </p>
-
-        {data.map_pin === false && (
-          <Callout tone="alert" role="note">
-            This address has no map pin. Google needs one when it can't find the address on the map by itself. If
-            creating fails, check the street address, city and PIN code.
-          </Callout>
-        )}
 
         <div className="gp-setup-grid">
           {accounts.length > 1 && (
@@ -605,6 +642,23 @@ export default function SetupCreate({ headRef, accounts, account, onBack, onCrea
           </div>
         </div>
 
+        {pinNeeded ? (
+          <SetupPin
+            idBase={ids}
+            storefrontPin={data.storefront_pin === true}
+            rejected={pinRejected}
+            disabled={working}
+            onSaved={pinDone}
+            headingRef={pinRef}
+          />
+        ) : (
+          pinSaved && (
+            <Callout tone="ok" role="status">
+              Map location saved. You can create your profile now.
+            </Callout>
+          )
+        )}
+
         {problem && (
           <Callout tone="bad" role="alert">
             {problem.message}
@@ -660,10 +714,21 @@ export default function SetupCreate({ headRef, accounts, account, onBack, onCrea
               )}
               Check
             </button>
-            <button type="submit" className="gp-btn gp-btn-primary" disabled={working}>
+            <button
+              type="submit"
+              className="gp-btn gp-btn-primary"
+              disabled={working || pinNeeded}
+              aria-describedby={pinNeeded ? `${ids}-pin-first` : undefined}
+            >
               <FiPlus size={18} aria-hidden="true" />
               Create my Google profile
             </button>
+            {pinNeeded && (
+              <span id={`${ids}-pin-first`} className="gp-note gp-setup-inline">
+                <FiAlertTriangle size={16} aria-hidden="true" />
+                Save the map location first.
+              </span>
+            )}
             {tried && Object.keys(clientErrors).length > 0 && !working && (
               <span className="gp-note gp-setup-inline">
                 <FiAlertTriangle size={16} aria-hidden="true" />

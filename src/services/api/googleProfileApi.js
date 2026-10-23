@@ -47,8 +47,9 @@ export const googleProfileApi = {
   locations: (account) => view(axiosInstance.get(`${BASE}/google/locations`, { params: { account } })),
   // Use an existing profile: { account_name, location_name }.
   pickLocation: (body) => view(axiosInstance.post(`${BASE}/google/location`, body)),
-  // { locations: [{ id, name }], map_pin, form: { location_id, title, category_query, category, region_code,
-  //   address_lines, locality, administrative_area, postal_code, phone, website, description, hours } }
+  // { locations: [{ id, name }], map_pin, storefront_pin, form: { location_id, title, category_query, category,
+  //   region_code, address_lines, locality, administrative_area, postal_code, phone, website, description, hours } }
+  // storefront_pin (HappyWedz): the storefront has a map location, so "Use my storefront map pin" can be offered.
   prefill: (locationId) =>
     view(axiosInstance.get(`${BASE}/google/create/prefill`, { params: locationId ? { location_id: locationId } : {} })),
   // [{ name: "categories/…", display_name }]
@@ -57,6 +58,9 @@ export const googleProfileApi = {
   // { data: [{ title, address, request_access_uri }], meta: { checked, reason } }
   checkProfile: (body) => page(axiosInstance.post(`${BASE}/google/create/check`, body, SLOW)),
   createProfile: (body) => view(axiosInstance.post(`${BASE}/google/create`, body, SLOW)),
+  // The map location Google may need first (RD-24 follow-up): { maps_url } or {} (the storefront's own)
+  // -> { latitude, longitude }. Reading a link can take a while.
+  savePin: (body = {}) => view(axiosInstance.put(`${BASE}/google/create/pin`, body, SLOW)),
   // { state, method, awaiting_code, options: [{ method, phone, address, email }] }
   verification: () => view(axiosInstance.get(`${BASE}/google/verification`)),
   startVerification: (method) => view(axiosInstance.post(`${BASE}/google/verification`, { method }, SLOW)),

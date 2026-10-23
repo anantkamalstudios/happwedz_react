@@ -1120,6 +1120,37 @@
   letter-spacing: 0.12em;
 }
 
+/* The map location Google may need before a create (SetupPin.jsx) */
+.gp-setup-map {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--gp-pink-line);
+  border-radius: 12px;
+  background: var(--gp-pink-soft);
+}
+
+.gp-setup-map .gp-h3 {
+  margin: 0;
+}
+
+.gp-setup-map .gp-h3 svg {
+  flex: none;
+  color: var(--gp-pink-strong);
+}
+
+.gp-setup-map .gp-h3:focus {
+  outline: none;
+}
+
+.gp-setup-map .gp-h3:focus-visible {
+  outline: 2px solid var(--gp-pink);
+}
+
+.gp-setup-map .gp-field {
+  min-width: 0;
+}
+
 .gp-setup-foot {
   padding-top: 4px;
   border-top: 1px solid var(--gp-line);
@@ -1134,7 +1165,8 @@
     flex: 1 1 100%;
   }
 
-  .gp-setup-empty {
+  .gp-setup-empty,
+  .gp-setup-map {
     padding: 14px;
   }
 }
