@@ -170,7 +170,7 @@ export default function StartScreen({ view, busy, problem, onSubmit, askOwnerEma
                   ? null
                   : askOwnerEmail
                     ? "Your HappyWedz login. It does not change."
-                    : "GrowthOS sends the set-password link here"
+                    : "Your GrowthOS account uses this email"
               }
             />
             <Fact label="Mobile" value={storefront.mobile} />
