@@ -5,6 +5,7 @@ import googleProfileApi, { errorCode, errorMessage } from "../../../services/api
 import { useToast } from "../../layouts/toasts/Toast";
 import PlanFeatureNotice from "./PlanFeatureNotice";
 import StartScreen from "./google-profile/StartScreen";
+import SetupPick from "./google-profile/SetupPick";
 import {
   ApproveScreen,
   ConnectScreen,
@@ -15,12 +16,22 @@ import {
   VerifyScreen,
 } from "./google-profile/StatusScreens";
 import { StepStrip } from "./google-profile/GpParts";
-import { GROWTHOS_LOGIN_FALLBACK, STEP_FOR_SCREEN, formatWhen, msUntil } from "./google-profile/gpFormat";
+import {
+  GROWTHOS_LOGIN_FALLBACK,
+  STEP_FOR_SCREEN,
+  clearGoogleReturn,
+  connectErrorText,
+  formatWhen,
+  msUntil,
+  readGoogleReturn,
+} from "./google-profile/gpFormat";
 import "./google-profile/GoogleProfile.css";
 
 // The vendor's Google Business Profile, set up through GrowthOS AI (a HappyWedz partner).
-// The HappyWedz server talks to GrowthOS and tells this page which screen to show; the
-// Google steps themselves happen in GrowthOS, which these screens link out to.
+// The HappyWedz server talks to GrowthOS and tells this page which screen to show.
+// RD-24 (GrowthOS docs/partner-api-gbp-contract.md §6.5): Google is connected from here
+// (Google sends the vendor back with ?google=connected or ?google_error=…), and the profile
+// is picked or created and verified here, without a visit to GrowthOS.
 
 const NETWORK_MESSAGE = "Could not reach HappyWedz. Check your internet connection and try again.";
 const LOCKED_TITLE = "Google Profile";
@@ -36,7 +47,7 @@ export default function GoogleProfilePage() {
   const [status, setStatus] = useState("loading"); // loading | failed | locked | ready
   const [loadError, setLoadError] = useState({ network: false, message: "" });
   const [view, setView] = useState(null);
-  const [busy, setBusy] = useState(null); // null | "refresh" | "resend" | "setup" | "link"
+  const [busy, setBusy] = useState(null); // null | "refresh" | "resend" | "setup" | "link" | "connect"
   const [problem, setProblem] = useState(null); // why the last "Set up" failed
   // RD-23, on the email-taken screen: "Use a different email" opens the setup form with an email field.
   const [otherEmail, setOtherEmail] = useState(false);
@@ -45,6 +56,12 @@ export default function GoogleProfilePage() {
   // The approval email may be sent again once every 5 minutes; kept here when the View has no time.
   const [linkResendAt, setLinkResendAt] = useState(null);
   const [, setTick] = useState(0);
+  // RD-24: what Google's return left in the address bar, read once when the page opens.
+  const [googleReturn] = useState(readGoogleReturn);
+  const [connectProblem, setConnectProblem] = useState(() =>
+    googleReturn.error ? connectErrorText(googleReturn.error) : null
+  );
+  const opened = useRef(false);
 
   // Move the reader to the top of the new screen after a button changed it.
   const showNewScreen = () => {
@@ -52,19 +69,23 @@ export default function GoogleProfilePage() {
     requestAnimationFrame(() => headingRef.current?.focus());
   };
 
-  const load = useCallback(async ({ silent = false } = {}) => {
+  // `force`: read GrowthOS now (after Google sent the vendor back), falling back to the stored View.
+  const load = useCallback(async ({ silent = false, force = false } = {}) => {
     if (!silent) setStatus("loading");
     try {
-      const data = await googleProfileApi.get();
+      const data = force
+        ? await googleProfileApi.refresh().catch(() => googleProfileApi.get())
+        : await googleProfileApi.get();
       setView(data);
       setStatus(data ? "ready" : "failed");
+      return data;
     } catch (err) {
       const code = errorCode(err);
       if (code === "PLAN_MODULE_LOCKED") {
         setStatus("locked");
-        return;
+        return null;
       }
-      if (silent) return;
+      if (silent) return null;
       setLoadError({
         network: code === "network",
         message:
@@ -73,12 +94,32 @@ export default function GoogleProfilePage() {
             : errorMessage(err, "Something went wrong. Please try again."),
       });
       setStatus("failed");
+      return null;
     }
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    // Once, also under StrictMode: take Google's answer out of the address bar and read the status.
+    if (opened.current) return;
+    opened.current = true;
+    clearGoogleReturn();
+    if (!googleReturn.connected) {
+      load();
+      return;
+    }
+    load({ force: true }).then((data) => {
+      if (data) addToast("Google connected");
+    });
+  }, [load, googleReturn, addToast]);
+
+  // Back from Google with the browser's Back button: the page may come back from the cache with the button busy.
+  useEffect(() => {
+    const onShow = (event) => {
+      if (event.persisted) setBusy((current) => (current === "connect" ? null : current));
+    };
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
 
   // Re-draw when the resend wait is over, so the button turns back on by itself.
   const resendAt = view?.resend_available_at || (view?.screen === "approve" ? linkResendAt : null);
@@ -115,6 +156,47 @@ export default function GoogleProfilePage() {
       }
     } catch (err) {
       actionFailed(err, "Could not check your status. Please try again.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  // RD-24 "Connect Google": HappyWedz asks GrowthOS for a one-time link, then the browser goes to Google.
+  const handleConnect = async () => {
+    setBusy("connect");
+    setConnectProblem(null);
+    try {
+      const url = await googleProfileApi.connectUrl();
+      if (!url) throw new Error("no connect link");
+      window.location.assign(url);
+      // The page is leaving for Google; the button stays busy until then.
+    } catch (err) {
+      setBusy(null);
+      const code = errorCode(err);
+      if (code === "PLAN_MODULE_LOCKED") {
+        setStatus("locked");
+        return;
+      }
+      setConnectProblem(
+        code === "network" ? NETWORK_MESSAGE : errorMessage(err, "Google could not be connected. Please try again.")
+      );
+    }
+  };
+
+  // RD-24: a profile was picked, created or verified. Read the status again; resolves true when the screen moved on.
+  const afterGoogleStep = async (message) => {
+    setBusy("refresh");
+    try {
+      const next = await googleProfileApi.refresh();
+      const changed = next?.screen !== view?.screen;
+      setView(next);
+      setConnectProblem(null);
+      if (message) addToast(message);
+      if (changed) showNewScreen();
+      return changed;
+    } catch (err) {
+      actionFailed(err, "Could not check your status. Please try again.");
+      return false;
     } finally {
       setBusy(null);
     }
@@ -318,9 +400,18 @@ export default function GoogleProfilePage() {
       case "expired":
         return <ExpiredScreen {...common} resendWait={resendWait} onResend={handleResend} />;
       case "connect":
-        return <ConnectScreen {...common} />;
+        return <ConnectScreen {...common} connectProblem={connectProblem} onConnect={handleConnect} />;
+      case "pick":
+        return (
+          <SetupPick
+            connecting={busy === "connect"}
+            connectProblem={connectProblem}
+            onConnect={handleConnect}
+            onDone={afterGoogleStep}
+          />
+        );
       case "verify":
-        return <VerifyScreen {...common} />;
+        return <VerifyScreen {...common} onVerified={afterGoogleStep} />;
       case "live":
         return <LiveScreen {...common} />;
       case "approve":

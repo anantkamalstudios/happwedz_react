@@ -31,6 +31,36 @@ export const googleProfileApi = {
   // approve linking that business to HappyWedz (View screen "approve"), and sends it again.
   linkExisting: () => view(axiosInstance.post(`${BASE}/link-existing`)),
   resendLink: () => view(axiosInstance.post(`${BASE}/link-existing/resend`)),
+
+  // ── RD-24: connect Google, pick or create the profile, and verify it, all here ──
+  // Contract: GrowthOS/docs/partner-api-gbp-contract.md §6.4. Shapes are GrowthOS's own
+  // (growthos-web/src/contracts/google.ts and onboarding.ts).
+
+  // The one-time GrowthOS link that starts Google's sign-in; Google sends the vendor back
+  // to this page with ?google=connected or ?google_error=<code>.
+  connectUrl: () => view(axiosInstance.get(`${BASE}/google/connect-url`)).then((data) => data?.url || null),
+  connection: () => view(axiosInstance.get(`${BASE}/google/connection`)),
+  disconnectGoogle: () => axiosInstance.delete(`${BASE}/google/connection`).then(() => null),
+  // [{ name: "accounts/…", accountName, type }]
+  accounts: () => view(axiosInstance.get(`${BASE}/google/accounts`)),
+  // [{ name: "locations/…", title, address, phone, website, category }]
+  locations: (account) => view(axiosInstance.get(`${BASE}/google/locations`, { params: { account } })),
+  // Use an existing profile: { account_name, location_name }.
+  pickLocation: (body) => view(axiosInstance.post(`${BASE}/google/location`, body)),
+  // { locations: [{ id, name }], map_pin, form: { location_id, title, category_query, category, region_code,
+  //   address_lines, locality, administrative_area, postal_code, phone, website, description, hours } }
+  prefill: (locationId) =>
+    view(axiosInstance.get(`${BASE}/google/create/prefill`, { params: locationId ? { location_id: locationId } : {} })),
+  // [{ name: "categories/…", display_name }]
+  createCategories: (q, region) =>
+    view(axiosInstance.get(`${BASE}/google/create/categories`, { params: { q, ...(region ? { region } : {}) } })),
+  // { data: [{ title, address, request_access_uri }], meta: { checked, reason } }
+  checkProfile: (body) => page(axiosInstance.post(`${BASE}/google/create/check`, body, SLOW)),
+  createProfile: (body) => view(axiosInstance.post(`${BASE}/google/create`, body, SLOW)),
+  // { state, method, awaiting_code, options: [{ method, phone, address, email }] }
+  verification: () => view(axiosInstance.get(`${BASE}/google/verification`)),
+  startVerification: (method) => view(axiosInstance.post(`${BASE}/google/verification`, { method }, SLOW)),
+  completeVerification: (pin) => view(axiosInstance.post(`${BASE}/google/verification/complete`, { pin }, SLOW)),
 };
 
 // ── Managing the live profile (RD-21) ───────────────────────────────────────

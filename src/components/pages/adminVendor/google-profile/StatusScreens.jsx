@@ -1,12 +1,15 @@
 import React, { useId } from "react";
 import { Spinner } from "react-bootstrap";
-import { FiArrowRight, FiAtSign, FiLink, FiMail } from "react-icons/fi";
+import { FaGoogle } from "react-icons/fa";
+import { FiArrowRight, FiAtSign, FiLink, FiMail, FiShield } from "react-icons/fi";
 import { AsideCard, Callout, GrowthosLink, ProfileHead, RefreshButton } from "./GpParts";
 import { formatClock, formatWhen, msUntil } from "./gpFormat";
 import Dashboard from "./dashboard/Dashboard";
+import SetupVerify from "./SetupVerify";
 
 // Screens 2 to 5, the "email already in GrowthOS" choices and the Owner's approval
 // (RD-23). Each one is told the view, the GrowthOS address, and what to do on its buttons.
+// RD-24 (docs/partner-api-gbp-contract.md §6.5): Connect Google and the verification happen here.
 
 const ownerEmail = (view) => view?.growthos?.owner_email || view?.storefront?.email || "your email";
 const businessName = (view) =>
@@ -94,54 +97,92 @@ export function ExpiredScreen({ view, busy, resendWait, onResend }) {
   );
 }
 
+// RD-24: Google is connected from here (GrowthOS AI is HappyWedz's Google partner), and the profile is picked or
+// created and verified here too, so these screens no longer send the vendor to GrowthOS.
 const CONNECT_WORDS = {
   yes: {
     lead:
-      "You told us you already have a Google Business Profile. In GrowthOS, sign in with the Google account that owns it and pick it. Nothing new is created.",
+      "You told us you already have a Google Business Profile. Connect the Google account that owns it, then pick it here. Nothing new is created.",
     asideTitle: "Picking your profile",
     aside:
-      "After signing in with Google, GrowthOS lists the profiles in that account. Pick yours and nothing new is created.",
+      "After you connect Google, we list the profiles in that Google account. Pick yours and nothing new is created.",
   },
   no: {
     lead:
-      "You told us you don't have a Google Business Profile yet. In GrowthOS, sign in with Google. GrowthOS fills in a new profile from your HappyWedz details. You check it, and it's created in your own Google account.",
+      "You told us you don't have a Google Business Profile yet. Connect the Google account you want to own it. We fill in a new profile from your HappyWedz details. You check it, and it's created in your own Google account.",
     asideTitle: "Already have a profile?",
     aside:
-      "No problem. After signing in with Google, GrowthOS lists the profiles in that account. Pick yours and nothing new is created.",
+      "No problem. After you connect Google, we list the profiles in that Google account. Pick yours and nothing new is created.",
   },
   unsure: {
     lead:
-      "You weren't sure if you have a Google Business Profile. In GrowthOS, sign in with Google. GrowthOS checks Google for a matching profile before creating a new one, and anything new is created in your own Google account.",
+      "You weren't sure if you have a Google Business Profile. Connect your Google account. We list the profiles in it, and check Google for a matching profile before creating a new one in your own Google account.",
     asideTitle: "Already have a profile?",
     aside:
-      "No problem. After signing in with Google, GrowthOS lists the profiles in that account. Pick yours and nothing new is created.",
+      "No problem. After you connect Google, we list the profiles in that Google account. Pick yours and nothing new is created.",
   },
 };
 
-export function ConnectScreen({ view, loginUrl, busy, onRefresh }) {
+/** "Connect Google": gets the one-time link from HappyWedz, then the browser goes to Google. */
+function ConnectButton({ busy, onConnect, describedBy, primary = true, children = "Connect Google" }) {
+  return (
+    <button
+      type="button"
+      className={`gp-btn ${primary ? "gp-btn-primary" : "gp-btn-ghost"}`}
+      onClick={onConnect}
+      disabled={busy}
+      aria-busy={busy || undefined}
+      aria-describedby={describedBy}
+    >
+      {busy ? <Spinner animation="border" size="sm" aria-hidden="true" /> : <FaGoogle size={17} aria-hidden="true" />}
+      {children}
+    </button>
+  );
+}
+
+export function ConnectScreen({ view, busy, connectProblem, onConnect, onRefresh }) {
+  const ids = useId();
   const words = CONNECT_WORDS[view?.answer?.has_google_profile] || CONNECT_WORDS.no;
   return (
     <section className="gp-grid2">
       <div className="gp-card gp-card-tint">
-        <Callout tone="ok">Your GrowthOS account is ready.</Callout>
+        {connectProblem ? (
+          <Callout tone="bad" role="alert">
+            {connectProblem}
+          </Callout>
+        ) : (
+          <Callout tone="ok">Your details were sent to GrowthOS.</Callout>
+        )}
         <h2 className="gp-h2">Connect your Google account</h2>
         <p className="gp-lead">{words.lead}</p>
         <div className="gp-btns">
-          <GrowthosLink href={loginUrl}>Continue in GrowthOS</GrowthosLink>
+          <ConnectButton busy={busy === "connect"} onConnect={onConnect} describedBy={`${ids}-partner`} />
           <RefreshButton busy={busy === "refresh"} disabled={Boolean(busy)} onClick={onRefresh}>
             I've connected it
           </RefreshButton>
         </div>
+        <p className="gp-note gp-setup-partner" id={`${ids}-partner`}>
+          <FiShield size={16} aria-hidden="true" />
+          <span>
+            <b>GrowthOS AI</b> is HappyWedz's Google partner. Google will ask you to allow it.
+          </span>
+        </p>
         <p className="gp-note">Use the Google account you want to own the profile. A personal Gmail works.</p>
       </div>
       <AsideCard title={words.asideTitle}>
         <p className="gp-lead">{words.aside}</p>
+        <ol className="gp-next">
+          <li>Press Connect Google and choose your Google account.</li>
+          <li>Allow GrowthOS AI on Google's screen.</li>
+          <li>Pick your profile, or create a new one here.</li>
+          <li>Google verifies the profile.</li>
+        </ol>
       </AsideCard>
     </section>
   );
 }
 
-export function VerifyScreen({ view, loginUrl, busy, onRefresh }) {
+export function VerifyScreen({ view, busy, onRefresh, onVerified }) {
   return (
     <section className="gp-grid2">
       <div className="gp-card">
@@ -149,20 +190,15 @@ export function VerifyScreen({ view, loginUrl, busy, onRefresh }) {
           <span className="gp-chip gp-chip-warn">Google is verifying</span>
         </ProfileHead>
         <p className="gp-lead">
-          Google needs to confirm your business before the profile shows on Search and Maps. Google sends a code by
-          postcard, phone call, SMS or email. Google chooses which methods it offers. Enter the code in GrowthOS.
+          Google needs to confirm your business before the profile shows on Search and Maps. Google chooses which ways
+          it offers: a code by postcard, phone call, text message or email, or sometimes no code at all.
         </p>
-        <div className="gp-btns">
-          <GrowthosLink href={loginUrl}>Enter the code in GrowthOS</GrowthosLink>
-          <RefreshButton busy={busy === "refresh"} disabled={Boolean(busy)} onClick={onRefresh}>
-            Check again
-          </RefreshButton>
-        </div>
+        <SetupVerify onVerified={onVerified} onRefresh={onRefresh} refreshing={busy === "refresh"} />
       </div>
       <AsideCard title="How long does it take?">
         <p className="gp-lead">
-          A postcard can take a few days to arrive. Phone, SMS and email codes are usually quicker. Some businesses are
-          verified automatically.
+          A postcard can take a few days to arrive. Phone, text message and email codes are usually quicker. Some
+          businesses are verified automatically.
         </p>
       </AsideCard>
     </section>

@@ -2,7 +2,7 @@ import React, { useId, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import { FiArrowRight, FiLock, FiMapPin, FiSearch, FiStar, FiTrendingUp } from "react-icons/fi";
 import { Callout, FixLink } from "./GpParts";
-import { EMAIL_MAX, GROWTHOS_PRIVACY_URL, STOREFRONT_PATH, WEEKDAYS, isEmail, sameEmail, toTimeInput } from "./gpFormat";
+import { EMAIL_MAX, GROWTHOS_PRIVACY_URL, GROWTHOS_TERMS_URL, STOREFRONT_PATH, WEEKDAYS, isEmail, sameEmail, toTimeInput } from "./gpFormat";
 
 /** A Storefront link that opens the section to fix (Storefront reads ?section=), e.g. vendor-location. */
 const withSection = (url, tab) => {
@@ -307,8 +307,13 @@ export default function StartScreen({ view, busy, problem, onSubmit, askOwnerEma
           />
           <span>
             {view?.consent_text}{" "}
+            <a href={GROWTHOS_TERMS_URL} target="_blank" rel="noopener" className="gp-link">
+              GrowthOS Terms of Service
+              <span className="visually-hidden"> (opens in a new tab)</span>
+            </a>
+            {" · "}
             <a href={GROWTHOS_PRIVACY_URL} target="_blank" rel="noopener" className="gp-link">
-              GrowthOS Privacy Policy
+              Privacy Policy
               <span className="visually-hidden"> (opens in a new tab)</span>
             </a>
           </span>
