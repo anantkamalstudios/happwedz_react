@@ -89,6 +89,22 @@ export const gpManageApi = {
   addPhoto: (file, category) => upload("/photos", file, { category }),
   deletePhoto: (name) => view(axiosInstance.delete(`${BASE}/photos`, { params: { name } })),
 
+  // "Improve with AI" (RD-22): the AI helper, keywords, storefront facts, services, storefront photos.
+  agent: () => view(axiosInstance.get(`${BASE}/agent`)),
+  setAgent: (on) => view(axiosInstance.put(`${BASE}/agent`, { on })),
+  keywords: () => page(axiosInstance.get(`${BASE}/keywords`)),
+  suggestKeywords: (body = {}) => view(axiosInstance.post(`${BASE}/keywords/suggest`, body)),
+  addKeyword: (body) => view(axiosInstance.post(`${BASE}/keywords`, body)),
+  setKeywordStatus: (keywordId, status) => view(axiosInstance.patch(`${BASE}/keywords/${enc(keywordId)}`, { status })),
+  deleteKeyword: (keywordId) => view(axiosInstance.delete(`${BASE}/keywords/${enc(keywordId)}`)),
+  storefront: () => view(axiosInstance.get(`${BASE}/storefront`)),
+  useStorefront: () => view(axiosInstance.post(`${BASE}/storefront/use`)),
+  services: () => page(axiosInstance.get(`${BASE}/services`)),
+  suggestServices: () => view(axiosInstance.post(`${BASE}/services/suggest`)),
+  addService: (body) => view(axiosInstance.post(`${BASE}/services`, body)),
+  deleteService: (serviceId) => view(axiosInstance.delete(`${BASE}/services/${enc(serviceId)}`)),
+  sendStorefrontPhotos: (items) => view(axiosInstance.post(`${BASE}/storefront/photos`, { items })),
+
   // Fixes
   fixes: () => view(axiosInstance.get(`${BASE}/fixes`)),
   prepareFixes: () => view(axiosInstance.post(`${BASE}/fixes/prepare`)),

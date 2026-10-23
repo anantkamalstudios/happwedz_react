@@ -1,22 +1,23 @@
 // HappyWedz x GrowthOS AI — Google Profile dashboard (GrowthOS plan RD-21, docs/partner-api-gbp-contract.md §3).
 // Six tabs, shown on the Live screen once the profile is verified. Each tab loads its own data when opened.
 import { useRef, useState } from "react";
+import ImproveTab from "./ImproveTab";
 import OverviewTab from "./OverviewTab";
 import ReviewsTab from "./ReviewsTab";
 import PostsTab from "./PostsTab";
 import ProfileTab from "./ProfileTab";
 import PhotosTab from "./PhotosTab";
-import FixesTab from "./FixesTab";
 import "./dashboard-d.css";
 import "./dashboard-e.css";
 
+// RD-22: "Improve with AI" comes first and holds the AI fixes (the old Fixes tab lives inside it).
 const DASHBOARD_TABS = [
+  { id: "improve", label: "Improve with AI", Component: ImproveTab },
   { id: "overview", label: "Overview", Component: OverviewTab },
   { id: "reviews", label: "Reviews", Component: ReviewsTab },
   { id: "posts", label: "Posts", Component: PostsTab },
   { id: "profile", label: "Profile", Component: ProfileTab },
   { id: "photos", label: "Photos", Component: PhotosTab },
-  { id: "fixes", label: "Fixes", Component: FixesTab },
 ];
 
 const STORAGE_KEY = "gp-dashboard-tab";
@@ -24,9 +25,9 @@ const STORAGE_KEY = "gp-dashboard-tab";
 const storedTab = () => {
   try {
     const id = window.localStorage.getItem(STORAGE_KEY);
-    return DASHBOARD_TABS.some((t) => t.id === id) ? id : "overview";
+    return DASHBOARD_TABS.some((t) => t.id === id) ? id : "improve";
   } catch {
-    return "overview";
+    return "improve";
   }
 };
 
