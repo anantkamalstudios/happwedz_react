@@ -157,6 +157,42 @@ export const gpManageApi = {
   rejectFix: (actionId) => view(axiosInstance.post(`${BASE}/fixes/${enc(actionId)}/reject`)),
 };
 
+// ── RD-25: the AI assistant chat ("Improve with AI") ────────────────────────
+// GrowthOS's Command Center for the Google profile. Contract: GrowthOS/docs/partner-api-gbp-contract.md §7.
+// Shapes: growthos-web/src/contracts/ai-commands.ts (Command) and the coach of §7.2. The AI can take up to a
+// minute, so every call that may reach it uses the 100 s timeout.
+const ASSISTANT = `${BASE}/assistant`;
+
+export const assistantApi = {
+  // { score, generated_for, items: [{ key, priority, title, message, points, action }] } — no AI used.
+  coach: () => view(axiosInstance.get(`${ASSISTANT}/coach`)),
+  // Command[] of the last 30 days, oldest first (questions: kind "question", result = the answer).
+  history: () => view(axiosInstance.get(ASSISTANT)),
+  clear: () => axiosInstance.delete(ASSISTANT).then(() => null),
+  // string[] — starter commands (Google ones only).
+  suggestions: () => view(axiosInstance.get(`${ASSISTANT}/suggestions`)),
+  // { kind: "question", answer } | { kind: "command", command }
+  send: (text, attachmentId) =>
+    view(axiosInstance.post(ASSISTANT, { text, ...(attachmentId ? { attachment_id: attachmentId } : {}) }, SLOW)),
+  // A photo for the next message, or for a command that asks for one: { id, kind, name, url }.
+  attach: (file) => {
+    const form = new FormData();
+    form.append("file", file);
+    return view(
+      axiosInstance.post(`${ASSISTANT}/attachments`, form, { ...SLOW, headers: { "Content-Type": "multipart/form-data" } }),
+    );
+  },
+  // Each answers the Command again.
+  choose: (commandId, option) => view(axiosInstance.post(`${ASSISTANT}/${enc(commandId)}/choose`, { option }, SLOW)),
+  // body { text?, parts?, edits?, photo_id?, attributes? }
+  apply: (commandId, body = {}) => view(axiosInstance.post(`${ASSISTANT}/${enc(commandId)}/apply`, body, SLOW)),
+  cancel: (commandId) => view(axiosInstance.post(`${ASSISTANT}/${enc(commandId)}/cancel`, {}, SLOW)),
+  undo: (commandId) => view(axiosInstance.post(`${ASSISTANT}/${enc(commandId)}/undo`, {}, SLOW)),
+  // The logo / cover / photo a command asked for (an attachment id from attach()).
+  upload: (commandId, uploadId) =>
+    view(axiosInstance.post(`${ASSISTANT}/${enc(commandId)}/upload`, { upload_id: uploadId }, SLOW)),
+};
+
 // An image the server serves at /vendor/google-profile/images/<id> needs the vendor's
 // token, which an <img src> does not send. Load it through axios and show the object
 // URL; call URL.revokeObjectURL on it when the image leaves the screen. Other URLs
