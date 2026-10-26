@@ -3,14 +3,16 @@
 // is: the cover photo (one), the logo (one) or a photo with Google's category (default Other); "Send to Google" sends
 // them (the server takes each photo from the vendor's own storefront by its index) and shows each photo's result.
 // API: gpManageApi.storefront → photos [{ index, url }]; gpManageApi.sendStorefrontPhotos(items) → { results }.
-import { useId, useState } from "react";
+// 2026-10-26: "Upload a photo" also sends a photo from the vendor's phone or computer (the Photos tab's form).
+import { useId, useRef, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import { FiArrowUpRight, FiCheck, FiSend, FiX } from "react-icons/fi";
+import { FiArrowUpRight, FiCheck, FiSend, FiUpload, FiX } from "react-icons/fi";
 import { gpManageApi } from "../../../../../services/api/googleProfileApi";
 import { Callout, FixLink, RefreshButton } from "../GpParts";
 import { storefrontSection } from "../gpFormat";
 import { AuthImage, TabLoading } from "./ProfileShared";
 import { ImproveError } from "./ImproveParts";
+import { PhotoUpload } from "./PhotosTab";
 import { DEFAULT_PHOTO_CATEGORY, PHOTOS_MAX, PHOTO_CATEGORIES } from "./ImproveUtils";
 
 const ROLE_WORDS = { cover: "the cover photo", logo: "the logo" };
@@ -71,6 +73,35 @@ export default function ImprovePhotos({ storefront, onSent }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null); // { tone, text }
+  const [uploading, setUploading] = useState(false);
+  const uploadRef = useRef(null);
+
+  const closeUpload = (sent) => {
+    setUploading(false);
+    if (sent) {
+      setMessage({ tone: "ok", text: "Photo sent to Google. Google checks photos before showing them." });
+      onSent?.();
+    }
+    window.requestAnimationFrame(() => uploadRef.current?.focus());
+  };
+
+  const uploadButton = (
+    <button
+      type="button"
+      ref={uploadRef}
+      className="gp-btn gp-btn-ghost"
+      onClick={() => {
+        setMessage(null);
+        setUploading(true);
+      }}
+      disabled={busy}
+    >
+      <FiUpload size={18} aria-hidden="true" />
+      Upload a photo
+    </button>
+  );
+  const uploadForm = uploading ? <PhotoUpload onAdded={() => closeUpload(true)} onCancel={() => closeUpload(false)} /> : null;
+  const note = <div aria-live="polite">{message && <Callout tone={message.tone}>{message.text}</Callout>}</div>;
 
   if (storefront.status === "loading") return <TabLoading label="Loading your storefront photos…" />;
   if (storefront.status === "error") {
@@ -91,13 +122,20 @@ export default function ImprovePhotos({ storefront, onSent }) {
   if (photos.length === 0) {
     return (
       <div className="gp-e-stack-sm">
-        <Callout tone="warn">Your storefront has no photos yet. Add real photos of your work to your storefront, then come back here.</Callout>
-        <div className="gp-btns">
-          <FixLink to={storefrontSection("photos")} className="gp-btn gp-btn-ghost">
-            Open my storefront
-            <FiArrowUpRight size={18} aria-hidden="true" />
-          </FixLink>
-        </div>
+        <Callout tone="warn">
+          Your storefront has no photos yet. Upload real photos of your work here, or add them to your storefront and come
+          back here.
+        </Callout>
+        {note}
+        {uploadForm || (
+          <div className="gp-btns">
+            {uploadButton}
+            <FixLink to={storefrontSection("photos")} className="gp-btn gp-btn-ghost">
+              Open my storefront
+              <FiArrowUpRight size={18} aria-hidden="true" />
+            </FixLink>
+          </div>
+        )}
       </div>
     );
   }
@@ -169,7 +207,8 @@ export default function ImprovePhotos({ storefront, onSent }) {
     <div className="gp-e-stack">
       <p className="gp-note">
         Tick up to {PHOTOS_MAX} photos from your storefront. Pick one as your cover photo and one as your logo; the rest go
-        to Google as photos. Only real photos of your work: AI never makes fake photos.
+        to Google as photos. Only real photos of your work: AI never makes fake photos. A photo that is not on your
+        storefront? Use Upload a photo.
       </p>
       <ul className="gp-e-photos gp-i-photos">
         {photos.map((p, i) => (
@@ -187,12 +226,14 @@ export default function ImprovePhotos({ storefront, onSent }) {
       </ul>
       {full && <p className="gp-note">You picked {PHOTOS_MAX}, the most for one go. Send these first, then pick more.</p>}
       <ImproveError error={error} />
-      <div aria-live="polite">{message && <Callout tone={message.tone}>{message.text}</Callout>}</div>
+      {note}
+      {uploadForm}
       <div className="gp-btns">
         <button type="button" className="gp-btn gp-btn-primary" onClick={send} disabled={busy || chosen.length === 0} aria-busy={busy || undefined}>
           {busy ? <Spinner animation="border" size="sm" aria-hidden="true" /> : <FiSend size={18} aria-hidden="true" />}
           {busy ? "Sending to Google…" : chosen.length ? `Send ${chosen.length} to Google` : "Tick at least one photo"}
         </button>
+        {!uploading && uploadButton}
       </div>
     </div>
   );

@@ -30,8 +30,8 @@ const CATEGORY_LABEL = Object.fromEntries(PHOTO_CATEGORIES);
 
 const dateOf = (iso) => (iso ? formatDay(String(iso).slice(0, 10)) : "");
 
-/** The "Add a photo" form: file, category, send. */
-function PhotoUpload({ onAdded, onCancel }) {
+/** The "Add a photo" form: file, category, send. Also used by "Improve with AI" step 4 (ImprovePhotos). */
+export function PhotoUpload({ onAdded, onCancel }) {
   const id = useId();
   const headingRef = useRef(null);
   const [file, setFile] = useState(null);

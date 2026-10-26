@@ -134,7 +134,9 @@ export default function ImproveTab({ onOpenTab }) {
 
   const keywordSummary =
     keywords.status === "ready"
-      ? `${activeCount} of ${KEYWORDS_NEEDED} keywords${activeCount >= KEYWORDS_NEEDED ? " — enough" : ""}.`
+      ? activeCount >= KEYWORDS_NEEDED
+        ? `${activeCount} keywords — enough.`
+        : `${activeCount} of ${KEYWORDS_NEEDED} keywords.`
       : "";
   const serviceSummary =
     services.status === "ready" ? (serviceCount ? `${serviceCount} ${serviceCount === 1 ? "service" : "services"} saved.` : "No services yet.") : "";
@@ -187,7 +189,7 @@ export default function ImproveTab({ onOpenTab }) {
                 "photos",
                 4,
                 "Photos",
-                photosSent ? "Photos sent to Google." : "Pick your cover photo, logo and photos from your storefront.",
+                photosSent ? "Photos sent to Google." : "Pick your cover photo, logo and photos from your storefront, or upload them.",
                 <ImprovePhotos storefront={storefront} onSent={() => setPhotosSent(true)} />,
               )}
               {step(
