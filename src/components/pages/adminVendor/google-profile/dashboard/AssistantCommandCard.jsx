@@ -13,7 +13,7 @@ import { Callout } from "../GpParts";
 import { AuthImage } from "./ProfileShared";
 import {
   BLOCKED,
-  BLOCKED_TITLES,
+  blockedTitle,
   PHOTO_ACCEPT,
   UPLOAD_LABELS,
   changesGoogle,
@@ -349,7 +349,7 @@ export default function AssistantCommandCard({ command, onChange, onChanged, onO
       : ready
         ? "Ready. Check it, then press the button."
         : blocked
-          ? `${BLOCKED_TITLES[status]}.`
+          ? `${blockedTitle(status, command.message)}.`
           : "Needs your answer.";
 
   return (
@@ -364,7 +364,7 @@ export default function AssistantCommandCard({ command, onChange, onChanged, onO
       {command.message && !ready && !applied &&
         (blocked ? (
           <Callout tone={status === "failed" ? "bad" : "warn"}>
-            <strong className="gp-a-callout-title">{BLOCKED_TITLES[status]}</strong>
+            <strong className="gp-a-callout-title">{blockedTitle(status, command.message)}</strong>
             <span>{command.message}</span>
           </Callout>
         ) : (

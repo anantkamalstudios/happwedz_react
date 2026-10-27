@@ -59,6 +59,10 @@ export const BLOCKED_TITLES = {
   failed: "This did not work",
 };
 
+/** 2026-10-27: "already saved / already tracked / already on" answers say "Nothing to do" (product owner). */
+export const blockedTitle = (status, message) =>
+  status === "unsupported" && /\balready\b/i.test(message || "") ? "Nothing to do" : BLOCKED_TITLES[status];
+
 /** Internal kinds (they only change GrowthOS's own tracking); every other google_* kind and review replies change Google. */
 const INTERNAL_KINDS = ["google_keyword_add", "google_keyword_remove", "google_goal"];
 export const changesGoogle = (kind) =>
