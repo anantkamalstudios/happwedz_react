@@ -2,6 +2,7 @@
 // Six tabs, shown on the Live screen once the profile is verified. Each tab loads its own data the first time it is
 // opened and is then kept (hidden) while another tab shows, so going back does not load it again (2026-10-27).
 import { useCallback, useRef, useState } from "react";
+import { HiOutlineSparkles } from "react-icons/hi";
 import ImproveTab from "./ImproveTab";
 import OverviewTab from "./OverviewTab";
 import ReviewsTab from "./ReviewsTab";
@@ -13,7 +14,7 @@ import "./dashboard-e.css";
 
 // RD-22: "Improve with AI" comes first and holds the AI fixes (the old Fixes tab lives inside it).
 const DASHBOARD_TABS = [
-  { id: "improve", label: "Improve with AI", Component: ImproveTab },
+  { id: "improve", label: "Improve with AI", Component: ImproveTab, Icon: HiOutlineSparkles },
   { id: "overview", label: "Overview", Component: OverviewTab },
   { id: "reviews", label: "Reviews", Component: ReviewsTab },
   { id: "posts", label: "Posts", Component: PostsTab },
@@ -39,6 +40,9 @@ export default function Dashboard({ view }) {
   const [stale, setStale] = useState([]);
   const [versions, setVersions] = useState({});
   const tabRefs = useRef({});
+  // 2026-10-27: "Improve with AI" puts its score and next steps in this column beside the tabs (a portal), so the
+  // chat and the steps fit on one screen.
+  const [sideSlot, setSideSlot] = useState(null);
 
   const onChanged = useCallback(() => setStale(DASHBOARD_TABS.map((t) => t.id).filter((x) => x !== "improve")), []);
 
@@ -72,43 +76,47 @@ export default function Dashboard({ view }) {
   };
 
   return (
-    <div className="gp-card gp-dash">
-      <div className="gp-dash-tabs" role="tablist" aria-label="Google profile" onKeyDown={onKeyDown}>
-        {DASHBOARD_TABS.map((tab) => (
-          <button
-            key={tab.id}
-            ref={(el) => {
-              tabRefs.current[tab.id] = el;
-            }}
-            type="button"
-            role="tab"
-            id={`gp-tab-${tab.id}`}
-            aria-selected={tab.id === active}
-            aria-controls={`gp-panel-${tab.id}`}
-            tabIndex={tab.id === active ? 0 : -1}
-            className={`gp-dash-tab${tab.id === active ? " is-active" : ""}`}
-            onClick={() => choose(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
+    <div className={`gp-dash-wrap${active === "improve" ? " has-side" : ""}`}>
+      <div className="gp-card gp-dash">
+        <div className="gp-dash-tabs" role="tablist" aria-label="Google profile" onKeyDown={onKeyDown}>
+          {DASHBOARD_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              ref={(el) => {
+                tabRefs.current[tab.id] = el;
+              }}
+              type="button"
+              role="tab"
+              id={`gp-tab-${tab.id}`}
+              aria-selected={tab.id === active}
+              aria-controls={`gp-panel-${tab.id}`}
+              tabIndex={tab.id === active ? 0 : -1}
+              className={`gp-dash-tab${tab.id === active ? " is-active" : ""}`}
+              onClick={() => choose(tab.id)}
+            >
+              {tab.Icon && <tab.Icon size={16} aria-hidden="true" />}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        {DASHBOARD_TABS.filter((tab) => tab.id === active || visited.includes(tab.id)).map((tab) => {
+          const { id } = tab;
+          const TabPanel = tab.Component;
+          return (
+            <div
+              key={`${id}-${versions[id] || 0}`}
+              className="gp-dash-panel"
+              role="tabpanel"
+              id={`gp-panel-${id}`}
+              aria-labelledby={`gp-tab-${id}`}
+              hidden={id !== active}
+            >
+              <TabPanel view={view} onOpenTab={choose} onChanged={onChanged} sideSlot={sideSlot} />
+            </div>
+          );
+        })}
       </div>
-      {DASHBOARD_TABS.filter((tab) => tab.id === active || visited.includes(tab.id)).map((tab) => {
-        const { id } = tab;
-        const TabPanel = tab.Component;
-        return (
-          <div
-            key={`${id}-${versions[id] || 0}`}
-            className="gp-dash-panel"
-            role="tabpanel"
-            id={`gp-panel-${id}`}
-            aria-labelledby={`gp-tab-${id}`}
-            hidden={id !== active}
-          >
-            <TabPanel view={view} onOpenTab={choose} onChanged={onChanged} />
-          </div>
-        );
-      })}
+      <div className="gp-dash-side" ref={setSideSlot} hidden={active !== "improve"} />
     </div>
   );
 }

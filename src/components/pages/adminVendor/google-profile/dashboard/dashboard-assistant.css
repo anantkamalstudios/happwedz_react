@@ -35,8 +35,8 @@
 .gp-a-chat {
   gap: 14px;
   padding: 20px;
-  height: min(82vh, 860px);
-  min-height: 480px;
+  /* 2026-10-27: fills the screen under the page header and the tabs (one screen holds the chat and the steps). */
+  height: clamp(460px, calc(100vh - 300px), 860px);
 }
 
 .gp-a-chat > * {
@@ -873,4 +873,47 @@
   .gp-a-tip-body {
     padding-left: 0;
   }
+}
+
+/* 2026-10-27: the tabs card and, for "Improve with AI", the score + next steps column beside it. */
+.gp-dash-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.gp-dash-side {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.gp-dash-side[hidden] {
+  display: none;
+}
+
+.gp-dash-side .gp-i-top {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1100px) {
+  .gp-dash-wrap.has-side {
+    grid-template-columns: minmax(0, 1.65fr) minmax(330px, 1fr);
+  }
+
+  /* The column stays in view and scrolls by itself when the steps are open. */
+  .gp-dash-wrap.has-side .gp-dash-side {
+    position: sticky;
+    top: 110px;
+    max-height: calc(100vh - 130px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 2px;
+  }
+}
+
+.gp-dash-tab svg {
+  margin-right: 6px;
+  vertical-align: -3px;
 }

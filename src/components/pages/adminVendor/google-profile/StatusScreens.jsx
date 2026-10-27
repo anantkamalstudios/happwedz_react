@@ -3,7 +3,7 @@ import { Spinner } from "react-bootstrap";
 import { FaGoogle } from "react-icons/fa";
 import { FiArrowRight, FiAtSign, FiLink, FiMail, FiShield } from "react-icons/fi";
 import { AsideCard, Callout, GrowthosLink, ProfileHead, RefreshButton } from "./GpParts";
-import { formatClock, formatWhen, msUntil } from "./gpFormat";
+import { formatClock, formatWhen, initials, msUntil } from "./gpFormat";
 import Dashboard from "./dashboard/Dashboard";
 import SetupVerify from "./SetupVerify";
 
@@ -211,8 +211,13 @@ export function LiveScreen({ view }) {
       {/* 2026-10-27 (product owner): one slim line under the page title, no GrowthOS link, so the tabs start near the
           top of the page. */}
       <div className="gp-live-bar">
-        <span className="gp-live-name">{businessName(view)}</span>
-        {profileLine(view) && <span className="gp-muted">{profileLine(view)}</span>}
+        <span className="gp-live-tile" aria-hidden="true">
+          {initials(businessName(view))}
+        </span>
+        <span className="gp-live-who">
+          <span className="gp-live-name">{businessName(view)}</span>
+          {profileLine(view) && <span className="gp-muted gp-live-line">{profileLine(view)}</span>}
+        </span>
         <span className="gp-chip gp-chip-ok">Verified by Google</span>
         <span className="gp-chip gp-chip-pink">Managed with GrowthOS</span>
       </div>

@@ -7,6 +7,7 @@
 // the fixes and the score; "Open fixes" in the chat opens the AI fixes step.
 // API: gpManageApi.agent / storefront / keywords / services (+ the calls inside each step and FixesTab), assistantApi.
 import { useCallback, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { gpManageApi } from "../../../../../services/api/googleProfileApi";
 import { Callout } from "../GpParts";
 import AssistantChat from "./AssistantChat";
@@ -18,7 +19,15 @@ import ImprovePhotos from "./ImprovePhotos";
 import ImproveServices from "./ImproveServices";
 import ImproveStorefront from "./ImproveStorefront";
 import { ImproveStep } from "./ImproveParts";
-import { KEYWORDS_NEEDED, activeKeywords, checklistKeys, isOpenFix, listOf, useLoad, vendorNeeds } from "./ImproveUtils";
+import {
+  KEYWORDS_NEEDED,
+  activeKeywords,
+  checklistKeys,
+  isOpenFix,
+  listOf,
+  useLoad,
+  vendorNeeds,
+} from "./ImproveUtils";
 import "./dashboard-improve.css";
 
 const STEP_IDS = ["storefront", "keywords", "services", "photos", "fixes", "needs"];
@@ -37,7 +46,7 @@ const photosDoneByPlan = (plan) => {
   );
 };
 
-export default function ImproveTab({ onOpenTab, onChanged }) {
+export default function ImproveTab({ onOpenTab, onChanged, sideSlot = null }) {
   const agent = useLoad(gpManageApi.agent);
   const storefront = useLoad(gpManageApi.storefront);
   const keywords = useLoad(gpManageApi.keywords);
@@ -50,7 +59,6 @@ export default function ImproveTab({ onOpenTab, onChanged }) {
   const [report, setReport] = useState(null); // { status, plan, after } from the fix list
   const [fixesRefresh, setFixesRefresh] = useState(0);
   const [opened, setOpened] = useState({});
-  const [firstCurrent, setFirstCurrent] = useState(undefined);
   const toggles = useRef({});
 
   const onReport = useCallback((next) => setReport(next), []);
@@ -98,10 +106,8 @@ export default function ImproveTab({ onOpenTab, onChanged }) {
     }
   }
 
-  // The step that was first when the tab opened stays open (finishing it does not close it under the vendor).
-  if (firstCurrent === undefined && current !== undefined) setFirstCurrent(current);
-
-  const isOpen = (id) => opened[id] ?? id === firstCurrent;
+  // 2026-10-27: every step starts closed (its one-line summary shows); "Start here" marks the first one to do.
+  const isOpen = (id) => opened[id] ?? false;
   const toggle = (id) => setOpened((cur) => ({ ...cur, [id]: !isOpen(id) }));
   const openStep = (id) => {
     setOpened((cur) => ({ ...cur, [id]: true }));
@@ -141,72 +147,83 @@ export default function ImproveTab({ onOpenTab, onChanged }) {
         : `${activeCount} of ${KEYWORDS_NEEDED} keywords.`
       : "";
   const serviceSummary =
-    services.status === "ready" ? (serviceCount ? `${serviceCount} ${serviceCount === 1 ? "service" : "services"} saved.` : "No services yet.") : "";
+    services.status === "ready"
+      ? serviceCount
+        ? `${serviceCount} ${serviceCount === 1 ? "service" : "services"} saved.`
+        : "No services yet."
+      : "";
   const fixSummary = !plan?.available
     ? ""
     : openFixes.length
       ? `${openFixes.length} ${openFixes.length === 1 ? "fix waits" : "fixes wait"} for your Apply.`
       : "No fixes waiting.";
   const needCount = plan?.available ? vendorNeeds(plan).needs.length : 0;
-  const needSummary = plan?.available && (plan.checklist || []).length ? (needCount ? `${needCount} to do.` : "Nothing needs you.") : "";
+  const needSummary =
+    plan?.available && (plan.checklist || []).length ? (needCount ? `${needCount} to do.` : "Nothing needs you.") : "";
 
   return (
     <div className="gp-e-tab gp-i-tab">
       {/* 2026-10-27: no heading here; the tab name says it and the chat comes first. */}
       <h2 className="visually-hidden">Improve with AI</h2>
 
-      <div className="gp-a-layout">
-        <div className="gp-a-main">
-          <AssistantChat onOpenTab={onOpenTab} onOpenFixes={() => openStep("fixes")} onChanged={changed} />
-        </div>
-
-        <div className="gp-a-side">
-          <ImproveAgent agent={agent} report={report} onChanged={changed} />
-
-          {agentOff && <Callout tone="warn">Turn on the AI helper so it can prepare fixes.</Callout>}
-
-          <section aria-labelledby="gp-i-steps-title" className="gp-e-stack">
-            <div className="gp-e-head">
-              <h2 className="gp-h3" id="gp-i-steps-title">
-                Next steps
-              </h2>
-              {current === null && <span className="gp-chip gp-chip-ok">All steps done</span>}
-            </div>
-            <ol className="gp-e-plain gp-i-steps">
-              {step(
-                "storefront",
-                1,
-                "Use my storefront",
-                facts?.description ? "GrowthOS has your description." : "Copy your About us text and FAQs to GrowthOS.",
-                <ImproveStorefront storefront={storefront} facts={facts} onUsed={setFacts} />,
-              )}
-              {step("keywords", 2, "Keywords", keywordSummary, <ImproveKeywords keywords={keywords} />)}
-              {step("services", 3, "Services", serviceSummary, <ImproveServices services={services} />)}
-              {step(
-                "photos",
-                4,
-                "Photos",
-                photosSent ? "Photos sent to Google." : "Pick your cover photo, logo and photos from your storefront, or upload them.",
-                <ImprovePhotos storefront={storefront} onSent={() => setPhotosSent(true)} />,
-              )}
-              {step(
-                "fixes",
-                5,
-                "AI fixes ready",
-                fixSummary,
-                <FixesTab embedded refresh={fixesRefresh} onReport={onReport} onOpenTab={onOpenTab} />,
-              )}
-              {step(
-                "needs",
-                6,
-                "Only you can do this",
-                needSummary,
-                <ImproveNeeds report={report} onOpenTab={onOpenTab} onOpenStep={openStep} onRetry={reloadFixes} />,
-              )}
-            </ol>
-          </section>
-        </div>
+      <div className="gp-a-main">
+        <AssistantChat onOpenTab={onOpenTab} onOpenFixes={() => openStep("fixes")} onChanged={changed} />
       </div>
+
+      {sideSlot &&
+        createPortal(
+          <div className="gp-a-side">
+            <ImproveAgent agent={agent} report={report} onChanged={changed} />
+
+            {agentOff && <Callout tone="warn">Turn on the AI helper so it can prepare fixes.</Callout>}
+
+            <section aria-labelledby="gp-i-steps-title" className="gp-e-stack">
+              <div className="gp-e-head">
+                <h2 className="gp-h3" id="gp-i-steps-title">
+                  Next steps
+                </h2>
+                {current === null && <span className="gp-chip gp-chip-ok">All steps done</span>}
+              </div>
+              <ol className="gp-e-plain gp-i-steps">
+                {step(
+                  "storefront",
+                  1,
+                  "Use my storefront",
+                  facts?.description
+                    ? "GrowthOS has your description."
+                    : "Copy your About us text and FAQs to GrowthOS.",
+                  <ImproveStorefront storefront={storefront} facts={facts} onUsed={setFacts} />,
+                )}
+                {step("keywords", 2, "Keywords", keywordSummary, <ImproveKeywords keywords={keywords} />)}
+                {step("services", 3, "Services", serviceSummary, <ImproveServices services={services} />)}
+                {step(
+                  "photos",
+                  4,
+                  "Photos",
+                  photosSent
+                    ? "Photos sent to Google."
+                    : "Pick your cover photo, logo and photos from your storefront, or upload them.",
+                  <ImprovePhotos storefront={storefront} onSent={() => setPhotosSent(true)} />,
+                )}
+                {step(
+                  "fixes",
+                  5,
+                  "AI fixes ready",
+                  fixSummary,
+                  <FixesTab embedded refresh={fixesRefresh} onReport={onReport} onOpenTab={onOpenTab} />,
+                )}
+                {step(
+                  "needs",
+                  6,
+                  "Only you can do this",
+                  needSummary,
+                  <ImproveNeeds report={report} onOpenTab={onOpenTab} onOpenStep={openStep} onRetry={reloadFixes} />,
+                )}
+              </ol>
+            </section>
+          </div>,
+          sideSlot,
+        )}
     </div>
   );
 }
