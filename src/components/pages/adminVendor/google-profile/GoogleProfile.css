@@ -1171,13 +1171,17 @@
   }
 }
 
-/* 2026-10-27: the short profile header on the Live screen. */
-.gp-live-card {
-  padding: 14px 20px;
+/* 2026-10-27: the Live screen's one-line profile bar under the page title. */
+.gp-live-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: -6px;
 }
 
-.gp-live-card .gp-profile-ph {
-  width: 48px;
-  height: 48px;
-  font-size: 18px;
+.gp-live-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gp-ink);
 }

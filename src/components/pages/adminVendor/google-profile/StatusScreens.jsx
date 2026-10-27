@@ -205,20 +205,16 @@ export function VerifyScreen({ view, busy, onRefresh, onVerified }) {
   );
 }
 
-export function LiveScreen({ view, loginUrl }) {
+export function LiveScreen({ view }) {
   return (
     <section className="gp-stack">
-      {/* 2026-10-27: a short header, so the tabs start near the top of the page. */}
-      <div className="gp-card gp-live-card">
-        <div className="gp-live-head">
-          <ProfileHead name={businessName(view)} line={profileLine(view)}>
-            <div className="gp-chips">
-              <span className="gp-chip gp-chip-ok">Verified by Google</span>
-              <span className="gp-chip gp-chip-pink">Managed with GrowthOS</span>
-            </div>
-          </ProfileHead>
-          <GrowthosLink href={loginUrl} primary={false}>Open GrowthOS</GrowthosLink>
-        </div>
+      {/* 2026-10-27 (product owner): one slim line under the page title, no GrowthOS link, so the tabs start near the
+          top of the page. */}
+      <div className="gp-live-bar">
+        <span className="gp-live-name">{businessName(view)}</span>
+        {profileLine(view) && <span className="gp-muted">{profileLine(view)}</span>}
+        <span className="gp-chip gp-chip-ok">Verified by Google</span>
+        <span className="gp-chip gp-chip-pink">Managed with GrowthOS</span>
       </div>
       <Dashboard view={view} />
     </section>

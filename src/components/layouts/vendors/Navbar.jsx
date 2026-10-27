@@ -329,7 +329,8 @@ const Navbar = () => {
               overflowX: isMobile ? "auto" : "visible",
               WebkitOverflowScrolling: isMobile ? "touch" : undefined,
               paddingBottom: isMobile ? 8 : undefined,
-              gap: isMobile ? 12 : undefined,
+              // 2026-10-27: more room between items (long labels such as "Google Profile" ran into the next one).
+              gap: isMobile ? 12 : 22,
               maxWidth: "100%",
             }}
           >

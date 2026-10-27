@@ -152,13 +152,8 @@ export default function ImproveTab({ onOpenTab, onChanged }) {
 
   return (
     <div className="gp-e-tab gp-i-tab">
-      <div className="gp-e-stack-sm">
-        <h2 className="gp-h2">Improve with AI</h2>
-        <p className="gp-lead">
-          Ask the AI assistant, or follow the steps. The AI does most of the work and asks before every change on
-          Google.
-        </p>
-      </div>
+      {/* 2026-10-27: no heading here; the tab name says it and the chat comes first. */}
+      <h2 className="visually-hidden">Improve with AI</h2>
 
       <div className="gp-a-layout">
         <div className="gp-a-main">
