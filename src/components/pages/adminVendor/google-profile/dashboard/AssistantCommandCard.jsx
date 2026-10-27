@@ -195,7 +195,7 @@ function AttributeForm({ questions, answers, onChange }) {
   );
 }
 
-export default function AssistantCommandCard({ command, onChange, onChanged, onOpenTab }) {
+export default function AssistantCommandCard({ command, onChange, onChanged, onOpenTab, compact = false }) {
   const id = useId();
   const p = command.preview || {};
   const parts = Array.isArray(p.parts) ? p.parts : [];
@@ -226,6 +226,8 @@ export default function AssistantCommandCard({ command, onChange, onChanged, onO
     setAnswers(answersOf(p));
   }
   const [busy, setBusy] = useState(""); // apply | cancel | undo | upload | choose:<id>
+  // 2026-10-27: a finished card from an earlier visit shows its title and result only, details on request.
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [error, setError] = useState(null);
   const statusRef = useRef(null);
   const editRef = useRef(null);
@@ -315,6 +317,7 @@ export default function AssistantCommandCard({ command, onChange, onChanged, onO
     });
   };
 
+  const short = compact && (applied || status === "cancelled") && !detailsOpen;
   const google = changesGoogle(command.kind);
   const hasEditable = Boolean(p.editable) || parts.some((x) => x.editable);
   const applyLabel = parts.length
@@ -412,7 +415,12 @@ export default function AssistantCommandCard({ command, onChange, onChanged, onO
       {p.title && (ready || applied || status === "cancelled") && (
         <div className="gp-a-preview">
           <p className="gp-a-preview-title">{p.title}</p>
-          {shown && <AuthImage src={shown} alt="The photo that will be used" className="gp-a-preview-img" />}
+          {compact && (applied || status === "cancelled") && (
+            <button type="button" className="gp-link gp-a-details" aria-expanded={detailsOpen} onClick={() => setDetailsOpen((o) => !o)}>
+              {detailsOpen ? "Hide details" : "Show details"}
+            </button>
+          )}
+          {!short && shown && <AuthImage src={shown} alt="The photo that will be used" className="gp-a-preview-img" />}
           {ready && p.photo_choice && <PhotoPicker choice={p.photo_choice} value={photo} onChange={setPhoto} />}
           {ready && p.attribute_form?.length > 0 && (
             <AttributeForm
@@ -421,8 +429,8 @@ export default function AssistantCommandCard({ command, onChange, onChanged, onO
               onChange={(name, value) => setAnswers((all) => ({ ...all, [name]: value }))}
             />
           )}
-          <Changes changes={changes} />
-          <Items items={items} />
+          {!short && <Changes changes={changes} />}
+          {!short && <Items items={items} />}
 
           {p.editable && ready && (
             <div className="gp-e-stack-sm">
@@ -457,7 +465,7 @@ export default function AssistantCommandCard({ command, onChange, onChanged, onO
             </div>
           )}
 
-          {parts.length > 0 && (
+          {parts.length > 0 && !short && (
             <ul className="gp-e-plain gp-a-parts" aria-label="What the AI will do">
               {parts.map((part) => {
                 const on = ticked.includes(part.id);
@@ -514,7 +522,7 @@ export default function AssistantCommandCard({ command, onChange, onChanged, onO
             </ul>
           )}
 
-          {notes.length > 0 && (
+          {notes.length > 0 && !short && (
             <ul className="gp-e-plain gp-a-notes">
               {notes.map((n) => (
                 <li key={n} className="gp-note">

@@ -1170,3 +1170,14 @@
     padding: 14px;
   }
 }
+
+/* 2026-10-27: the short profile header on the Live screen. */
+.gp-live-card {
+  padding: 14px 20px;
+}
+
+.gp-live-card .gp-profile-ph {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+}

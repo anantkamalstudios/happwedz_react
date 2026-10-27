@@ -208,7 +208,8 @@ export function VerifyScreen({ view, busy, onRefresh, onVerified }) {
 export function LiveScreen({ view, loginUrl }) {
   return (
     <section className="gp-stack">
-      <div className="gp-card">
+      {/* 2026-10-27: a short header, so the tabs start near the top of the page. */}
+      <div className="gp-card gp-live-card">
         <div className="gp-live-head">
           <ProfileHead name={businessName(view)} line={profileLine(view)}>
             <div className="gp-chips">
@@ -218,10 +219,6 @@ export function LiveScreen({ view, loginUrl }) {
           </ProfileHead>
           <GrowthosLink href={loginUrl} primary={false}>Open GrowthOS</GrowthosLink>
         </div>
-        <Callout tone="ok">
-          Your profile can now appear on Google Search and Maps. See your numbers, answer reviews, write posts and edit
-          your profile below.
-        </Callout>
       </div>
       <Dashboard view={view} />
     </section>

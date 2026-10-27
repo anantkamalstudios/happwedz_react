@@ -168,7 +168,7 @@ function ScoreCard({ plan, picked, after }) {
   );
 }
 
-export default function FixesTab({ onOpenTab, embedded = false, onReport }) {
+export default function FixesTab({ onOpenTab, embedded = false, onReport, refresh = 0 }) {
   const [state, setState] = useState({ status: "loading", plan: null, error: null });
   const [selected, setSelected] = useState(null); // null = every open fix
   const [busy, setBusy] = useState(null); // { id, kind } | { id: "all" }
@@ -190,6 +190,11 @@ export default function FixesTab({ onOpenTab, embedded = false, onReport }) {
       return null;
     }
   }, []);
+
+  // `refresh` going up (something changed elsewhere, e.g. in the AI chat): read the plan again quietly.
+  useEffect(() => {
+    if (refresh > 0) load(true);
+  }, [refresh, load]);
 
   useEffect(() => {
     load();

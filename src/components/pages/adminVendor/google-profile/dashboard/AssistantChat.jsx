@@ -56,12 +56,20 @@ export default function AssistantChat({ onOpenTab, onOpenFixes, onChanged }) {
     return () => set.forEach((url) => URL.revokeObjectURL(url));
   }, []);
 
-  // New messages: scroll to the end of the chat.
+  // 2026-10-27: the chat opens at its newest message (today's AI message is the last one), like a messenger; new
+  // messages scroll to the end too.
+  const opened = useRef(false);
   useEffect(() => {
     const log = logRef.current;
-    if (!log || fresh.length === 0) return;
+    if (!log || history.status === "loading" || coach.status === "loading") return;
+    if (!opened.current) {
+      opened.current = true;
+      log.scrollTop = log.scrollHeight;
+      return;
+    }
+    if (fresh.length === 0) return;
     log.scrollTo({ top: log.scrollHeight, behavior: prefersReducedMotion() ? "auto" : "smooth" });
-  }, [fresh, busy]);
+  }, [fresh, busy, history.status, coach.status]);
 
   /** Sends one message (with a photo already uploaded, or a file to upload first) and shows the answer. */
   const submit = useCallback(async ({ text, attachment = null, file = null, preview = null }) => {
@@ -176,7 +184,7 @@ export default function AssistantChat({ onOpenTab, onOpenFixes, onChanged }) {
   const empty = history.status !== "loading" && turns.length === 0;
   const starters = empty && suggestions.status === "ready" ? suggestionTexts(suggestions.data).slice(0, 6) : [];
 
-  const renderTurn = (turn) => (
+  const renderTurn = (turn, compact = false) => (
     <li key={turn.key} className="gp-a-turn">
       <UserBubble text={turn.text} attachments={turn.attachments} localPreview={turn.preview} />
       {turn.type === "pending" && (
@@ -191,7 +199,13 @@ export default function AssistantChat({ onOpenTab, onOpenFixes, onChanged }) {
       )}
       {turn.type === "command" && (
         <AssistantBubble wide>
-          <AssistantCommandCard command={turn.command} onChange={replaceCommand} onChanged={onChanged} onOpenTab={onOpenTab} />
+          <AssistantCommandCard
+            command={turn.command}
+            onChange={replaceCommand}
+            onChanged={onChanged}
+            onOpenTab={onOpenTab}
+            compact={compact}
+          />
         </AssistantBubble>
       )}
       {turn.type === "failed" && (
@@ -254,17 +268,6 @@ export default function AssistantChat({ onOpenTab, onOpenFixes, onChanged }) {
         tabIndex={0}
       >
         <ol className="gp-e-plain gp-a-turns">
-          <li className="gp-a-turn">
-            <AssistantCoach
-              coach={coach}
-              busy={busy}
-              onSend={(text) => sendText(text, null)}
-              onUploadFor={onUploadFor}
-              onOpenFixes={onOpenFixes}
-              onOpenTab={onOpenTab}
-              onTypeAnswer={onTypeAnswer}
-            />
-          </li>
           {history.status === "loading" && (
             <li className="gp-a-turn">
               <p className="gp-a-typing gp-note" role="status">
@@ -286,7 +289,20 @@ export default function AssistantChat({ onOpenTab, onOpenFixes, onChanged }) {
               </AssistantBubble>
             </li>
           )}
-          {turns.map(renderTurn)}
+          {/* Earlier visits' finished cards are short; today's AI message comes after them, then this visit's messages. */}
+          {past.map((turn) => renderTurn(turn, true))}
+          <li className="gp-a-turn">
+            <AssistantCoach
+              coach={coach}
+              busy={busy}
+              onSend={(text) => sendText(text, null)}
+              onUploadFor={onUploadFor}
+              onOpenFixes={onOpenFixes}
+              onOpenTab={onOpenTab}
+              onTypeAnswer={onTypeAnswer}
+            />
+          </li>
+          {fresh.map((turn) => renderTurn(turn))}
         </ol>
       </div>
 

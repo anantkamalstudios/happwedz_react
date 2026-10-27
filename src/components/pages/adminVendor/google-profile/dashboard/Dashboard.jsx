@@ -1,6 +1,7 @@
 // HappyWedz x GrowthOS AI — Google Profile dashboard (GrowthOS plan RD-21, docs/partner-api-gbp-contract.md §3).
-// Six tabs, shown on the Live screen once the profile is verified. Each tab loads its own data when opened.
-import { useRef, useState } from "react";
+// Six tabs, shown on the Live screen once the profile is verified. Each tab loads its own data the first time it is
+// opened and is then kept (hidden) while another tab shows, so going back does not load it again (2026-10-27).
+import { useCallback, useRef, useState } from "react";
 import ImproveTab from "./ImproveTab";
 import OverviewTab from "./OverviewTab";
 import ReviewsTab from "./ReviewsTab";
@@ -33,10 +34,21 @@ const storedTab = () => {
 
 export default function Dashboard({ view }) {
   const [active, setActive] = useState(storedTab);
+  const [visited, setVisited] = useState(() => [storedTab()]);
+  // After the AI assistant changed something, the other tabs load again when next opened (a new key).
+  const [stale, setStale] = useState([]);
+  const [versions, setVersions] = useState({});
   const tabRefs = useRef({});
+
+  const onChanged = useCallback(() => setStale(DASHBOARD_TABS.map((t) => t.id).filter((x) => x !== "improve")), []);
 
   const choose = (id, focus = false) => {
     setActive(id);
+    setVisited((list) => (list.includes(id) ? list : [...list, id]));
+    if (stale.includes(id)) {
+      setVersions((v) => ({ ...v, [id]: (v[id] || 0) + 1 }));
+      setStale((list) => list.filter((x) => x !== id));
+    }
     try {
       window.localStorage.setItem(STORAGE_KEY, id);
     } catch {
@@ -58,9 +70,6 @@ export default function Dashboard({ view }) {
       choose(DASHBOARD_TABS[event.key === "Home" ? 0 : DASHBOARD_TABS.length - 1].id, true);
     }
   };
-
-  const current = DASHBOARD_TABS.find((t) => t.id === active) || DASHBOARD_TABS[0];
-  const { Component } = current;
 
   return (
     <div className="gp-card gp-dash">
@@ -84,9 +93,22 @@ export default function Dashboard({ view }) {
           </button>
         ))}
       </div>
-      <div className="gp-dash-panel" role="tabpanel" id={`gp-panel-${current.id}`} aria-labelledby={`gp-tab-${current.id}`}>
-        <Component view={view} onOpenTab={choose} />
-      </div>
+      {DASHBOARD_TABS.filter((tab) => tab.id === active || visited.includes(tab.id)).map((tab) => {
+        const { id } = tab;
+        const TabPanel = tab.Component;
+        return (
+          <div
+            key={`${id}-${versions[id] || 0}`}
+            className="gp-dash-panel"
+            role="tabpanel"
+            id={`gp-panel-${id}`}
+            aria-labelledby={`gp-tab-${id}`}
+            hidden={id !== active}
+          >
+            <TabPanel view={view} onOpenTab={choose} onChanged={onChanged} />
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -31,10 +31,16 @@
   }
 }
 
-/* The chat card */
+/* The chat card. 2026-10-27: a fixed height, so the message box always stays in view and only the messages scroll. */
 .gp-a-chat {
   gap: 14px;
   padding: 20px;
+  height: min(82vh, 860px);
+  min-height: 480px;
+}
+
+.gp-a-chat > * {
+  flex: none;
 }
 
 .gp-a-chat-head {
@@ -49,9 +55,12 @@
   flex: 1 1 260px;
 }
 
+.gp-a-chat > .gp-a-log {
+  flex: 1 1 auto;
+}
+
 .gp-a-log {
-  min-height: 240px;
-  max-height: min(68vh, 720px);
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 4px 4px 4px 0;
@@ -779,4 +788,14 @@
     animation: none;
     opacity: 0.7;
   }
+}
+
+/* "Show details" on an earlier visit's finished card */
+.gp-a-details {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
 }

@@ -37,7 +37,7 @@ const photosDoneByPlan = (plan) => {
   );
 };
 
-export default function ImproveTab({ onOpenTab }) {
+export default function ImproveTab({ onOpenTab, onChanged }) {
   const agent = useLoad(gpManageApi.agent);
   const storefront = useLoad(gpManageApi.storefront);
   const keywords = useLoad(gpManageApi.keywords);
@@ -48,16 +48,18 @@ export default function ImproveTab({ onOpenTab }) {
   const facts = usedFacts ?? (savedFacts.status === "ready" ? savedFacts.data : null);
   const [photosSent, setPhotosSent] = useState(false);
   const [report, setReport] = useState(null); // { status, plan, after } from the fix list
-  const [fixesKey, setFixesKey] = useState(0);
+  const [fixesRefresh, setFixesRefresh] = useState(0);
   const [opened, setOpened] = useState({});
   const [firstCurrent, setFirstCurrent] = useState(undefined);
   const toggles = useRef({});
 
   const onReport = useCallback((next) => setReport(next), []);
-  const reloadFixes = useCallback(() => {
-    setReport(null);
-    setFixesKey((k) => k + 1);
-  }, []);
+  // 2026-10-27: the score and fixes are read again quietly (what is on screen stays until the new answer comes).
+  const reloadFixes = useCallback(() => setFixesRefresh((n) => n + 1), []);
+  const changed = useCallback(() => {
+    reloadFixes();
+    onChanged?.();
+  }, [reloadFixes, onChanged]);
 
   const plan = report?.status === "ready" ? report.plan : null;
   const planKnown = report?.status === "ready" || report?.status === "error";
@@ -160,11 +162,11 @@ export default function ImproveTab({ onOpenTab }) {
 
       <div className="gp-a-layout">
         <div className="gp-a-main">
-          <AssistantChat onOpenTab={onOpenTab} onOpenFixes={() => openStep("fixes")} onChanged={reloadFixes} />
+          <AssistantChat onOpenTab={onOpenTab} onOpenFixes={() => openStep("fixes")} onChanged={changed} />
         </div>
 
         <div className="gp-a-side">
-          <ImproveAgent agent={agent} report={report} onChanged={reloadFixes} />
+          <ImproveAgent agent={agent} report={report} onChanged={changed} />
 
           {agentOff && <Callout tone="warn">Turn on the AI helper so it can prepare fixes.</Callout>}
 
@@ -197,7 +199,7 @@ export default function ImproveTab({ onOpenTab }) {
                 5,
                 "AI fixes ready",
                 fixSummary,
-                <FixesTab key={fixesKey} embedded onReport={onReport} onOpenTab={onOpenTab} />,
+                <FixesTab embedded refresh={fixesRefresh} onReport={onReport} onOpenTab={onOpenTab} />,
               )}
               {step(
                 "needs",

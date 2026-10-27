@@ -431,7 +431,9 @@ export default function GoogleProfilePage() {
     }
   };
 
-  const showSteps = status === "ready" && known;
+  // 2026-10-27: once the profile is live the set-up steps are all done, so the strip and the status time go (the
+  // tabs come straight after a short profile header).
+  const showSteps = status === "ready" && known && screen !== "live";
   const checkedAt = showSteps && screen !== "start" ? formatWhen(view?.checked_at) : "";
 
   return (
@@ -447,7 +449,7 @@ export default function GoogleProfilePage() {
         </header>
 
         {showSteps && <StepStrip done={STEP_FOR_SCREEN[screen]} />}
-        {checkedAt && <p className="gp-note gp-checked">Status last checked {checkedAt}</p>}
+        {checkedAt && screen !== "live" && <p className="gp-note gp-checked">Status last checked {checkedAt}</p>}
 
         {renderScreen()}
       </div>
