@@ -19,12 +19,7 @@ function ReviewLinkActions({ url }) {
   };
   return (
     <div className="gp-e-stack-sm">
-      <p className="gp-a-link-text">
-        <a href={url} target="_blank" rel="noopener noreferrer" className="gp-link">
-          {url}
-          <span className="visually-hidden"> (opens in a new tab)</span>
-        </a>
-      </p>
+      {/* 2026-10-27: the long link is not printed; Copy link and WhatsApp carry it. */}
       <div className="gp-btns gp-a-btns">
         <button type="button" className="gp-btn gp-btn-ghost gp-a-btn" onClick={copy}>
           <FiCopy size={16} aria-hidden="true" />
@@ -49,20 +44,20 @@ function ItemAction({ action, busy, onSend, onUploadFor, onOpenFixes, onOpenTab,
   switch (action.type) {
     case "upload_photo":
       return (
-        <button type="button" className="gp-btn gp-btn-primary gp-a-btn" disabled={busy} onClick={() => onUploadFor(action.command)}>
+        <button type="button" className="gp-btn gp-btn-primary gp-a-btn gp-a-btn-sm" disabled={busy} onClick={() => onUploadFor(action.command)}>
           <FiUpload size={16} aria-hidden="true" />
           {PURPOSE_LABELS[action.purpose] || "Upload a photo"}
         </button>
       );
     case "command":
       return (
-        <button type="button" className="gp-btn gp-btn-primary gp-a-btn" disabled={busy} onClick={() => onSend(action.command)}>
+        <button type="button" className="gp-btn gp-btn-primary gp-a-btn gp-a-btn-sm" disabled={busy} onClick={() => onSend(action.command)}>
           Ask the AI to do it
         </button>
       );
     case "open_fixes":
       return (
-        <button type="button" className="gp-btn gp-btn-primary gp-a-btn" onClick={onOpenFixes}>
+        <button type="button" className="gp-btn gp-btn-primary gp-a-btn gp-a-btn-sm" onClick={onOpenFixes}>
           {typeof action.count === "number" && action.count > 0 ? `Open fixes (${action.count})` : "Open fixes"}
         </button>
       );
@@ -126,15 +121,17 @@ export default function AssistantCoach({ coach, busy, onSend, onUploadFor, onOpe
     );
   }
 
+  // 2026-10-27: one message with a short list (one bubble, not one per tip).
   return (
-    <>
-      <AssistantBubble>
-        <p className="gp-a-text">Here's what will help your Google profile today:</p>
-      </AssistantBubble>
-      {items.map((item, index) => (
-        <AssistantBubble key={item.key || index} wide>
-          <div className="gp-a-tip">
+    <AssistantBubble wide>
+      <p className="gp-a-text">Here's what will help your Google profile today:</p>
+      <ol className="gp-e-plain gp-a-tips">
+        {items.map((item, index) => (
+          <li key={item.key || index} className="gp-a-tip">
             <div className="gp-a-tip-head">
+              <span className="gp-a-tip-num" aria-hidden="true">
+                {index + 1}
+              </span>
               <p className="gp-a-tip-title">
                 <span className="visually-hidden">
                   Tip {index + 1} of {items.length}:{" "}
@@ -145,19 +142,21 @@ export default function AssistantCoach({ coach, busy, onSend, onUploadFor, onOpe
                 <span className="gp-chip gp-chip-pink">+{item.points} points</span>
               )}
             </div>
-            {item.message && <p className="gp-a-text">{item.message}</p>}
-            <ItemAction
-              action={item.action}
-              busy={busy}
-              onSend={onSend}
-              onUploadFor={onUploadFor}
-              onOpenFixes={onOpenFixes}
-              onOpenTab={onOpenTab}
-              onTypeAnswer={onTypeAnswer}
-            />
-          </div>
-        </AssistantBubble>
-      ))}
-    </>
+            <div className="gp-a-tip-body">
+              {item.message && <p className="gp-a-text gp-a-tip-text">{item.message}</p>}
+              <ItemAction
+                action={item.action}
+                busy={busy}
+                onSend={onSend}
+                onUploadFor={onUploadFor}
+                onOpenFixes={onOpenFixes}
+                onOpenTab={onOpenTab}
+                onTypeAnswer={onTypeAnswer}
+              />
+            </div>
+          </li>
+        ))}
+      </ol>
+    </AssistantBubble>
   );
 }

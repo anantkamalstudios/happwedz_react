@@ -344,6 +344,8 @@ const Navbar = () => {
                   background: "transparent",
                   fontSize: isMobile ? 12 : 13,
                   minWidth: isMobile ? 56 : 58,
+                  // 2026-10-27: never squeezed narrower than its label (a long label ran into the next item).
+                  flexShrink: 0,
                   color:
                     activeTab === tab.id ? "var(--primary-color)" : "#2c3e50",
                   paddingLeft: isMobile ? 6 : undefined,

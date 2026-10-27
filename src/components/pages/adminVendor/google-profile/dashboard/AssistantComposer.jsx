@@ -16,6 +16,11 @@ export default function AssistantComposer({ value, onChange, onSend, busy, input
   const latest = useRef(null);
   latest.current = attachment;
 
+  // An emptied box (after Send, or a tip filled it) goes back to one line.
+  useEffect(() => {
+    if (!value && inputRef?.current) inputRef.current.style.height = "";
+  }, [value, inputRef]);
+
   // The photo preview is freed when the box goes away (a sent photo's preview belongs to the chat then).
   useEffect(
     () => () => {
@@ -128,7 +133,7 @@ export default function AssistantComposer({ value, onChange, onSend, busy, input
       <label htmlFor={`${id}-input`} className="visually-hidden">
         Message the AI assistant
       </label>
-      <div className="gp-a-input-row">
+      <div className={`gp-a-input-row${busy ? " is-busy" : ""}`}>
         <input
           ref={fileRef}
           type="file"
@@ -151,13 +156,18 @@ export default function AssistantComposer({ value, onChange, onSend, busy, input
         <textarea
           id={`${id}-input`}
           ref={inputRef}
-          className="form-control gp-a-input"
-          rows={2}
+          className="gp-a-input"
+          rows={1}
           value={value}
           maxLength={PROMPT_MAX}
           placeholder="Ask anything, or tell the AI what to change"
           aria-describedby={`${id}-hint`}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            onChange(e.target.value);
+            // The box grows with the text (up to the CSS max-height), then scrolls.
+            e.target.style.height = "auto";
+            e.target.style.height = `${e.target.scrollHeight}px`;
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
@@ -172,9 +182,11 @@ export default function AssistantComposer({ value, onChange, onSend, busy, input
       </div>
       <p className="gp-note gp-a-hint" id={`${id}-hint`}>
         <span>Enter to send · Shift + Enter for a new line</span>
-        <span>
-          {value.length} / {PROMPT_MAX}
-        </span>
+        {value.length >= PROMPT_MAX - 100 && (
+          <span>
+            {value.length} / {PROMPT_MAX}
+          </span>
+        )}
       </p>
     </form>
   );

@@ -230,13 +230,10 @@ export default function AssistantChat({ onOpenTab, onOpenFixes, onChanged }) {
           <h3 className="gp-h3" id={`${id}-title`}>
             AI assistant
           </h3>
-          <p className="gp-note">
-            Ask about your Google profile, or tell the AI what to change. Anything that shows on Google waits for your
-            tap.
-          </p>
+          <p className="gp-note">Ask about your profile or tell the AI what to change. Nothing goes to Google until you tap.</p>
         </div>
         {turns.length > 0 && !confirming && (
-          <button type="button" className="gp-btn gp-btn-ghost gp-a-btn" onClick={() => setConfirming(true)} disabled={busy}>
+          <button type="button" className="gp-btn gp-btn-ghost gp-a-btn gp-a-btn-sm" onClick={() => setConfirming(true)} disabled={busy}>
             <FiTrash2 size={16} aria-hidden="true" />
             Clear chat
           </button>
