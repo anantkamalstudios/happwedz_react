@@ -1078,3 +1078,37 @@ legend.gp-e-label {
     gap: 2px;
   }
 }
+
+/* 2026-10-27: the photos picked in "Add photos" (up to 10) */
+.gp-e-upload-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 10px;
+}
+
+.gp-e-upload-item {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.gp-e-upload-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--gp-line);
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.gp-e-upload-x {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #fff;
+}
+
+.gp-e-upload-state {
+  justify-self: start;
+  font-size: 12px;
+}

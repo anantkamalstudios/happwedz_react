@@ -44,9 +44,9 @@ function ItemAction({ action, busy, onSend, onUploadFor, onOpenFixes, onOpenTab,
   switch (action.type) {
     case "upload_photo":
       return (
-        <button type="button" className="gp-btn gp-btn-primary gp-a-btn gp-a-btn-sm" disabled={busy} onClick={() => onUploadFor(action.command)}>
+        <button type="button" className="gp-btn gp-btn-primary gp-a-btn gp-a-btn-sm" disabled={busy} onClick={() => onUploadFor(action.command, action.purpose)}>
           <FiUpload size={16} aria-hidden="true" />
-          {PURPOSE_LABELS[action.purpose] || "Upload a photo"}
+          {action.purpose === "photo" ? "Upload photos" : PURPOSE_LABELS[action.purpose] || "Upload a photo"}
         </button>
       );
     case "command":

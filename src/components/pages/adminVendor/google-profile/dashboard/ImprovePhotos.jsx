@@ -79,7 +79,7 @@ export default function ImprovePhotos({ storefront, onSent }) {
   const closeUpload = (sent) => {
     setUploading(false);
     if (sent) {
-      setMessage({ tone: "ok", text: "Photo sent to Google. Google checks photos before showing them." });
+      setMessage({ tone: "ok", text: `${sent > 1 ? `${sent} photos` : "Photo"} sent to Google. Google checks photos before showing them.` });
       onSent?.();
     }
     window.requestAnimationFrame(() => uploadRef.current?.focus());
@@ -97,10 +97,10 @@ export default function ImprovePhotos({ storefront, onSent }) {
       disabled={busy}
     >
       <FiUpload size={18} aria-hidden="true" />
-      Upload a photo
+      Upload photos
     </button>
   );
-  const uploadForm = uploading ? <PhotoUpload onAdded={() => closeUpload(true)} onCancel={() => closeUpload(false)} /> : null;
+  const uploadForm = uploading ? <PhotoUpload onAdded={(n) => closeUpload(n)} onCancel={() => closeUpload(0)} /> : null;
   const note = <div aria-live="polite">{message && <Callout tone={message.tone}>{message.text}</Callout>}</div>;
 
   if (storefront.status === "loading") return <TabLoading label="Loading your storefront photos…" />;
@@ -207,8 +207,8 @@ export default function ImprovePhotos({ storefront, onSent }) {
     <div className="gp-e-stack">
       <p className="gp-note">
         Tick up to {PHOTOS_MAX} photos from your storefront. Pick one as your cover photo and one as your logo; the rest go
-        to Google as photos. Only real photos of your work: AI never makes fake photos. A photo that is not on your
-        storefront? Use Upload a photo.
+        to Google as photos. Only real photos of your work: AI never makes fake photos. Photos that are not on your
+        storefront? Use Upload photos.
       </p>
       <ul className="gp-e-photos gp-i-photos">
         {photos.map((p, i) => (

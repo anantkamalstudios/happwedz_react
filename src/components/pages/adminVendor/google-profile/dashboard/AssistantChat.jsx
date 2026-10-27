@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import { FiTrash2 } from "react-icons/fi";
-import { assistantApi } from "../../../../../services/api/googleProfileApi";
+import { assistantApi, gpManageApi } from "../../../../../services/api/googleProfileApi";
 import { RefreshButton } from "../GpParts";
 import AssistantCoach from "./AssistantCoach";
 import AssistantCommandCard from "./AssistantCommandCard";
@@ -28,6 +28,9 @@ import {
 import { ConfirmBox } from "./ProfileShared";
 import { useLoad } from "./ImproveUtils";
 import "./dashboard-assistant.css";
+
+/** "Add more photos" in today's tips: at most this many photos in one go. */
+const PHOTOS_AT_ONCE = 10;
 
 export default function AssistantChat({ onOpenTab, onOpenFixes, onChanged }) {
   const id = useId();
@@ -118,16 +121,66 @@ export default function AssistantChat({ onOpenTab, onOpenFixes, onChanged }) {
     submit({ text: turn.text, attachment: turn.attachment, file: turn.file, preview: turn.preview });
   };
 
-  // Coach "Upload photo": pick a photo, then send the item's command with it.
-  const onUploadFor = (command) => {
+  // Coach "Upload photo": pick a photo, then send the item's command with it. 2026-10-27: "Add more photos"
+  // (purpose photo) takes up to PHOTOS_AT_ONCE photos and sends them straight to Google as photos (category Other),
+  // one by one, without the AI.
+  const coachMany = useRef(false);
+  const onUploadFor = (command, purpose) => {
     if (busy) return;
     coachCommand.current = command || "";
+    coachMany.current = purpose === "photo";
     setPhotoNote("");
+    if (coachFileRef.current) coachFileRef.current.multiple = coachMany.current;
     coachFileRef.current?.click();
   };
+
+  const sendPhotos = async (files) => {
+    const key = newKey();
+    const shown = files.map((file, i) => {
+      const url = URL.createObjectURL(file);
+      previews.current.add(url);
+      return { id: `${key}-${i}`, kind: "image", name: file.name, url };
+    });
+    const text = files.length === 1 ? "Add this photo to my Google profile" : `Add these ${files.length} photos to my Google profile`;
+    const base = { key, text, preview: null, attachments: shown };
+    const pending = (done) => ({ ...base, type: "pending", stage: "upload", label: `Sending photo ${done + 1} of ${files.length} to Google…` });
+    setFresh((list) => [...list, pending(0)]);
+    setBusy(true);
+    setAnnouncement("");
+    let sent = 0;
+    const failed = [];
+    for (let i = 0; i < files.length; i += 1) {
+      setFresh((list) => list.map((t) => (t.key === key ? pending(i) : t)));
+      try {
+        await gpManageApi.addPhoto(files[i], "ADDITIONAL");
+        sent += 1;
+      } catch (error) {
+        failed.push(`${files[i].name}: ${error?.response?.data?.message || "not sent"}`);
+      }
+    }
+    const answer = [
+      sent ? `${sent} ${sent === 1 ? "photo" : "photos"} sent to Google as "Other". Google checks photos before showing them.` : "No photo was sent.",
+      ...(failed.length ? ["Not sent:", ...failed] : []),
+    ].join("\n");
+    const turn = { ...base, type: "question", answer };
+    setFresh((list) => list.map((t) => (t.key === key ? turn : t)));
+    setAnnouncement(answer);
+    setBusy(false);
+    if (sent) onChanged?.();
+  };
+
   const onCoachFile = (event) => {
-    const file = event.target.files?.[0];
+    const picked = Array.from(event.target.files || []);
     event.target.value = "";
+    if (coachMany.current && picked.length) {
+      const bad = picked.map((f) => photoProblem(f)).find(Boolean);
+      const good = picked.filter((f) => !photoProblem(f));
+      const extra = good.length > PHOTOS_AT_ONCE ? ` Only the first ${PHOTOS_AT_ONCE} are sent; add the rest after.` : "";
+      setPhotoNote(bad ? `Some photos were left out: ${bad}${extra}` : extra.trim());
+      if (good.length) sendPhotos(good.slice(0, PHOTOS_AT_ONCE));
+      return;
+    }
+    const file = picked[0];
     const text = coachCommand.current;
     if (!file || !text) return;
     const problem = photoProblem(file);
@@ -189,7 +242,7 @@ export default function AssistantChat({ onOpenTab, onOpenFixes, onChanged }) {
       <UserBubble text={turn.text} attachments={turn.attachments} localPreview={turn.preview} />
       {turn.type === "pending" && (
         <TypingIndicator
-          label={turn.stage === "upload" ? "Uploading your photo…" : "The AI is writing… This can take up to a minute."}
+          label={turn.label || (turn.stage === "upload" ? "Uploading your photo…" : "The AI is writing… This can take up to a minute.")}
         />
       )}
       {turn.type === "question" && (
