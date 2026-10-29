@@ -5,9 +5,13 @@ import { FiLock } from "react-icons/fi";
 /**
  * Shown in place of a dashboard tool the vendor's plan doesn't include.
  *
- * The tab itself is hidden from the navbar, so this is what a vendor sees only
- * if they reach the page another way: a bookmark, an old open tab, or a link
- * from before they changed plan. The server refuses the data either way.
+ * These tabs used to be hidden from the navbar, which made this a page almost
+ * nobody saw — only someone arriving from a bookmark or an old open tab. They
+ * are listed for everyone now, marked with a padlock, so this is the ordinary
+ * way a vendor finds out what a feature does and what it would cost. It is
+ * worth keeping it a decent page.
+ *
+ * Nothing here is a security boundary: the API refuses the data either way.
  */
 const PlanFeatureNotice = ({ title, description }) => {
   const navigate = useNavigate();

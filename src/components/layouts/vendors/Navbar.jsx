@@ -5,6 +5,7 @@ import { LiaHomeSolid } from "react-icons/lia";
 import { FaRegStar } from "react-icons/fa";
 import { PiAddressBookLight, PiInstagramLogoLight, PiMapPinLight, PiOfficeChairLight } from "react-icons/pi";
 import { GoMail } from "react-icons/go";
+import { FiLock } from "react-icons/fi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { IoStorefrontOutline } from "react-icons/io5";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -230,26 +231,27 @@ const Navbar = () => {
       },
     ];
 
-    // CRM and Instagram are sold with a subscription plan. A vendor whose plan
-    // doesn't include one never sees its tab (the API refuses it too).
-    if (hasCrm) {
-      baseTabs.push({
-        id: "crm",
-        slug: "vendor-crm",
-        label: "CRM",
-        Icon: PiAddressBookLight,
-      });
-    }
+    // CRM, Google Profile and Instagram are sold with a subscription plan.
+    // They are listed for everyone all the same: hiding them meant the only way
+    // to find out they existed was to read the pricing page. Opening one is
+    // safe — Main.jsx wraps each in FeatureGuard, which shows what the feature
+    // does instead of the tool, and the API refuses it either way.
+    baseTabs.push({
+      id: "crm",
+      slug: "vendor-crm",
+      label: "CRM",
+      Icon: PiAddressBookLight,
+      locked: !hasCrm,
+    });
 
     // Google Profile (set up through GrowthOS AI) is also a plan module.
-    if (hasGoogleProfile) {
-      baseTabs.push({
-        id: "google-profile",
-        slug: "vendor-google-profile",
-        label: "Google Profile",
-        Icon: PiMapPinLight,
-      });
-    }
+    baseTabs.push({
+      id: "google-profile",
+      slug: "vendor-google-profile",
+      label: "Google Profile",
+      Icon: PiMapPinLight,
+      locked: !hasGoogleProfile,
+    });
 
     // Only add Movments+ tab for photographers (vendor type id = 1 or 12)
     if (isPhotographer) {
@@ -261,14 +263,13 @@ const Navbar = () => {
       });
     }
 
-    if (hasInstagram) {
-      baseTabs.push({
-        id: "instagram",
-        slug: "vendor-instagram",
-        label: "Instagram",
-        Icon: PiInstagramLogoLight,
-      });
-    }
+    baseTabs.push({
+      id: "instagram",
+      slug: "vendor-instagram",
+      label: "Instagram",
+      Icon: PiInstagramLogoLight,
+      locked: !hasInstagram,
+    });
 
     baseTabs.push({
       id: "settings",
@@ -353,6 +354,8 @@ const Navbar = () => {
                   marginRight: isMobile ? 4 : undefined,
                 }}
                 onClick={() => handleTabClick(tab)}
+                title={tab.locked ? `${tab.label} — not in your plan` : undefined}
+                aria-label={tab.locked ? `${tab.label}, not in your plan` : undefined}
               >
                 <div style={{ position: "relative" }}>
                   {tab.Icon ? (
@@ -373,6 +376,23 @@ const Navbar = () => {
                         display: "block",
                       }}
                     />
+                  )}
+                  {tab.locked && (
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        bottom: -3,
+                        right: -5,
+                        background: "#fff",
+                        borderRadius: "50%",
+                        lineHeight: 0,
+                        padding: 1,
+                        color: "#9aa3ad",
+                      }}
+                    >
+                      <FiLock size={isMobile ? 11 : 10} />
+                    </span>
                   )}
                   {tab.id === "enquiries" &&
                     showEnquiryBadge &&
