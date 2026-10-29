@@ -396,16 +396,26 @@ const VendorRegister = () => {
                       placeholder="Password"
                       value={formData.password}
                       onChange={handleChange}
-                      style={{ paddingRight: "48px" }}
+                      // No Bootstrap error glyph: it lands in the same corner as
+                      // the eye, and the message below already says what is wrong.
+                      style={{ paddingRight: "48px", backgroundImage: "none" }}
                     />
                     <label className="fs-16">Password</label>
                     <button
                       type="button"
-                      className="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent"
+                      className="position-absolute border-0 bg-transparent d-flex align-items-center justify-content-center p-0"
                       onClick={togglePasswordVisibility}
                       style={{
                         zIndex: 10,
-                        marginRight: "10px",
+                        // Against the input's own box, not the wrapper. The wrapper
+                        // also holds the validation message, so centring on it
+                        // dropped the icon onto the bottom border the moment a
+                        // password failed validation.
+                        top: 0,
+                        right: 12,
+                        height: "calc(3.5rem + 2px)",
+                        width: 28,
+                        color: "#6c757d",
                       }}
                       aria-label={
                         passwordVisible ? "Hide password" : "Show password"
