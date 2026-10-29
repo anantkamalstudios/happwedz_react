@@ -847,3 +847,202 @@
 
 .rt-special-logo { width: 24px; height: 24px; object-fit: contain; }
 .rt-special-price { font-size: 11px; color: #222; white-space: nowrap; }
+
+/* ── Combined international round trips ──────────────────────────────────────
+   TripJack sells an international round trip as one itinerary under a single
+   priceId, so it cannot go in the two-column pick-an-outbound-pick-a-return
+   layout. One card carries both directions and one price. */
+
+.combo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.combo-note {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b5560;
+  background: #fff5f9;
+  border: 1px solid #f7d6e4;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.combo-card {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  background: #fff;
+  border: 1px solid #ebe6e9;
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.combo-card:hover {
+  border-color: #f0b9ce;
+}
+
+.combo-card.is-selected {
+  border-color: #ed1173;
+  box-shadow: 0 0 0 1px #ed1173 inset;
+}
+
+.combo-card-legs {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.combo-leg-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9b8d94;
+  margin-bottom: 4px;
+}
+
+.combo-leg + .combo-leg {
+  border-top: 1px dashed #ece7ea;
+  padding-top: 10px;
+}
+
+.combo-leg-body {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.combo-leg-airline {
+  min-width: 132px;
+  display: flex;
+  flex-direction: column;
+}
+
+.combo-leg-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #22161c;
+}
+
+.combo-leg-num {
+  font-size: 11.5px;
+  color: #9b8d94;
+}
+
+.combo-leg-point {
+  text-align: center;
+  min-width: 56px;
+}
+
+.combo-leg-time {
+  font-size: 15px;
+  font-weight: 700;
+  color: #22161c;
+}
+
+.combo-leg-code,
+.combo-leg-date {
+  font-size: 11.5px;
+  color: #9b8d94;
+}
+
+.combo-leg-mid {
+  flex: 1 1 120px;
+  text-align: center;
+  min-width: 120px;
+}
+
+.combo-leg-dur,
+.combo-leg-stops {
+  font-size: 11.5px;
+  color: #6b5560;
+}
+
+.combo-leg-line {
+  height: 1px;
+  background: #e4dde1;
+  margin: 4px 0;
+}
+
+.combo-leg-via {
+  color: #9b8d94;
+}
+
+.combo-card-side {
+  flex: 0 0 auto;
+  width: 168px;
+  border-left: 1px solid #f0ebee;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  text-align: right;
+}
+
+.combo-card-price {
+  font-size: 19px;
+  font-weight: 700;
+  color: #22161c;
+}
+
+.combo-card-fare {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #6b5560;
+}
+
+.combo-card-bag {
+  font-size: 11.5px;
+  color: #6b5560;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.combo-card-book {
+  margin-top: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: #ed1173;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 8px 22px;
+  cursor: pointer;
+}
+
+.combo-card-book:hover {
+  background: #d40f67;
+}
+
+@media (max-width: 768px) {
+  .combo-card {
+    flex-direction: column;
+  }
+
+  .combo-card-side {
+    width: auto;
+    border-left: 0;
+    border-top: 1px solid #f0ebee;
+    padding-left: 0;
+    padding-top: 12px;
+    align-items: stretch;
+    text-align: left;
+  }
+
+  .combo-card-book {
+    width: 100%;
+  }
+}

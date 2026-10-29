@@ -190,6 +190,11 @@ export default function FlightSearchResults() {
   const [returnFlights, setReturnFlights] = useState([]);
   const [filteredOutbound, setFilteredOutbound] = useState([]);
   const [filteredReturn, setFilteredReturn] = useState([]);
+  // International round trips arrive as one itinerary covering both
+  // directions under a single priceId, so they are held apart from the
+  // outbound/return lists and shown as one list.
+  const [comboFlights, setComboFlights] = useState([]);
+  const [selectedCombo, setSelectedCombo] = useState(null);
   const [selectedOutbound, setSelectedOutbound] = useState(null);
   const [selectedReturn, setSelectedReturn] = useState(null);
   const [sortOutbound, setSortOutbound] = useState("price");
@@ -237,6 +242,10 @@ export default function FlightSearchResults() {
       list.map((trip, i) => ({ ...trip, _key: `${bucket}-${i}` }));
     const onwardKeyed = stamp(onward, "ONWARD");
     const returnKeyed = stamp(ret, "RETURN");
+    setComboFlights(
+      stamp([...(directTrips.COMBO || []), ...(connectingTrips.COMBO || [])], "COMBO")
+    );
+    setSelectedCombo(null);
     setOutboundFlights(onwardKeyed);
     setReturnFlights(returnKeyed);
     setFilteredOutbound(onwardKeyed);
@@ -1014,6 +1023,132 @@ export default function FlightSearchResults() {
   // useVirtualList calls, so the hook order stays stable.
   if (!searchParams || !initialResults) return null;
 
+  // Only COMBO came back: there is nothing to pick in two columns.
+  const comboMode =
+    comboFlights.length > 0 && outboundFlights.length === 0 && returnFlights.length === 0;
+
+  /**
+   * Where the outbound ends: the first segment that arrives at the
+   * destination. Everything after it is the way home. Splitting on a single
+   * origin-to-destination segment would only work on a non-stop, and an
+   * India-Europe fare never is.
+   */
+  const splitCombo = (trip) => {
+    const segs = Array.isArray(trip?.sI) ? trip.sI : [];
+    const to = String(searchParams?.to || "").toUpperCase();
+    const at = segs.findIndex((seg) => String(seg?.aa?.code || "").toUpperCase() === to);
+    if (at < 0 || at === segs.length - 1) return { out: segs, back: [] };
+    return { out: segs.slice(0, at + 1), back: segs.slice(at + 1) };
+  };
+
+  const comboLegMinutes = (segs) =>
+    segs.reduce((sum, seg) => sum + (Number(seg?.duration) || 0), 0);
+
+  /** One direction of a combined itinerary. */
+  const renderComboLeg = (segs, label) => {
+    if (!segs.length) return null;
+    const first = segs[0];
+    const last = segs[segs.length - 1];
+    const airline = first?.fD?.aI || {};
+    const stops = segs.length - 1;
+    return (
+      <div className="combo-leg">
+        <div className="combo-leg-label">{label}</div>
+        <div className="combo-leg-body">
+          <div className="combo-leg-airline">
+            <span className="combo-leg-name">{airline.name || airline.code}</span>
+            <span className="combo-leg-num">
+              {segs.map((seg) => `${seg?.fD?.aI?.code}-${seg?.fD?.fN}`).join(", ")}
+            </span>
+          </div>
+          <div className="combo-leg-point">
+            <div className="combo-leg-time">{getTime(first.dt)}</div>
+            <div className="combo-leg-code">{first?.da?.code}</div>
+            <div className="combo-leg-date">{getDateLabel(first.dt)}</div>
+          </div>
+          <div className="combo-leg-mid">
+            <div className="combo-leg-dur">{formatDuration(comboLegMinutes(segs))}</div>
+            <div className="combo-leg-line" />
+            <div className="combo-leg-stops">
+              {stops === 0 ? "Non-stop" : `${stops} stop${stops > 1 ? "s" : ""}`}
+              {stops > 0 && (
+                <span className="combo-leg-via">
+                  {" via "}
+                  {segs.slice(0, -1).map((seg) => seg?.aa?.code).join(", ")}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="combo-leg-point">
+            <div className="combo-leg-time">{getTime(last.at)}</div>
+            <div className="combo-leg-code">{last?.aa?.code}</div>
+            <div className="combo-leg-date">{getDateLabel(last.at)}</div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderComboList = () => {
+    if (!comboFlights.length) {
+      return <div className="no-results">No flights found</div>;
+    }
+    const pax = paxFromSearch(searchParams);
+    const sorted = [...comboFlights].sort((a, b) => getPrice(a, pax) - getPrice(b, pax));
+
+    return (
+      <div className="combo-list">
+        <div className="combo-note">
+          These fares cover both directions and are sold as one ticket, so the
+          outbound and return cannot be chosen separately.
+        </div>
+        {sorted.map((trip) => {
+          const { out, back } = splitCombo(trip);
+          const fare = trip?.totalPriceList?.[0];
+          const price = getPrice(trip, pax);
+          const chosen = selectedCombo?._key === trip._key;
+          return (
+            <div
+              key={trip._key}
+              className={`combo-card${chosen ? " is-selected" : ""}`}
+              onClick={() => setSelectedCombo(trip)}
+            >
+              <div className="combo-card-legs">
+                {renderComboLeg(out, `${searchParams.from} → ${searchParams.to}`)}
+                {renderComboLeg(back, `${searchParams.to} → ${searchParams.from}`)}
+              </div>
+              <div className="combo-card-side">
+                <div className="combo-card-price">{formatPrice(price)}</div>
+                <div className="combo-card-fare">
+                  <span className={getFareBadgeClass(fare?.fareIdentifier)}>
+                    {getFareLabel(fare?.fareIdentifier)}
+                  </span>
+                  <span className="combo-card-cabin">{getFareCabin(fare)}</span>
+                </div>
+                {getCheckinBaggage(fare) && (
+                  <div className="combo-card-bag">
+                    <FiBriefcase size={11} /> {getCheckinBaggage(fare)}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="combo-card-book"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedCombo(trip);
+                    reviewAndGo(trip, null);
+                  }}
+                >
+                  Book
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const renderRoundTripColumn = (type) => {
     const isOut = type === "outbound";
     const list = isOut ? filteredOutbound : filteredReturn;
@@ -1239,7 +1374,9 @@ export default function FlightSearchResults() {
                 </button>
               </div>
             )}
-            {isRoundTrip ? (
+            {comboMode ? (
+              renderComboList()
+            ) : isRoundTrip ? (
               <div className="rt-columns">
                 {renderRoundTripColumn("outbound")}
                 {renderRoundTripColumn("return")}
