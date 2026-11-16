@@ -178,6 +178,16 @@ const SORT_LABELS = {
   price: "Price",
 };
 
+/**
+ * One direction of a combined itinerary, shaped like an ordinary trip.
+ *
+ * Everything in utils/flightFilters reads trip.sI, so handing it a copy whose
+ * sI is just that half lets filterTrips and deriveFacets work on a combo with
+ * no changes of their own.
+ */
+const outHalf = (trip) => ({ ...trip, sI: trip._out || trip.sI || [] });
+const inHalf = (trip) => ({ ...trip, sI: trip._in || [] });
+
 const ShimmerCard = () => <div className="shimmer-card" />;
 
 
@@ -194,6 +204,8 @@ export default function FlightSearchResults() {
   // directions under a single priceId, so they are held apart from the
   // outbound/return lists and shown as one list.
   const [comboFlights, setComboFlights] = useState([]);
+  const [filteredCombo, setFilteredCombo] = useState([]);
+  const [sortCombo, setSortCombo] = useState("price");
   const [selectedCombo, setSelectedCombo] = useState(null);
   const [selectedOutbound, setSelectedOutbound] = useState(null);
   const [selectedReturn, setSelectedReturn] = useState(null);
@@ -242,17 +254,37 @@ export default function FlightSearchResults() {
       list.map((trip, i) => ({ ...trip, _key: `${bucket}-${i}` }));
     const onwardKeyed = stamp(onward, "ONWARD");
     const returnKeyed = stamp(ret, "RETURN");
-    setComboFlights(
-      stamp([...(directTrips.COMBO || []), ...(connectingTrips.COMBO || [])], "COMBO")
-    );
+    // Split each combo once here rather than on every render: _out and _in are
+    // what the filters, the facets and the card all read.
+    const comboKeyed = stamp(
+      [...(directTrips.COMBO || []), ...(connectingTrips.COMBO || [])],
+      "COMBO"
+    ).map((trip) => {
+      const segs = Array.isArray(trip?.sI) ? trip.sI : [];
+      const toCode = String(searchParams?.to || "").toUpperCase();
+      const at = segs.findIndex((seg) => String(seg?.aa?.code || "").toUpperCase() === toCode);
+      const out = at < 0 || at === segs.length - 1 ? segs : segs.slice(0, at + 1);
+      const back = at < 0 || at === segs.length - 1 ? [] : segs.slice(at + 1);
+      return { ...trip, _out: out, _in: back };
+    });
+    setComboFlights(comboKeyed);
     setSelectedCombo(null);
     setOutboundFlights(onwardKeyed);
     setReturnFlights(returnKeyed);
     setFilteredOutbound(onwardKeyed);
     setFilteredReturn(returnKeyed);
     const facetPax = paxFromSearch(searchParams);
-    const outboundFacets = deriveFacets(onwardKeyed, facetPax);
-    const returnFacets = deriveFacets(returnKeyed, facetPax);
+    // On an international round trip the two columns are empty and the combo
+    // halves are what the sidebar must describe, or every facet reads as one
+    // itinerary with a stop in the middle.
+    const outboundFacets = deriveFacets(
+      onwardKeyed.length ? onwardKeyed : comboKeyed.map(outHalf),
+      facetPax
+    );
+    const returnFacets = deriveFacets(
+      returnKeyed.length ? returnKeyed : comboKeyed.map(inHalf),
+      facetPax
+    );
     setFiltersMeta({ outbound: outboundFacets, return: returnFacets });
     const specialOptions = deriveSpecialReturn(onwardKeyed, returnKeyed, facetPax);
     setSpecialReturns(specialOptions);
@@ -353,7 +385,31 @@ export default function FlightSearchResults() {
         sortReturn,
       ),
     );
-  }, [outboundFlights, returnFlights, sortOutbound, sortReturn, filters, searchParams, markups]);
+    // A combined itinerary is kept only when BOTH halves pass: "non-stop" on a
+    // round trip has to mean non-stop in each direction, not one leg of two.
+    const outboundKeeps = new Set(
+      filterTrips(comboFlights.map(outHalf), filters, { searchFrom: from, searchTo: to, pax }).map(
+        (t) => t._key
+      )
+    );
+    const returnKeeps = new Set(
+      filterTrips(comboFlights.map(inHalf), filters, {
+        isReturn: true,
+        searchFrom: to,
+        searchTo: from,
+        pax,
+      }).map((t) => t._key)
+    );
+    // Sorted on the outbound half, then mapped back to the whole itinerary:
+    // "duration" and "arrival" read trip.sI, and on a combo that is both
+    // directions — so sorting the raw combo by arrival would order the list by
+    // when people get home.
+    const byKey = new Map(comboFlights.map((t) => [t._key, t]));
+    const kept = comboFlights
+      .filter((t) => outboundKeeps.has(t._key) && returnKeeps.has(t._key))
+      .map(outHalf);
+    setFilteredCombo(sortList(kept, sortCombo).map((half) => byKey.get(half._key)));
+  }, [outboundFlights, returnFlights, comboFlights, sortOutbound, sortReturn, sortCombo, filters, searchParams, markups]);
 
   // Cheapest / fastest picks for the quick-select bar. Both read from the
   // filtered list so they always describe what is actually on screen.
@@ -1009,6 +1065,11 @@ export default function FlightSearchResults() {
     loaderRef: loaderRetRef,
     hasMore: hasMoreRet,
   } = useVirtualList(filteredReturn, 15);
+  const {
+    visibleItems: visibleCombo,
+    loaderRef: loaderComboRef,
+    hasMore: hasMoreCombo,
+  } = useVirtualList(filteredCombo, 15);
   // Without `pax` this falls back to farePrice's single-adult default, which
   // is what made the bar read half the fare on a two-passenger search.
   const totalPrice =
@@ -1026,20 +1087,6 @@ export default function FlightSearchResults() {
   // Only COMBO came back: there is nothing to pick in two columns.
   const comboMode =
     comboFlights.length > 0 && outboundFlights.length === 0 && returnFlights.length === 0;
-
-  /**
-   * Where the outbound ends: the first segment that arrives at the
-   * destination. Everything after it is the way home. Splitting on a single
-   * origin-to-destination segment would only work on a non-stop, and an
-   * India-Europe fare never is.
-   */
-  const splitCombo = (trip) => {
-    const segs = Array.isArray(trip?.sI) ? trip.sI : [];
-    const to = String(searchParams?.to || "").toUpperCase();
-    const at = segs.findIndex((seg) => String(seg?.aa?.code || "").toUpperCase() === to);
-    if (at < 0 || at === segs.length - 1) return { out: segs, back: [] };
-    return { out: segs.slice(0, at + 1), back: segs.slice(at + 1) };
-  };
 
   const comboLegMinutes = (segs) =>
     segs.reduce((sum, seg) => sum + (Number(seg?.duration) || 0), 0);
@@ -1093,8 +1140,21 @@ export default function FlightSearchResults() {
     if (!comboFlights.length) {
       return <div className="no-results">No flights found</div>;
     }
-    const pax = paxFromSearch(searchParams);
-    const sorted = [...comboFlights].sort((a, b) => getPrice(a, pax) - getPrice(b, pax));
+    // Filtered down to nothing is a different thing from no flights at all,
+    // and renderEmpty offers the reset that gets the list back.
+    if (!filteredCombo.length) {
+      return renderEmpty(comboFlights.length);
+    }
+
+    const sortButton = (key, label) => (
+      <button
+        type="button"
+        className={`rt-sort-btn ${sortCombo === key ? "is-active" : ""}`}
+        onClick={() => setSortCombo(key)}
+      >
+        {label}
+      </button>
+    );
 
     return (
       <div className="combo-list">
@@ -1102,8 +1162,25 @@ export default function FlightSearchResults() {
           These fares cover both directions and are sold as one ticket, so the
           outbound and return cannot be chosen separately.
         </div>
-        {sorted.map((trip) => {
-          const { out, back } = splitCombo(trip);
+
+        <div className="combo-toolbar">
+          <span className="combo-count">
+            {filteredCombo.length}
+            {filteredCombo.length !== comboFlights.length ? ` of ${comboFlights.length}` : ""}{" "}
+            {filteredCombo.length === 1 ? "fare" : "fares"}
+          </span>
+          <span className="combo-sorts">
+            <span className="combo-sort-label">Sort by</span>
+            {sortButton("price", "Price")}
+            {sortButton("duration", "Duration")}
+            {sortButton("departure", "Departure")}
+            {sortButton("arrival", "Arrival")}
+          </span>
+        </div>
+
+        {visibleCombo.map((trip) => {
+          const out = trip._out || [];
+          const back = trip._in || [];
           const fare = trip?.totalPriceList?.[0];
           const price = getPrice(trip, pax);
           const chosen = selectedCombo?._key === trip._key;
@@ -1146,6 +1223,12 @@ export default function FlightSearchResults() {
             </div>
           );
         })}
+
+        {hasMoreCombo && (
+          <div ref={loaderComboRef} className="load-more-trigger">
+            Loading more fares…
+          </div>
+        )}
       </div>
     );
   };
