@@ -1046,3 +1046,71 @@
     width: 100%;
   }
 }
+
+/* ── While a fare is being re-priced ─────────────────────────────────────────
+   Booking checks the price with the airline before the next page can open.
+   That is a few seconds of nothing, during which the page looked untouched
+   and people pressed Book a second time. */
+
+.booking-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(18, 12, 15, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.booking-overlay-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 26px 30px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 18px 48px rgba(18, 12, 15, 0.28);
+}
+
+.booking-overlay-spinner {
+  display: block;
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 14px;
+  border: 3px solid #f6dce7;
+  border-top-color: #ed1173;
+  border-radius: 50%;
+  animation: booking-overlay-spin 0.7s linear infinite;
+}
+
+@keyframes booking-overlay-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.booking-overlay-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #22161c;
+  margin-bottom: 6px;
+}
+
+.booking-overlay-sub {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #6b5560;
+}
+
+.combo-card-book:disabled {
+  background: #f0a9c8;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .booking-overlay-spinner {
+    animation-duration: 2.4s;
+  }
+}

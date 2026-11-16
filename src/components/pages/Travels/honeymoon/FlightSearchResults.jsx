@@ -1133,13 +1133,14 @@ export default function FlightSearchResults() {
                 <button
                   type="button"
                   className="combo-card-book"
+                  disabled={loading}
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedCombo(trip);
                     reviewAndGo(trip, null);
                   }}
                 >
-                  Book
+                  {loading ? "Please wait…" : "Book"}
                 </button>
               </div>
             </div>
@@ -1298,6 +1299,20 @@ export default function FlightSearchResults() {
 
   return (
     <div className={`tj-results-page ${isRoundTrip ? "is-round" : ""}`}>
+      {/* Booking re-prices the fare with the airline before the next page can
+          open, which takes a few seconds. Without this the page sat there
+          looking untouched and people pressed Book again. */}
+      {loading && (
+        <div className="booking-overlay" role="status" aria-live="polite">
+          <div className="booking-overlay-card">
+            <span className="booking-overlay-spinner" aria-hidden="true" />
+            <div className="booking-overlay-title">Checking live fares…</div>
+            <div className="booking-overlay-sub">
+              Confirming the price with the airline. This takes a few seconds — please don&apos;t go back.
+            </div>
+          </div>
+        </div>
+      )}
       <FlightSearchHeader
         searchParams={searchParams}
         places={headerPlaces}

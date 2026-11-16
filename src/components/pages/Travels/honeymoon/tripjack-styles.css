@@ -2537,6 +2537,9 @@
 .tj-booking-page {
   background: #f5f5f5;
   min-height: 100vh;
+  /* Room for the fixed session countdown, so it cannot sit over the last
+     thing on the page — which is the button the traveller came here to press. */
+  padding-bottom: calc(44px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ============================================
@@ -5587,16 +5590,25 @@
   padding-top: 6px;
 }
 
-/* ── Booking session countdown ────────────────────────────────────────────── */
+/* ── Booking session countdown ──────────────────────────────────────────────
+   Fixed, not sticky. A sticky element only pins while its own containing block
+   is on screen, and this one sits at the end of the page — so the clock only
+   appeared once you had scrolled to the bottom, which is exactly when a
+   traveller filling in passenger details is not looking. The whole point is
+   that the countdown is visible while they work, so it is pinned to the
+   window. .tj-booking-page reserves the height it covers. */
 .fc-session-bar {
-  position: sticky;
+  position: fixed;
+  left: 0;
+  right: 0;
   bottom: 0;
-  z-index: 20;
+  z-index: 1040;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 11px 16px;
+  padding-bottom: calc(11px + env(safe-area-inset-bottom, 0px));
   background: #222;
   color: #fff;
   font-size: 13px;
