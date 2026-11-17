@@ -7749,3 +7749,82 @@
 }
 
 .ao-card.is-locked .ao-card-icon img { opacity: 0.45; }
+
+/* ── Flight date pickers ─────────────────────────────────────────────────────
+   minDate already stops a past date (or one before the outbound) being picked,
+   but nothing said so: a disabled day looked exactly like a selectable one, so
+   people clicked it and nothing happened. */
+.tj-flight-search-wrapper .react-datepicker__day--disabled,
+.react-datepicker__day--disabled {
+  color: #c3bcc0 !important;
+  cursor: not-allowed !important;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.tj-flight-search-wrapper .react-datepicker__day--disabled:hover,
+.react-datepicker__day--disabled:hover {
+  background: transparent !important;
+  color: #c3bcc0 !important;
+}
+
+/* ── While a search is running ───────────────────────────────────────────────
+   The search takes 10-20 seconds and the only sign was the word on the button,
+   so people pressed it again or assumed it had failed. */
+.flight-searching-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(18, 12, 15, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.flight-searching-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 26px 30px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 18px 48px rgba(18, 12, 15, 0.28);
+}
+
+.flight-searching-spinner {
+  display: block;
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 14px;
+  border: 3px solid #f6dce7;
+  border-top-color: #ed1173;
+  border-radius: 50%;
+  animation: flight-searching-spin 0.7s linear infinite;
+}
+
+@keyframes flight-searching-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.flight-searching-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #22161c;
+  margin-bottom: 6px;
+}
+
+.flight-searching-sub {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #6b5560;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flight-searching-spinner {
+    animation-duration: 2.4s;
+  }
+}
