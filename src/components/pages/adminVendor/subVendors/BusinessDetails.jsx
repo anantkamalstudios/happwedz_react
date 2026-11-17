@@ -227,6 +227,7 @@ const BusinessDetails = ({ formData, setFormData, onVerificationSubmitted }) => 
           state: prev.attributes?.state || vendor.state || "",
           zip: prev.attributes?.zip || vendor.zip || "",
           website: prev.attributes?.website || vendor.website || "",
+          gstin: prev.attributes?.gstin || vendor.gstin || "",
           facebook_link:
             prev.attributes?.facebook_link || vendor.facebook_link || "",
           instagram_link:
@@ -381,6 +382,10 @@ const BusinessDetails = ({ formData, setFormData, onVerificationSubmitted }) => 
       vendor_type_id: a.vendor_type_id ? Number(a.vendor_type_id) : null,
       firstName: a.firstName || null,
       lastName: a.lastName || null,
+      // Optional. A vendor who gives it is invoiced B2B and can claim input
+      // credit on their subscription fee; sent uppercased because that is how
+      // a GSTIN is issued and how the server validates it.
+      gstin: (a.gstin || "").trim().toUpperCase() || null,
     };
     if (newPassword && newPassword === confirmPassword) {
       payload.password = newPassword;
@@ -887,6 +892,25 @@ const BusinessDetails = ({ formData, setFormData, onVerificationSubmitted }) => 
             value={formData.attributes?.lastName || ""}
             onChange={handleAttributeChange}
           />
+        </div>
+        <div className="mb-3">
+          <label className="form-label fs-16">
+            GSTIN <span className="text-muted fs-14">(optional)</span>
+          </label>
+          <input
+            name="gstin"
+            type="text"
+            className="form-control fs-14"
+            placeholder="27AABCU9603R1ZX"
+            maxLength={15}
+            style={{ textTransform: "uppercase" }}
+            value={formData.attributes?.gstin || ""}
+            onChange={handleAttributeChange}
+          />
+          <small className="text-muted fs-14">
+            If your business is GST registered, add it here and your subscription invoices
+            will be made out to it, so you can claim input credit.
+          </small>
         </div>
         {/* Hidden once the business is verified — there is nothing left to submit. */}
         {access && access.verificationStatus !== "approved" && (
