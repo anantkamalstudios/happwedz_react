@@ -1,6 +1,11 @@
 import { useState, useMemo } from 'react';
 import { FaSuitcase, FaUtensils } from 'react-icons/fa';
-import { createFlightPaymentOrder, verifyAndBookFlight, holdFlightBooking } from '../../../../../services/api/flightApi';
+import {
+  createFlightPaymentOrder,
+  verifyAndBookFlight,
+  holdFlightBooking,
+  getFlightBookingStatus,
+} from '../../../../../services/api/flightApi';
 import { ssrForTraveller, addOnTotal, addOnBreakdown } from './FlightAddOn';
 import FareSummary from './FareSummary';
 import FlightSegments from './FlightSegments';
@@ -8,6 +13,29 @@ import { shortDob } from './flightFormat';
 
 /** The portal marks each traveller with their type initial after the name. */
 const PAX_INITIAL = { ADULT: 'A', CHILD: 'C', INFANT: 'I' };
+
+/**
+ * Keep asking the server how a ticketing call ended, for up to two minutes.
+ *
+ * Only reached when the booking request got no reply at all. The booking is
+ * still running server-side at that point, so the question is which way it
+ * lands, and the worst possible answer to give the customer meanwhile is that
+ * their payment failed — they pay again.
+ *
+ * Returns the settled status, or null if it never settles in time.
+ */
+const waitForBooking = async (razorpayOrderId, { attempts = 24, gapMs = 5000 } = {}) => {
+  for (let i = 0; i < attempts; i += 1) {
+    await new Promise((resolve) => setTimeout(resolve, gapMs));
+    try {
+      const status = await getFlightBookingStatus(razorpayOrderId);
+      if (status?.booked || status?.state === 'failed') return status;
+    } catch {
+      // A failed poll says nothing about the booking. Keep asking.
+    }
+  }
+  return null;
+};
 
 export default function BookingReview({ 
   markup = 0,
@@ -29,6 +57,9 @@ export default function BookingReview({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // Shown while the booking is still being confirmed. Deliberately not an
+  // error: the one thing a customer must not do here is pay a second time.
+  const [pending, setPending] = useState(null);
 
 
   // SSR meal/baggage options per segment, from the review response.
@@ -270,6 +301,39 @@ export default function BookingReview({
             }
           } catch (verifyErr) {
             console.error('Payment verification error:', verifyErr);
+
+            // A reply never arrived. That is not the same as a refusal: the
+            // server books the flight and only then answers, so the ticket may
+            // well have been issued after the browser stopped listening. The
+            // server did answer and said no only when there is a response body.
+            if (!verifyErr.response) {
+              setPending(
+                'Your payment went through. We are confirming the ticket with the airline — ' +
+                  'this can take a minute. Please do not close this page or pay again.'
+              );
+              const settled = await waitForBooking(rzpResponse.razorpay_order_id);
+              setPending(null);
+              if (settled?.booked) {
+                onPaymentSuccess({
+                  status: true,
+                  order_id: settled.order_id,
+                  pnr: settled.pnr,
+                  amount_paid: settled.amount,
+                  razorpay_payment_id: rzpResponse.razorpay_payment_id,
+                });
+                return;
+              }
+              setError(
+                settled?.state === 'failed'
+                  ? 'The airline could not confirm this booking, so the payment has not been taken. Payment ID ' +
+                    rzpResponse.razorpay_payment_id + ' — please contact us if anything was deducted.'
+                  : 'Your payment went through and the booking is still being confirmed with the airline. ' +
+                    'Please do not pay again. Quote payment ID ' + rzpResponse.razorpay_payment_id +
+                    ' — the ticket will be emailed to you, and we will call if anything is wrong.'
+              );
+              return;
+            }
+
             setError(verifyErr.response?.data?.message || 'Payment succeeded but verification failed.');
           } finally {
             setLoading(false);
@@ -306,6 +370,12 @@ export default function BookingReview({
           {error && (
             <div className="alert alert-danger" role="alert">
               {error}
+            </div>
+          )}
+
+          {pending && !error && (
+            <div className="alert alert-info" role="status">
+              {pending}
             </div>
           )}
           

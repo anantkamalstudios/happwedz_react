@@ -7,6 +7,17 @@ const LEGACY_BASE_URL = `${API_BASE_URL}/Flight_booking`;
 const isTripJackSearchQuery = (payload) =>
   Boolean(payload?.routeInfos || payload?.searchModifiers);
 
+/**
+ * Ticketing is allowed far longer than the shared 30s client budget.
+ *
+ * Booking is two sequential TripJack calls plus a Razorpay capture, and the
+ * server's own per-call budget is 60s — so the browser was giving up at half
+ * the time the server was entitled to take. Aborting the request does not
+ * abort the booking: the customer was told the payment had failed while the
+ * ticket was being issued behind them.
+ */
+const TICKETING_TIMEOUT = 180000;
+
 // --- Location search (TripJack) ---
 
 export const searchLocations = async (q, signal) => {
@@ -248,7 +259,9 @@ export const holdFlightBooking = async (holdData) => {
     contact: holdData.contact,
     booking_payload: holdData.booking_payload,
   };
-  const response = await axiosInstance.post("/flight_payment/hold", payload);
+  const response = await axiosInstance.post("/flight_payment/hold", payload, {
+    timeout: TICKETING_TIMEOUT,
+  });
   return response.data;
 };
 
@@ -260,6 +273,22 @@ export const verifyAndBookFlight = async (payload) => {
   const response = await axiosInstance.post(
     "/flight_payment/verify_and_book",
     payload,
+    { timeout: TICKETING_TIMEOUT },
+  );
+  return response.data;
+};
+
+/**
+ * Has the booking behind this Razorpay order been ticketed yet?
+ *
+ * Read-only, and safe to call repeatedly: it reports what the booking request
+ * has written so far. Used to find out how a ticketing call ended when the
+ * browser stopped waiting for it.
+ */
+export const getFlightBookingStatus = async (razorpayOrderId, signal) => {
+  const response = await axiosInstance.get(
+    `/flight_payment/status/${encodeURIComponent(razorpayOrderId)}`,
+    { signal, timeout: 15000 },
   );
   return response.data;
 };
