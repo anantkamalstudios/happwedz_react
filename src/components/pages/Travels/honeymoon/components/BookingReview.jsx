@@ -9,6 +9,13 @@ import { shortDob } from './flightFormat';
 /** The portal marks each traveller with their type initial after the name. */
 const PAX_INITIAL = { ADULT: 'A', CHILD: 'C', INFANT: 'I' };
 
+/** Rupees, two decimals. Signless: the wording says which way a fare moved. */
+const money = (n) =>
+  `₹${Math.abs(Number(n) || 0).toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
 export default function BookingReview({ 
   markup = 0,
   trip, 
@@ -107,8 +114,101 @@ export default function BookingReview({
         0,
     );
 
+  /**
+   * The review response's fare for a leg, matched on TripJack's own price id.
+   *
+   * Matched by id rather than by position: the review can return the legs in
+   * either order, and lining the outbound up against the return would invent a
+   * fare change that is not there.
+   */
+  const reviewedFareFor = (fareOption) => {
+    const wanted = fareOption?.id;
+    if (!wanted) return null;
+    for (const t of reviewData?.tripInfos || []) {
+      for (const f of t?.totalPriceList || []) {
+        if (f?.id === wanted) return f;
+      }
+    }
+    return null;
+  };
+
+  // The fares to price and display by. Where the review re-priced a leg, that
+  // is what the traveller pays, so that is what the page must show; where it
+  // did not, the search fare stands.
+  const pricedFare = reviewedFareFor(fare) || fare;
+  const pricedReturnFare = returnTrip ? reviewedFareFor(returnFare) || returnFare : returnFare;
+
+  /** Refundability, baggage and fare type, as the traveller reads them. */
+  const fareTerms = (fareOption) => ({
+    // rT === 1 is TripJack's refundable flag.
+    refundable: fareOption?.fd?.ADULT?.rT === 1,
+    baggage: String(fareOption?.fd?.ADULT?.bI?.iB || '').trim(),
+    fareType: String(fareOption?.fareIdentifier || '').trim(),
+  });
+
+  const fareChange = useMemo(() => {
+    const legs = [
+      { label: 'Outbound', before: fare, after: reviewedFareFor(fare) },
+      ...(returnTrip
+        ? [{ label: 'Return', before: returnFare, after: reviewedFareFor(returnFare) }]
+        : []),
+    ].filter((l) => l.before);
+
+    // Both sides are summed from the per-leg fares, never from totalPriceInfo:
+    // that grand total can carry SSR charges the search fare never had, which
+    // would read as a price rise the airline never made.
+    const priced = legs.filter((l) => l.after);
+    const shownTotal = legs.reduce((n, l) => n + sumAcrossPax(l.before, 'TF'), 0);
+    const repricedTotal = priced.reduce((n, l) => n + sumAcrossPax(l.after, 'TF'), 0);
+
+    // Prices are only compared when every leg was re-priced; a partial sum
+    // would show up as a phantom drop.
+    const comparable = priced.length === legs.length && shownTotal > 0 && repricedTotal > 0;
+    const difference = comparable ? Math.round((repricedTotal - shownTotal) * 100) / 100 : 0;
+
+    // With nothing to compare, the total on screen stays the one the traveller
+    // picked: quoting half a round trip on the Continue button would promise a
+    // price we are not going to charge.
+    const nowTotal = comparable ? repricedTotal : shownTotal;
+
+    const worseTerms = [];
+    for (const { label, before, after } of priced) {
+      const was = fareTerms(before);
+      const now = fareTerms(after);
+      if (was.refundable && !now.refundable) {
+        worseTerms.push({ what: `${label} refundability`, from: 'Refundable', to: 'Non-refundable' });
+      }
+      if (was.baggage && now.baggage && was.baggage !== now.baggage) {
+        worseTerms.push({ what: `${label} check-in baggage`, from: was.baggage, to: now.baggage });
+      }
+      if (was.fareType && now.fareType && was.fareType !== now.fareType) {
+        worseTerms.push({ what: `${label} fare type`, from: was.fareType, to: now.fareType });
+      }
+    }
+
+    // A rupee either way is rounding, not a fare change.
+    const dearer = difference > 1;
+    const cheaper = difference < -1;
+    if (!dearer && !cheaper && !worseTerms.length) return null;
+
+    return {
+      shownTotal,
+      nowTotal,
+      difference,
+      worseTerms,
+      // Dearer, or worse terms: the traveller agrees before paying. Cheaper
+      // and nothing else touched: applied, and simply said.
+      blocking: dearer || worseTerms.length > 0,
+    };
+  }, [fare, returnFare, returnTrip, reviewData, searchParams]);
+
+  // Set by Continue on the modal. A cheaper fare is never blocking, so nothing
+  // stands between the traveller and the payment button.
+  const [fareChangeAccepted, setFareChangeAccepted] = useState(false);
+  const mustAcceptFare = Boolean(fareChange?.blocking) && !fareChangeAccepted;
+
   const calculateTotalAmount = () => {
-    const legs = [fare, returnFare].filter(Boolean);
+    const legs = [pricedFare, pricedReturnFare].filter(Boolean);
     return legs.reduce((n, f) => n + sumAcrossPax(f, 'TF'), 0) + addonsTotal;
   };
 
@@ -192,6 +292,8 @@ export default function BookingReview({
 
   // HOLD: block the fare without payment — customer pays & confirms later.
   const handleHold = async () => {
+    // The modal covers the page, but a stray call must not slip past it.
+    if (mustAcceptFare) return;
     setLoading(true);
     setError(null);
     try {
@@ -209,6 +311,8 @@ export default function BookingReview({
   };
 
   const handleProceedToPayment = async () => {
+    // The modal covers the page, but a stray call must not slip past it.
+    if (mustAcceptFare) return;
     setLoading(true);
     setError(null);
 
@@ -308,10 +412,78 @@ export default function BookingReview({
               {error}
             </div>
           )}
-          
-          <FlightSegments trip={trip} fare={fare} />
 
-          {returnTrip && <FlightSegments trip={returnTrip} fare={returnFare} className="mt-3" />}
+          {/* A fare that only got cheaper is applied without stopping anyone,
+              but it is still said out loud: a total that moves on its own is
+              the thing travellers write in to complain about. */}
+          {fareChange && !fareChange.blocking && (
+            <div className="fare-change-notice" role="status">
+              <strong>Good news — this fare has come down.</strong> The airline is now charging{' '}
+              {money(fareChange.nowTotal)} instead of {money(fareChange.shownTotal)}. You pay the lower
+              amount, and nothing else about the booking has changed.
+            </div>
+          )}
+
+          {mustAcceptFare && (
+            <div className="fare-change-backdrop" role="presentation">
+              <div
+                className="fare-change-modal"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="fare-change-title"
+              >
+                <h5 id="fare-change-title">Fare has changed</h5>
+                <p className="fare-change-lead">
+                  The airline re-priced this itinerary while you were filling in the details. Please
+                  check what changed before you pay.
+                </p>
+
+                <div className="fare-change-rows">
+                  {fareChange.difference > 1 && (
+                    <div className="fare-change-row">
+                      <span className="fare-change-what">Total fare</span>
+                      <span className="fare-change-was">{money(fareChange.shownTotal)}</span>
+                      <span className="fare-change-arrow" aria-hidden="true">→</span>
+                      <span className="fare-change-now">{money(fareChange.nowTotal)}</span>
+                    </div>
+                  )}
+                  {fareChange.worseTerms.map((t) => (
+                    <div className="fare-change-row" key={t.what}>
+                      <span className="fare-change-what">{t.what}</span>
+                      <span className="fare-change-was">{t.from}</span>
+                      <span className="fare-change-arrow" aria-hidden="true">→</span>
+                      <span className="fare-change-now">{t.to}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {fareChange.difference > 1 && (
+                  <p className="fare-change-delta">
+                    That is {money(fareChange.difference)} more than the fare you selected.
+                  </p>
+                )}
+
+                <div className="fare-change-actions">
+                  <button type="button" className="itin-btn itin-btn-back" onClick={onBack}>
+                    « Back to results
+                  </button>
+                  <button
+                    type="button"
+                    className="itin-btn itin-btn-next"
+                    onClick={() => setFareChangeAccepted(true)}
+                  >
+                    Continue at {money(fareChange.nowTotal)}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <FlightSegments trip={trip} fare={pricedFare} />
+
+          {returnTrip && (
+            <FlightSegments trip={returnTrip} fare={pricedReturnFare} className="mt-3" />
+          )}
 
           {/* The portal lays passengers out as a table with their seat and
               per-segment meal and baggage choices beside each name. */}
@@ -408,9 +580,12 @@ export default function BookingReview({
       </div>
       
       <div className="col-lg-4">
+        {/* The re-priced fares, so the rail adds up to what the card is
+            actually charged. Billing the review total while the summary still
+            showed the search fare is how a Rs 2,694 gap went unremarked. */}
         <FareSummary
-          fare={fare}
-          returnFare={returnFare}
+          fare={pricedFare}
+          returnFare={pricedReturnFare}
           searchParams={searchParams}
           markup={markup}
           extras={Object.entries(addOnBreakdown(addOns)).map(([label, amount]) => ({ label, amount }))}
