@@ -901,7 +901,7 @@ const BusinessDetails = ({ formData, setFormData, onVerificationSubmitted }) => 
             name="gstin"
             type="text"
             className="form-control fs-14"
-            placeholder="27AABCU9603R1ZX"
+            placeholder="27AABCU9603R1ZN"
             maxLength={15}
             style={{ textTransform: "uppercase" }}
             value={formData.attributes?.gstin || ""}
