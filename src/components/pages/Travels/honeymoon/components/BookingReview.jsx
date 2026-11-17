@@ -36,6 +36,10 @@ export default function BookingReview({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // Not a failure, so not an error: closing the Razorpay window left the page
+  // looking exactly as it had before Pay was pressed, with nothing to say
+  // whether the booking had gone through, been charged, or been lost.
+  const [notice, setNotice] = useState(null);
 
 
   // SSR meal/baggage options per segment, from the review response.
@@ -296,6 +300,7 @@ export default function BookingReview({
     if (mustAcceptFare) return;
     setLoading(true);
     setError(null);
+    setNotice(null);
     try {
       const res = await holdFlightBooking(buildPaymentOrderPayload());
       if (res?.status) {
@@ -315,6 +320,7 @@ export default function BookingReview({
     if (mustAcceptFare) return;
     setLoading(true);
     setError(null);
+    setNotice(null);
 
     try {
       const razorpayReady = await loadRazorpayScript();
@@ -382,6 +388,9 @@ export default function BookingReview({
         modal: {
           ondismiss: () => {
             setLoading(false);
+            setNotice(
+              'Payment cancelled — nothing has been charged. Your passengers, seats and add-ons are all still here, so you can pay whenever you are ready.'
+            );
           },
         },
         theme: { color: '#ed1173' },
@@ -410,6 +419,12 @@ export default function BookingReview({
           {error && (
             <div className="alert alert-danger" role="alert">
               {error}
+            </div>
+          )}
+
+          {notice && !error && (
+            <div className="alert alert-info" role="status">
+              {notice}
             </div>
           )}
 
