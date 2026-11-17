@@ -736,7 +736,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  row-gap: 10px;
   width: 100%;
+  /* Min, Max and Apply shared one line whatever the width. In the round-trip
+     sidebar that left the two boxes about 27px wide, so ₹34,233 was clipped to
+     "₹3423" — a believable wrong number, which is worse than an obviously
+     broken one. Apply drops to its own line instead. */
+  flex-wrap: wrap;
 }
 
 .tj-price-input {
@@ -4642,8 +4648,10 @@
 }
 
 .tj-price-field {
-  flex: 1;
-  min-width: 0;
+  /* Wide enough for a six-figure fare (126255) plus the rupee prefix and the
+     number spinner. min-width: 0 let it shrink to whatever was left over. */
+  flex: 1 1 92px;
+  min-width: 92px;
   display: flex;
   flex-direction: column;
   gap: 2px;
