@@ -29,6 +29,7 @@ const PlanPickerModal = ({ show, onClose, onPurchased }) => {
     reload,
     storefrontTabs,
     trialAvailable,
+    gst,
   } = useSubscriptionPlans(show);
 
   const { startCheckout, startTrial, processing, status, activePlanId } =
@@ -133,6 +134,7 @@ const PlanPickerModal = ({ show, onClose, onPurchased }) => {
           <PlanCards
             plans={visiblePlans}
             storefrontTabs={storefrontTabs}
+            gst={gst}
             onStartTrial={startTrial}
             trialAvailable={trialAvailable}
             cycle={cycle}

@@ -98,6 +98,9 @@ const styles = `
 }
 .hw-price { font-size:2.3rem; font-weight:700; color:var(--hw-ink); line-height:1.05; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
 .hw-per { font-size:.92rem; font-weight:500; color:var(--hw-muted); }
+/* Sits directly under the price, because it qualifies the price. Quiet
+   enough not to compete with it, legible enough to count as disclosure. */
+.hw-gst-note { font-size:.78rem; font-weight:500; color:var(--hw-muted); margin-top:.15rem; }
 .hw-desc { font-size:.9rem; color:var(--hw-muted); line-height:1.55; margin:12px 0 0; }
 .hw-rule { height:1px; background:var(--hw-line); margin:20px 0 18px; }
 .hw-feat { display:flex; gap:9px; align-items:flex-start; font-size:.88rem; color:#3b2c34; line-height:1.45; margin-bottom:8px; }
@@ -205,6 +208,9 @@ const PlanCards = ({
   canPurchase = true,
   disabledReason = "",
   storefrontTabs = [],
+  // { inclusive, rate }. Defaults to saying nothing: a price must not claim
+  // to include tax before the business is registered to collect any.
+  gst = { inclusive: false, rate: null },
   onStartTrial = null,
   trialAvailable = false,
 }) => {
@@ -282,6 +288,15 @@ const PlanCards = ({
                   <span className="hw-price">{formatPrice(plan.price_inr)}</span>
                   <span className="hw-per">/ {cycleNoun(plan.billing_cycle)}</span>
                 </div>
+
+                {/* The price has always included GST; until there is a GSTIN
+                    we are simply not allowed to say so. A free plan has no
+                    tax in it to mention. */}
+                {gst?.inclusive && Number(plan.price_inr) > 0 && (
+                  <div className="hw-gst-note">
+                    Including {gst.rate ? `${Number(gst.rate)}% ` : ""}GST
+                  </div>
+                )}
 
                 {perMonth && (
                   <div className="hw-per mt-1" style={{ fontSize: ".82rem" }}>

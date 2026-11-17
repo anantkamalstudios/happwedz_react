@@ -75,6 +75,7 @@ const VendorPremium = () => {
     reload,
     storefrontTabs,
     trialAvailable,
+    gst,
   } = useSubscriptionPlans(true);
 
   const { startCheckout, startTrial, processing, status, activePlanId } =
@@ -161,6 +162,7 @@ const VendorPremium = () => {
             <PlanCards
               plans={visiblePlans}
               storefrontTabs={storefrontTabs}
+              gst={gst}
               onStartTrial={startTrial}
               trialAvailable={trialAvailable}
               cycle={cycle}

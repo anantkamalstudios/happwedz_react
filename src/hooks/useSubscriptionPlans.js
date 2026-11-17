@@ -17,6 +17,10 @@ export default function useSubscriptionPlans(enabled = true) {
   // Whether this vendor can still start a free trial: the feature is on, they have not
   // used theirs, and they are not already on a plan.
   const [trialAvailable, setTrialAvailable] = useState(false);
+  // Whether the prices may be labelled GST-inclusive. They always are
+  // inclusive — the tax is carved out of the price, never added — but only a
+  // registered business may say so, so the server decides.
+  const [gst, setGst] = useState({ inclusive: false, rate: null });
   const [cycle, setCycle] = useState("monthly");
   const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState("");
@@ -31,6 +35,7 @@ export default function useSubscriptionPlans(enabled = true) {
       setAccess(data.access || {});
       setStorefrontTabs(data.storefrontTabs || []);
       setTrialAvailable(Boolean(data.trialAvailable));
+      setGst(data.gst || { inclusive: false, rate: null });
 
       // Open on a cycle that actually has plans, so the first paint is never an empty
       // tab just because monthly happens to be the default.
@@ -66,6 +71,7 @@ export default function useSubscriptionPlans(enabled = true) {
     access,
     storefrontTabs,
     trialAvailable,
+    gst,
     cycle,
     setCycle,
     showCycleTabs,
