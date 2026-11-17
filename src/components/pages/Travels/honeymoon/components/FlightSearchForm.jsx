@@ -35,7 +35,7 @@ const saveRecentSearch = (entry) => {
   }
 };
 
-export default function FlightSearchForm({ onSearchStart, onSearchEnd } = {}) {
+export default function FlightSearchForm() {
   const navigate = useNavigate();
   const saved = loadSaved();
 
@@ -49,20 +49,6 @@ export default function FlightSearchForm({ onSearchStart, onSearchEnd } = {}) {
   const [infants, setInfants] = useState(saved.infants || 0);
   const [showTravelersDropdown, setShowTravelersDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // Rendered at the end of the component; declared here so the two Search
-  // buttons and this stay in one place.
-  const searchingOverlay = loading ? (
-    <div className="flight-searching-overlay" role="status" aria-live="polite">
-      <div className="flight-searching-card">
-        <span className="flight-searching-spinner" aria-hidden="true" />
-        <div className="flight-searching-title">Searching flights…</div>
-        <div className="flight-searching-sub">
-          Checking live fares with the airlines. This usually takes 10–20 seconds.
-        </div>
-      </div>
-    </div>
-  ) : null;
   const [preferredAirline, setPreferredAirline] = useState(
     Array.isArray(saved.preferredAirline) ? saved.preferredAirline : []
   );
@@ -237,10 +223,6 @@ export default function FlightSearchForm({ onSearchStart, onSearchEnd } = {}) {
 
     const searchQuery = { searchQuery: mcQuery };
     setLoading(true);
-    // The results page uses this to close the Modify panel and cover the old
-    // results, which otherwise stay live and clickable for the 15 seconds the
-    // search takes.
-    onSearchStart?.();
     try {
       const { searchFlights } = await import("../../../../../services/api/flightApi");
       const result = await searchFlights(searchQuery.searchQuery);
@@ -256,7 +238,6 @@ export default function FlightSearchForm({ onSearchStart, onSearchEnd } = {}) {
       alert("Search failed. Please try again.");
     } finally {
       setLoading(false);
-      onSearchEnd?.();
     }
   };
 
@@ -383,7 +364,6 @@ export default function FlightSearchForm({ onSearchStart, onSearchEnd } = {}) {
 
   return (
     <div className="tj-flight-search-wrapper">
-      {searchingOverlay}
       <div className="tj-search-card">
         <div className="tj-trip-type-tabs">
           <div className={`tj-trip-tab ${tripType === "oneway" ? "active" : ""}`} onClick={() => setTripType("oneway")}>ONE WAY</div>

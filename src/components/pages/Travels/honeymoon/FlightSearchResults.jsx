@@ -216,8 +216,6 @@ export default function FlightSearchResults() {
   const [expandedFares, setExpandedFares] = useState({});
   const [selectedFareByFlight, setSelectedFareByFlight] = useState({});
   const [modifyOpen, setModifyOpen] = useState(false);
-  // True from the moment a re-search starts until its results land.
-  const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(false);
   const [staleNotice, setStaleNotice] = useState('');
   const [showDetails, setShowDetails] = useState({});
@@ -252,25 +250,8 @@ export default function FlightSearchResults() {
       ...(directTrips.RETURN || []),
       ...(connectingTrips.RETURN || []),
     ];
-    // Keyed by what the itinerary IS, not where it sits in the list.
-    //
-    // This was `${bucket}-${i}`, so a selection stored as "RETURN-3" matched
-    // whatever landed at index 3 of the NEXT search — change the return date
-    // and the bottom bar kept quoting a flight that was no longer on screen,
-    // because the id still matched something.
-    const seenKeys = new Set();
     const stamp = (list, bucket) =>
-      list.map((trip) => {
-        const signature = (trip?.sI || [])
-          .map((seg) => `${seg?.fD?.aI?.code}${seg?.fD?.fN}@${seg?.dt}`)
-          .join("|");
-        let key = `${bucket}-${signature}`;
-        // Two identical itineraries would otherwise share a selection.
-        let n = 2;
-        while (seenKeys.has(key)) key = `${bucket}-${signature}#${n++}`;
-        seenKeys.add(key);
-        return { ...trip, _key: key };
-      });
+      list.map((trip, i) => ({ ...trip, _key: `${bucket}-${i}` }));
     const onwardKeyed = stamp(onward, "ONWARD");
     const returnKeyed = stamp(ret, "RETURN");
     // Split each combo once here rather than on every render: _out and _in are
@@ -288,14 +269,6 @@ export default function FlightSearchResults() {
     });
     setComboFlights(comboKeyed);
     setSelectedCombo(null);
-    // New results, new choices. Without this the previous legs survived into a
-    // list they were never part of, and the card, the radio and the bottom bar
-    // stopped agreeing with each other.
-    setSelectedOutbound(null);
-    setSelectedReturn(null);
-    setSelectedFareByFlight({});
-    setSearching(false);
-    setModifyOpen(false);
     setOutboundFlights(onwardKeyed);
     setReturnFlights(returnKeyed);
     setFilteredOutbound(onwardKeyed);
@@ -582,7 +555,6 @@ export default function FlightSearchResults() {
    * so there is one copy of the query-building rather than two that drift.
    */
   const rerunSearch = async (nextParams) => {
-    setSearching(true);
     const base = buildTripJackSearchQuery(nextParams);
     const directQuery = {
       ...base,
@@ -1413,17 +1385,6 @@ export default function FlightSearchResults() {
       {/* Booking re-prices the fare with the airline before the next page can
           open, which takes a few seconds. Without this the page sat there
           looking untouched and people pressed Book again. */}
-      {searching && (
-        <div className="booking-overlay" role="status" aria-live="polite">
-          <div className="booking-overlay-card">
-            <span className="booking-overlay-spinner" aria-hidden="true" />
-            <div className="booking-overlay-title">Searching flights…</div>
-            <div className="booking-overlay-sub">
-              Checking live fares with the airlines. These results will be replaced.
-            </div>
-          </div>
-        </div>
-      )}
       {loading && (
         <div className="booking-overlay" role="status" aria-live="polite">
           <div className="booking-overlay-card">
@@ -1443,13 +1404,7 @@ export default function FlightSearchResults() {
       {modifyOpen && (
         <div className="tj-modify-panel">
           <div className="container">
-            <FlightSearchForm
-              onSearchStart={() => {
-                setSearching(true);
-                setModifyOpen(false);
-              }}
-              onSearchEnd={() => setSearching(false)}
-            />
+            <FlightSearchForm />
           </div>
         </div>
       )}

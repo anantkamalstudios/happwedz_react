@@ -1143,12 +1143,3 @@
   color: #9b8d94;
   margin-right: 2px;
 }
-
-/* The sidebar is narrow enough that Min, Max and Apply cannot share a line
-   without squeezing the boxes. Apply takes its own row and fills it, so the
-   wrap reads as the layout rather than as something that fell off the end. */
-.rt-sidebar-col .tj-price-apply {
-  flex: 1 0 100%;
-  align-self: stretch;
-  padding-block: 7px;
-}

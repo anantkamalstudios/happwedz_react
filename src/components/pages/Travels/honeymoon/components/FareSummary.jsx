@@ -44,9 +44,7 @@ export default function FareSummary({
   const [taxOpen, setTaxOpen] = useState(false);
   const [totalOpen, setTotalOpen] = useState(true);
   const [markupOpen, setMarkupOpen] = useState(false);
-  // Open from the start: a bare "Meal, Baggage & Seat ₹5,300" invites the
-  // question of what it is made of, and the answer is already to hand.
-  const [extrasOpen, setExtrasOpen] = useState(true);
+  const [extrasOpen, setExtrasOpen] = useState(false);
   const [markupDraft, setMarkupDraft] = useState(String(markup || 0));
 
   const pax = {
