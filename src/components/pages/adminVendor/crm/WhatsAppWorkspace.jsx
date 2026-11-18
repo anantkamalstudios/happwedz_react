@@ -37,6 +37,28 @@ const STATUS_TONE = {
   failed: "crm-badge crm-tone-red",
 };
 
+/**
+ * Meta's language codes in the words a vendor uses. Only the ones the account
+ * actually has; anything else keeps its code, which is better than guessing
+ * at a name.
+ */
+const LANGUAGE_NAMES = {
+  en: "English",
+  en_US: "English",
+  en_GB: "English",
+  hi: "Hindi",
+  mr: "Marathi",
+  gu: "Gujarati",
+  ta: "Tamil",
+  te: "Telugu",
+  kn: "Kannada",
+  ml: "Malayalam",
+  bn: "Bengali",
+  pa: "Punjabi",
+};
+
+const languageName = (code) => LANGUAGE_NAMES[code] || LANGUAGE_NAMES[String(code).split("_")[0]] || code;
+
 const when = (v) =>
   v ? new Date(v).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
 
@@ -693,7 +715,7 @@ const Campaigns = () => {
               </select>
               <div className="crm-hint">
                 {chosenLanguages.length > 1
-                  ? `This one is approved in ${chosenLanguages.join(" and ")}. A broadcast is sent by name only, so Wapzio picks which goes out.`
+                  ? `This one is approved in ${chosenLanguages.map(languageName).join(" and ")}. A broadcast is sent by name only, so Wapzio picks which goes out.`
                   : templates.length
                     ? "Only approved templates are listed."
                     : "You have no approved templates yet."}
@@ -996,8 +1018,9 @@ const History = () => {
   return (
     <>
       <div className="crm-hint">
-        Everything sent from HappyWedz. Replies from clients are not shown — WhatsApp messages
-        sent to you do not reach us.
+        Everything sent from HappyWedz to one client at a time. Broadcasts are not listed
+        here — they are campaigns, and they live on the Broadcasts tab. Replies from clients
+        are not shown either: WhatsApp messages sent to you do not reach us.
       </div>
 
       <div className="crm-tabs">
