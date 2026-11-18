@@ -284,19 +284,25 @@ export const WhatsAppReply = ({ client, connected }) => {
       {error ? <div className="crm-error">{error}</div> : null}
       {sent ? <div className="crm-notice crm-notice-info">{sent}</div> : null}
 
-      <textarea
-        className="crm-input"
-        rows={3}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder={`Write to ${client.name || "this client"}…`}
-      />
-
-      <p className="crm-muted crm-small">
-        A plain message only reaches a client who has written to you in the last 24 hours.
-        Outside that, WhatsApp allows approved templates only — send a quotation or invoice
-        instead.
-      </p>
+      <div className="crm-field">
+        <textarea
+          className="crm-input"
+          rows={3}
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            // A failure left on screen while the vendor retypes reads as
+            // though the new attempt failed too.
+            if (error) setError("");
+          }}
+          placeholder={`Write to ${client.name || "this client"}…`}
+        />
+        <div className="crm-hint">
+          A plain message only reaches a client who has written to you in the last 24 hours.
+          Outside that, WhatsApp allows approved templates only — send a quotation or invoice
+          instead.
+        </div>
+      </div>
 
       <div className="crm-actions">
         <button type="submit" className="crm-btn crm-btn-primary" disabled={sending || !text.trim()}>

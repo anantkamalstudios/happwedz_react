@@ -107,18 +107,19 @@ const TemplateForm = ({ waba, onDone, onCancel }) => {
 
   return (
     <form className="crm-card crm-card-pad" onSubmit={submit}>
-      <h4 className="crm-card-title">New template</h4>
-      <p className="crm-muted crm-small">
-        Meta has to approve every template before it can be sent. That usually takes a few
-        hours. You cannot use it until it comes back approved.
-      </p>
+      <div className="crm-card-title">New template</div>
+      <div className="crm-hint">
+        Meta has to approve every template before it can be sent — usually a few hours. It
+        cannot be used until it comes back approved.
+      </div>
 
       {error ? <div className="crm-error">{error}</div> : null}
 
       <div className="crm-grid-2">
-        <label className="crm-field">
-          <span>Name</span>
+        <div className="crm-field">
+          <label className="crm-label">Name</label>
           <input
+            className="crm-input"
             value={form.templateName}
             // Meta names are lowercase, and the server lowercases before
             // submitting - so a vendor typing My_Template would have got a
@@ -128,111 +129,131 @@ const TemplateForm = ({ waba, onDone, onCancel }) => {
             placeholder="booking_confirmed"
             required
           />
-          <small className="crm-muted">
-            Lowercase letters, numbers and underscores only. Capitals are converted as you type.
-          </small>
-        </label>
+          <div className="crm-hint">
+            Lowercase letters, numbers and underscores. Capitals are converted as you type.
+          </div>
+        </div>
 
-        <label className="crm-field">
-          <span>Language</span>
-          <select value={form.language} onChange={(e) => set({ language: e.target.value })}>
+        <div className="crm-field">
+          <label className="crm-label">Language</label>
+          <select
+            className="crm-input"
+            value={form.language}
+            onChange={(e) => set({ language: e.target.value })}
+          >
             <option value="en_US">English (US)</option>
             <option value="en">English</option>
             <option value="hi">Hindi</option>
             <option value="mr">Marathi</option>
           </select>
-        </label>
+        </div>
       </div>
 
-      <label className="crm-field">
-        <span>Category</span>
-        <select value={form.category} onChange={(e) => set({ category: e.target.value })}>
+      <div className="crm-field">
+        <label className="crm-label">Category</label>
+        <select
+          className="crm-input"
+          value={form.category}
+          onChange={(e) => set({ category: e.target.value })}
+        >
           {CATEGORIES.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.label} — {c.hint}
+              {c.label}
             </option>
           ))}
         </select>
-      </label>
+        <div className="crm-hint">{CATEGORIES.find((c) => c.id === form.category)?.hint}</div>
+      </div>
 
       {waba.length ? (
         waba.length > 1 ? (
-          <label className="crm-field">
-            <span>WhatsApp Business Account</span>
-            <select value={form.wabaId} onChange={(e) => set({ wabaId: e.target.value })}>
+          <div className="crm-field">
+            <label className="crm-label">WhatsApp Business Account</label>
+            <select
+              className="crm-input"
+              value={form.wabaId}
+              onChange={(e) => set({ wabaId: e.target.value })}
+            >
               {waba.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.name || a.id}
                 </option>
               ))}
             </select>
-          </label>
+          </div>
         ) : null
       ) : (
-        <label className="crm-field">
-          <span>WhatsApp Business Account ID</span>
+        <div className="crm-field">
+          <label className="crm-label">WhatsApp Business Account ID</label>
           <input
+            className="crm-input"
             value={form.wabaId}
             onChange={(e) => set({ wabaId: e.target.value })}
             placeholder="1248119146671221"
             required
           />
-          <small className="crm-muted">
+          <div className="crm-hint">
             We could not read this from your account. It is the long number shown against your
             WhatsApp Business Account in your provider's dashboard.
-          </small>
-        </label>
+          </div>
+        </div>
       )}
 
       {form.category !== "AUTHENTICATION" ? (
         <>
-          <label className="crm-field">
-            <span>Message</span>
+          <div className="crm-field">
+            <label className="crm-label">Message</label>
             <textarea
+              className="crm-input"
               rows={4}
               value={form.body}
               onChange={(e) => set({ body: e.target.value })}
               placeholder="Hi {{1}}, your booking for {{2}} is confirmed."
             />
-            <small className="crm-muted">
+            <div className="crm-hint">
               Use {"{{1}}"}, {"{{2}}"} for anything that changes from one message to the next.
-            </small>
-          </label>
+            </div>
+          </div>
 
           {used.length ? (
             <div className="crm-card crm-card-pad">
-              <strong className="crm-small">Sample values</strong>
-              <p className="crm-muted crm-small">
+              <div className="crm-section-label">Sample values</div>
+              <div className="crm-hint">
                 Meta rejects a template without these. They are only examples for the reviewer.
-              </p>
-              {used.map((key) => (
-                <label className="crm-field" key={key}>
-                  <span>{`{{${key}}}`}</span>
-                  <input
-                    value={examples[key] || ""}
-                    onChange={(e) => setExamples((x) => ({ ...x, [key]: e.target.value }))}
-                    placeholder={key === "1" ? "Rahul" : "Sangeet, 12 Feb"}
-                    required
-                  />
-                </label>
-              ))}
+              </div>
+              <div className="crm-grid-2">
+                {used.map((key) => (
+                  <div className="crm-field" key={key}>
+                    <label className="crm-label">{`{{${key}}}`}</label>
+                    <input
+                      className="crm-input"
+                      value={examples[key] || ""}
+                      onChange={(e) => setExamples((x) => ({ ...x, [key]: e.target.value }))}
+                      placeholder={key === "1" ? "Rahul" : "Sangeet, 12 Feb"}
+                      required
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : null}
 
-          <label className="crm-field">
-            <span>Footer (optional)</span>
+          <div className="crm-field">
+            <label className="crm-label">Footer (optional)</label>
             <input
+              className="crm-input"
               value={form.footerText}
               onChange={(e) => set({ footerText: e.target.value })}
               placeholder="Thank you"
             />
-          </label>
+            <div className="crm-hint">Small grey line under the message.</div>
+          </div>
         </>
       ) : (
-        <p className="crm-muted crm-small">
+        <div className="crm-notice crm-notice-info">
           An authentication template carries no message of its own — the passcode is filled in
           when it is sent.
-        </p>
+        </div>
       )}
 
       {problem && form.templateName ? (
@@ -399,10 +420,10 @@ const Contacts = () => {
 
   return (
     <>
-      <p className="crm-muted crm-small">
+      <div className="crm-hint">
         These are the contacts held in your WhatsApp account. Anyone you message is added
         automatically.
-      </p>
+      </div>
 
       <input
         className="crm-input crm-search"
@@ -504,10 +525,10 @@ const History = () => {
 
   return (
     <>
-      <p className="crm-muted crm-small">
+      <div className="crm-hint">
         Everything sent from HappyWedz. Replies from clients are not shown — WhatsApp messages
         sent to you do not reach us.
-      </p>
+      </div>
 
       <div className="crm-tabs">
         {["", "sent", "failed"].map((s) => (
