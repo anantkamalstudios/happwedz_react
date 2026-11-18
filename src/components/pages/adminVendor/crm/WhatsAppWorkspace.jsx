@@ -578,6 +578,13 @@ const Campaigns = () => {
   }, [form.audience]);
 
   const chosen = templates.find((t) => t.name === form.templateName);
+  const chosenLanguages = form.templateName
+    ? [
+        ...new Set(
+          templates.filter((t) => t.name === form.templateName).map((t) => t.language).filter(Boolean)
+        ),
+      ]
+    : [];
   const reach = audience?.reachable ?? 0;
 
   const problem = (() => {
@@ -680,9 +687,11 @@ const Campaigns = () => {
                 ))}
               </select>
               <div className="crm-hint">
-                {templates.length
-                  ? "Only approved templates are listed."
-                  : "You have no approved templates yet."}
+                {chosenLanguages.length > 1
+                  ? `This one is approved in ${chosenLanguages.join(" and ")}. A broadcast is sent by name only, so Wapzio picks which goes out.`
+                  : templates.length
+                    ? "Only approved templates are listed."
+                    : "You have no approved templates yet."}
               </div>
             </div>
           </div>
