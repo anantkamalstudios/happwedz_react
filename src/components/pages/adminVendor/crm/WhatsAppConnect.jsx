@@ -237,6 +237,33 @@ export default function WhatsAppConnect() {
               </div>
             )}
 
+            {/* What Wapzio actually sent, and what became of it.
+                Both ends can report success while a message goes nowhere —
+                Wapzio counts a 200 as delivered, and we answer 200 to
+                anything we understand, including an event we decide not to
+                act on. Twice now the only way to find out was to reason
+                backwards from what was missing on a screen. */}
+            {state.webhookLog?.length ? (
+              <details className="small mb-2">
+                <summary className="text-muted" style={{ cursor: "pointer" }}>
+                  Last {state.webhookLog.length} messages from Wapzio
+                </summary>
+                <div className="mt-1" style={{ maxHeight: 180, overflowY: "auto" }}>
+                  {state.webhookLog.map((e, i) => (
+                    <div key={i} className="text-muted" style={{ fontFamily: "monospace", fontSize: 11.5 }}>
+                      {new Date(e.at).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", second: "2-digit" })}
+                      {" · "}
+                      {e.event} → {e.kind} → {e.outcome}
+                      {e.why ? ` (${e.why})` : ""}
+                      {e.from ? ` · from ${e.from}` : ""}
+                      {e.to ? ` · to ${e.to}` : ""}
+                      {e.status ? ` · ${e.status}` : ""}
+                    </div>
+                  ))}
+                </div>
+              </details>
+            ) : null}
+
             {state.webhookLastError ? (
               <div className="small d-flex align-items-start gap-2 mb-2" style={{ color: "#b45309" }}>
                 <TriangleAlert size={14} className="flex-shrink-0 mt-1" />
