@@ -546,6 +546,9 @@ textarea.crm-input {
   border-bottom: 1px solid var(--crm-line);
   margin-bottom: 16px;
   overflow-x: auto;
+  /* overflow-x: auto makes the OTHER axis scrollable too, so a tab one pixel
+     taller than its bar drew a stray vertical scrollbar beside the tabs. */
+  overflow-y: hidden;
 }
 
 .crm-tab {

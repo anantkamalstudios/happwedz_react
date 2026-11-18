@@ -121,18 +121,34 @@ const TemplateForm = ({ waba, onDone, onCancel }) => {
         </select>
       </label>
 
-      {waba.length > 1 ? (
+      {waba.length ? (
+        waba.length > 1 ? (
+          <label className="crm-field">
+            <span>WhatsApp Business Account</span>
+            <select value={form.wabaId} onChange={(e) => set({ wabaId: e.target.value })}>
+              {waba.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name || a.id}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null
+      ) : (
         <label className="crm-field">
-          <span>WhatsApp Business Account</span>
-          <select value={form.wabaId} onChange={(e) => set({ wabaId: e.target.value })}>
-            {waba.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name || a.id}
-              </option>
-            ))}
-          </select>
+          <span>WhatsApp Business Account ID</span>
+          <input
+            value={form.wabaId}
+            onChange={(e) => set({ wabaId: e.target.value })}
+            placeholder="1248119146671221"
+            required
+          />
+          <small className="crm-muted">
+            We could not read this from your account. It is the long number shown against your
+            WhatsApp Business Account in your provider's dashboard.
+          </small>
         </label>
-      ) : null}
+      )}
 
       {form.category !== "AUTHENTICATION" ? (
         <>
@@ -235,6 +251,14 @@ const Templates = () => {
       {error ? <div className="crm-error">{error}</div> : null}
       {notice ? <div className="crm-notice crm-notice-info">{notice}</div> : null}
 
+      {!waba.length && templates.length ? (
+        <div className="crm-notice crm-notice-warn">
+          We could not read your WhatsApp Business Account automatically, though your
+          templates load fine. You can still create a template — you will be asked for the
+          account ID, which you will find in your WhatsApp provider's dashboard.
+        </div>
+      ) : null}
+
       {creating ? (
         <TemplateForm
           waba={waba}
@@ -247,12 +271,7 @@ const Templates = () => {
         />
       ) : (
         <div className="crm-actions">
-          <button
-            className="crm-btn crm-btn-primary"
-            onClick={() => setCreating(true)}
-            disabled={!waba.length}
-            title={waba.length ? "" : "No WhatsApp Business Account was found for this key"}
-          >
+          <button className="crm-btn crm-btn-primary" onClick={() => setCreating(true)}>
             New template
           </button>
         </div>
@@ -273,7 +292,7 @@ const Templates = () => {
           <tbody>
             {templates.map((t) => (
               <tr key={`${t.name}-${t.language}`}>
-                <td className="crm-num">{t.name}</td>
+                <td className="crm-strong">{t.name}</td>
                 <td>{t.language || "—"}</td>
                 <td>{t.category || "—"}</td>
                 <td>
@@ -366,7 +385,7 @@ const Contacts = () => {
               {rows.map((c) => (
                 <tr key={c.phone}>
                   <td>{c.name || "—"}</td>
-                  <td className="crm-num">{c.phone}</td>
+                  <td className="crm-strong">{c.phone}</td>
                   <td>{c.status || "—"}</td>
                 </tr>
               ))}
@@ -464,7 +483,13 @@ const History = () => {
       {loading ? (
         <Spinner />
       ) : !rows.length ? (
-        <p className="crm-muted">Nothing sent yet.</p>
+        <p className="crm-muted">
+          {status === "failed"
+            ? "Nothing has failed."
+            : status === "sent"
+              ? "Nothing delivered yet."
+              : "Nothing sent yet."}
+        </p>
       ) : (
         <>
           <div className="crm-table-wrap"><table className="crm-table">
@@ -483,9 +508,9 @@ const History = () => {
                   <td>{when(m.at)}</td>
                   <td>
                     {KIND_LABEL[m.kind] || m.kind}
-                    {m.template ? <div className="crm-muted crm-small crm-num">{m.template}</div> : null}
+                    {m.template ? <div className="crm-muted crm-small">{m.template}</div> : null}
                   </td>
-                  <td className="crm-num">{m.to}</td>
+                  <td className="crm-strong">{m.to}</td>
                   <td>{m.sentBy || "—"}</td>
                   <td>
                     <span className={STATUS_TONE[m.status] || "crm-badge"}>{m.status}</span>
