@@ -28,6 +28,10 @@ export default function WhatsAppConnect() {
   // under Message Templates as "CONNECTED WABA ID".
   const [wabaId, setWabaId] = useState("");
   const [savingWaba, setSavingWaba] = useState(false);
+  // The signing secret Wapzio shows once, when the vendor adds the address.
+  const [webhookSecret, setWebhookSecret] = useState("");
+  const [savingWebhook, setSavingWebhook] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   // Templates the account cannot send yet. A working key is not enough: Meta
   // has to have approved each message before it can go out.
@@ -84,6 +88,34 @@ export default function WhatsAppConnect() {
       setError(errorMessage(err, "Could not save that account id."));
     } finally {
       setSavingWaba(false);
+    }
+  };
+
+  const saveWebhook = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSavingWebhook(true);
+    try {
+      const data = await crmApi.setWhatsappWebhookSecret(webhookSecret.trim());
+      setState(data.whatsapp);
+      setWebhookSecret("");
+      addToast(data.message || "Saved.", "success");
+    } catch (err) {
+      setError(errorMessage(err, "Could not save that signing secret."));
+    } finally {
+      setSavingWebhook(false);
+    }
+  };
+
+  const copyWebhookUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(state.webhookUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Some browsers refuse without a user gesture they recognise; the
+      // address is on screen and can be selected by hand.
+      setError("Could not copy it — select the address and copy it yourself.");
     }
   };
 
@@ -181,6 +213,86 @@ export default function WhatsAppConnect() {
               CONNECTED WABA ID on the Message Templates page.
             </Form.Text>
           </Form>
+
+          {/* Replies and delivery reports. Without this, HappyWedz sees
+              only its own half of every conversation, and "sent" never
+              becomes "delivered". */}
+          <div className="border-top pt-3 mb-3">
+            <div className="fw-semibold small mb-1">Replies and delivery reports</div>
+
+            {state.webhookReady ? (
+              <div className="small mb-2" style={{ color: "#16a34a" }}>
+                On.{" "}
+                {state.webhookLastAt
+                  ? `Last message from Wapzio ${new Date(state.webhookLastAt).toLocaleString("en-IN", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}.`
+                  : "Nothing has arrived yet — send yourself a WhatsApp message to test it."}
+              </div>
+            ) : (
+              <div className="small mb-2 text-muted">
+                Off. Your clients&apos; replies stay in Wapzio, and a message you send never shows
+                as delivered or read. Two steps below turn it on.
+              </div>
+            )}
+
+            {state.webhookLastError ? (
+              <div className="small d-flex align-items-start gap-2 mb-2" style={{ color: "#b45309" }}>
+                <TriangleAlert size={14} className="flex-shrink-0 mt-1" />
+                <span>The last message from Wapzio could not be handled: {state.webhookLastError}</span>
+              </div>
+            ) : null}
+
+            <div className="small text-muted mb-1">
+              <strong>1.</strong> In Wapzio: Setup &amp; Integration → Integrations → Connect a
+              website. Paste this address, and turn on <em>Incoming message</em> and{" "}
+              <em>Message status</em>.
+            </div>
+            <div className="d-flex gap-2 align-items-center mb-3">
+              <code
+                className="small flex-grow-1 text-truncate px-2 py-1 border rounded"
+                style={{ background: "#fff" }}
+                title={state.webhookUrl || ""}
+              >
+                {state.webhookUrl || "—"}
+              </code>
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={copyWebhookUrl}
+                disabled={!state.webhookUrl}
+              >
+                {copied ? "Copied" : "Copy"}
+              </Button>
+            </div>
+
+            <Form onSubmit={saveWebhook}>
+              <div className="small text-muted mb-1">
+                <strong>2.</strong> Wapzio shows a signing secret once, on the next screen. Paste
+                it here — it is what proves a message really came from Wapzio.
+              </div>
+              <div className="d-flex gap-2 align-items-start">
+                <Form.Control
+                  type="password"
+                  size="sm"
+                  value={webhookSecret}
+                  onChange={(e) => setWebhookSecret(e.target.value)}
+                  placeholder={state.webhookReady ? "Saved — paste a new one to replace it" : "whsec_…"}
+                  autoComplete="new-password"
+                  style={{ maxWidth: 320 }}
+                />
+                <Button
+                  type="submit"
+                  variant="outline-success"
+                  size="sm"
+                  disabled={savingWebhook || !webhookSecret.trim()}
+                >
+                  {savingWebhook ? "Saving…" : "Save"}
+                </Button>
+              </div>
+            </Form>
+          </div>
 
           <Button variant="outline-danger" size="sm" onClick={disconnect} disabled={saving}>
             Disconnect
