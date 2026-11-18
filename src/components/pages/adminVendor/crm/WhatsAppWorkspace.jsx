@@ -16,11 +16,15 @@ import { Spinner } from "./crmUi";
 
 const TABS = [
   { key: "templates", label: "Templates" },
+  { key: "campaigns", label: "Broadcasts" },
   { key: "contacts", label: "Contacts" },
   { key: "history", label: "Sent" },
 ];
 
 const STATUS_TONE = {
+  completed: "crm-badge crm-tone-green",
+  sending: "crm-badge crm-tone-blue",
+  scheduled: "crm-badge crm-tone-amber",
   approved: "crm-badge crm-tone-green",
   pending: "crm-badge crm-tone-amber",
   rejected: "crm-badge crm-tone-red",
@@ -377,6 +381,287 @@ const Templates = () => {
   );
 };
 
+/* ─── Broadcasts ────────────────────────────────────────────────────────── */
+
+/**
+ * One approved template to many clients at once.
+ *
+ * Two things the screen has to be honest about. Variables are set once for
+ * the whole campaign, so a template with a name in it would greet everybody
+ * by the same name — the form says so beside the fields. And a broadcast
+ * cannot be recalled, so the number of people it will reach is shown before
+ * the button, not after.
+ */
+const Campaigns = () => {
+  const [campaigns, setCampaigns] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [audience, setAudience] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [composing, setComposing] = useState(false);
+
+  const [form, setForm] = useState({ name: "", templateName: "", audience: "all", scheduledAt: "" });
+  const [variables, setVariables] = useState({});
+  const [sending, setSending] = useState(false);
+
+  const set = (patch) => {
+    setForm((f) => ({ ...f, ...patch }));
+    setError("");
+  };
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [list, temps] = await Promise.all([
+        crmApi.whatsappCampaigns().catch(() => ({ campaigns: [] })),
+        crmApi.whatsappTemplates(),
+      ]);
+      setCampaigns(list.campaigns || []);
+      // Only an approved template can be broadcast, so the rest are not
+      // offered — choosing one that cannot send is a wasted journey.
+      setTemplates((temps.templates || []).filter((t) => t.status === "approved"));
+    } catch (err) {
+      setError(errorMessage(err, "Could not load your campaigns."));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Recount every time the audience changes, so the number beside the button
+  // is always the number that will actually be messaged.
+  useEffect(() => {
+    let cancelled = false;
+    crmApi
+      .whatsappAudience({ audience: form.audience })
+      .then((r) => !cancelled && setAudience(r))
+      .catch(() => !cancelled && setAudience(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [form.audience]);
+
+  const chosen = templates.find((t) => t.name === form.templateName);
+  const reach = audience?.reachable ?? 0;
+
+  const problem = (() => {
+    if (!form.name.trim()) return "Give this campaign a name.";
+    if (!form.templateName) return "Choose a template.";
+    if (!reach) return "Nobody in this audience has a number WhatsApp can reach.";
+    if (audience?.max && reach > audience.max) {
+      return `This would message ${reach} people at once. Send to at most ${audience.max} at a time.`;
+    }
+    return "";
+  })();
+
+  const send = async (e) => {
+    e.preventDefault();
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    setSending(true);
+    setError("");
+    try {
+      const result = await crmApi.startWhatsappCampaign({
+        ...form,
+        scheduledAt: form.scheduledAt || null,
+        variables,
+      });
+      setNotice(result.message);
+      setComposing(false);
+      setForm({ name: "", templateName: "", audience: "all", scheduledAt: "" });
+      setVariables({});
+      load();
+    } catch (err) {
+      setError(errorMessage(err, "Could not start this campaign."));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading) return <Spinner />;
+
+  return (
+    <>
+      {error ? <div className="crm-error">{error}</div> : null}
+      {notice ? <div className="crm-notice crm-notice-info">{notice}</div> : null}
+
+      {composing ? (
+        <form className="crm-card crm-card-pad" onSubmit={send}>
+          <div className="crm-card-title">New broadcast</div>
+          <div className="crm-hint">
+            Goes to many clients at once and cannot be recalled. Only approved templates can
+            be used.
+          </div>
+
+          <div className="crm-grid-2">
+            <div className="crm-field">
+              <label className="crm-label">Campaign name</label>
+              <input
+                className="crm-input"
+                value={form.name}
+                onChange={(e) => set({ name: e.target.value })}
+                placeholder="Diwali offer"
+                required
+              />
+              <div className="crm-hint">Only you see this.</div>
+            </div>
+
+            <div className="crm-field">
+              <label className="crm-label">Template</label>
+              <select
+                className="crm-input"
+                value={form.templateName}
+                onChange={(e) => set({ templateName: e.target.value })}
+              >
+                <option value="">Choose a template</option>
+                {templates.map((t) => (
+                  <option key={`${t.name}-${t.language}`} value={t.name}>
+                    {t.name} ({t.language})
+                  </option>
+                ))}
+              </select>
+              <div className="crm-hint">
+                {templates.length
+                  ? "Only approved templates are listed."
+                  : "You have no approved templates yet."}
+              </div>
+            </div>
+          </div>
+
+          <div className="crm-grid-2">
+            <div className="crm-field">
+              <label className="crm-label">Send to</label>
+              <select
+                className="crm-input"
+                value={form.audience}
+                onChange={(e) => set({ audience: e.target.value })}
+              >
+                {(audience?.options || []).map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              <div className="crm-hint">
+                {audience
+                  ? `${reach} of ${audience.total} will be messaged` +
+                    (audience.unreachable?.length
+                      ? ` · ${audience.unreachable.length} have no usable number`
+                      : "")
+                  : "Counting…"}
+              </div>
+            </div>
+
+            <div className="crm-field">
+              <label className="crm-label">Send later (optional)</label>
+              <input
+                className="crm-input"
+                type="datetime-local"
+                value={form.scheduledAt}
+                onChange={(e) => set({ scheduledAt: e.target.value })}
+              />
+              <div className="crm-hint">Leave empty to send now.</div>
+            </div>
+          </div>
+
+          {chosen ? (
+            <div className="crm-card crm-card-pad">
+              <div className="crm-section-label">Values for this campaign</div>
+              <div className="crm-hint">
+                These are the same for everyone who receives it. A template with someone's name
+                in it would greet every client by that one name, so keep personal details out
+                of a broadcast.
+              </div>
+              <div className="crm-grid-2">
+                {[1, 2, 3].map((n) => (
+                  <div className="crm-field" key={n}>
+                    <label className="crm-label">{`{{${n}}}`}</label>
+                    <input
+                      className="crm-input"
+                      value={variables[n] || ""}
+                      onChange={(e) => setVariables((v) => ({ ...v, [n]: e.target.value }))}
+                      placeholder={n === 1 ? "Diwali" : n === 2 ? "20%" : ""}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="crm-hint">Leave blank any the template does not use.</div>
+            </div>
+          ) : null}
+
+          {audience?.unreachable?.length ? (
+            <div className="crm-notice crm-notice-warn">
+              {audience.unreachable.length} will be skipped for want of a usable number:{" "}
+              {audience.unreachable.slice(0, 5).map((c) => c.name).join(", ")}
+              {audience.unreachable.length > 5 ? " and others" : ""}.
+            </div>
+          ) : null}
+
+          {problem && form.name ? <p className="crm-hint">{problem}</p> : null}
+
+          <div className="crm-actions">
+            <button type="button" className="crm-btn" onClick={() => setComposing(false)} disabled={sending}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="crm-btn crm-btn-primary"
+              disabled={sending || Boolean(problem)}
+              title={problem || ""}
+            >
+              {sending
+                ? "Starting…"
+                : form.scheduledAt
+                  ? `Schedule for ${reach}`
+                  : `Send to ${reach} now`}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="crm-actions">
+          <button className="crm-btn crm-btn-primary" onClick={() => setComposing(true)}>
+            New broadcast
+          </button>
+        </div>
+      )}
+
+      {!campaigns.length ? (
+        <p className="crm-muted">No broadcasts yet.</p>
+      ) : (
+        <div className="crm-table-wrap"><table className="crm-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Recipients</th>
+              <th>When</th>
+            </tr>
+          </thead>
+          <tbody>
+            {campaigns.map((c) => (
+              <tr key={c.id || c.name}>
+                <td className="crm-strong">{c.name || "—"}</td>
+                <td>
+                  <span className={STATUS_TONE[c.status] || "crm-badge"}>{c.status}</span>
+                </td>
+                <td>{c.recipients ?? "—"}</td>
+                <td>{when(c.scheduledAt || c.sentAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table></div>
+      )}
+    </>
+  );
+};
+
 /* ─── Contacts ──────────────────────────────────────────────────────────── */
 
 const Contacts = () => {
@@ -650,7 +935,15 @@ const WhatsAppWorkspace = ({ onBack }) => {
         ))}
       </div>
 
-      {tab === "templates" ? <Templates /> : tab === "contacts" ? <Contacts /> : <History />}
+      {tab === "templates" ? (
+        <Templates />
+      ) : tab === "campaigns" ? (
+        <Campaigns />
+      ) : tab === "contacts" ? (
+        <Contacts />
+      ) : (
+        <History />
+      )}
     </div>
   );
 };
