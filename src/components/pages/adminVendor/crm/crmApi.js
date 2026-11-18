@@ -95,6 +95,13 @@ export const crmApi = {
   // Free text, which WhatsApp only allows for 24 hours after the client
   // writes to the business. We cannot see when that was, so this can come
   // back saying the window has closed.
+  // The document itself rather than a link to it, and photos or a map pin.
+  // All session messages, so all bound by the 24-hour window.
+  whatsappQuotationPdf: (id) => data(axiosInstance.post(`${BASE}/quotations/${id}/whatsapp/pdf`)),
+  whatsappInvoicePdf: (id) => data(axiosInstance.post(`${BASE}/invoices/${id}/whatsapp/pdf`)),
+  whatsappFile: (clientId, body) =>
+    data(axiosInstance.post(`${BASE}/clients/${clientId}/whatsapp/file`, body)),
+
   // Broadcasts. Wapzio takes ONE set of variable values for the whole
   // campaign, so nothing here can personalise per recipient.
   whatsappAudience: (params) => data(axiosInstance.get(`${BASE}/whatsapp/audience`, { params })),

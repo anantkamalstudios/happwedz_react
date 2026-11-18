@@ -255,6 +255,10 @@ export const ActivityCard = ({ clientId, activity, onChanged }) => {
 export const WhatsAppReply = ({ client, connected }) => {
   const [text, setText] = React.useState("");
   const [sending, setSending] = React.useState(false);
+  // A file is fetched by WhatsApp from a public link, so this is an address
+  // rather than an upload.
+  const [attaching, setAttaching] = React.useState(false);
+  const [mediaUrl, setMediaUrl] = React.useState("");
   const [error, setError] = React.useState("");
   const [sent, setSent] = React.useState("");
 
@@ -262,12 +266,27 @@ export const WhatsAppReply = ({ client, connected }) => {
 
   const send = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (attaching ? !mediaUrl.trim() : !text.trim()) return;
     setSending(true);
     setError("");
     setSent("");
     try {
-      await crmApi.whatsappReply(client.id, { text: text.trim() });
+      if (attaching) {
+        // The type is worked out from the address: a PDF is a document to
+        // WhatsApp, a JPEG is a photo, and they are not interchangeable.
+        const lower = mediaUrl.toLowerCase();
+        const type = /\.(jpe?g|png|webp|gif)(\?|$)/.test(lower)
+          ? "image"
+          : /\.(mp4|mov|3gp)(\?|$)/.test(lower)
+            ? "video"
+            : /\.(mp3|ogg|m4a|aac)(\?|$)/.test(lower)
+              ? "audio"
+              : "document";
+        await crmApi.whatsappFile(client.id, { type, mediaUrl: mediaUrl.trim(), caption: text.trim() });
+        setMediaUrl("");
+      } else {
+        await crmApi.whatsappReply(client.id, { text: text.trim() });
+      }
       setSent(`Sent to ${client.name}.`);
       setText("");
     } catch (err) {
@@ -304,8 +323,36 @@ export const WhatsAppReply = ({ client, connected }) => {
         </div>
       </div>
 
+      {attaching ? (
+        <div className="crm-field">
+          <label className="crm-label">Web address of the file</label>
+          <input
+            className="crm-input"
+            value={mediaUrl}
+            onChange={(e) => setMediaUrl(e.target.value)}
+            placeholder="https://…/venue-photos.pdf"
+          />
+          <div className="crm-hint">
+            WhatsApp fetches the file itself, so it has to be a link anyone can open —
+            not a file on your computer.
+          </div>
+        </div>
+      ) : null}
+
       <div className="crm-actions">
-        <button type="submit" className="crm-btn crm-btn-primary" disabled={sending || !text.trim()}>
+        <button
+          type="button"
+          className="crm-btn crm-btn-sm"
+          onClick={() => setAttaching((v) => !v)}
+          disabled={sending}
+        >
+          {attaching ? "Just a message" : "Attach a photo or file"}
+        </button>
+        <button
+          type="submit"
+          className="crm-btn crm-btn-primary"
+          disabled={sending || (attaching ? !mediaUrl.trim() : !text.trim())}
+        >
           <WhatsAppIcon /> {sending ? "Sending…" : "Send"}
         </button>
       </div>

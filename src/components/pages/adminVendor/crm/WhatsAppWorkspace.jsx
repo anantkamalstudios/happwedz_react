@@ -36,6 +36,19 @@ const when = (v) =>
   v ? new Date(v).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
 
 /** Meta's three categories, in the words a vendor would use. */
+/**
+ * The buttons a template may carry.
+ *
+ * Meta allows at most three, and a quotation with "Confirm" and "Call us" on
+ * it is worth more than one with a link to tap.
+ */
+const BUTTON_TYPES = [
+  { id: "quick_reply", label: "Quick reply", hint: "The client taps it and the text comes back to you" },
+  { id: "website", label: "Open a link", hint: "Needs the web address" },
+  { id: "phone_call", label: "Call us", hint: "Needs the number to ring" },
+  { id: "copy_code", label: "Copy a code", hint: "For a discount code" },
+];
+
 const CATEGORIES = [
   { id: "UTILITY", label: "Utility", hint: "Order updates, reminders, receipts" },
   { id: "MARKETING", label: "Marketing", hint: "Offers, announcements, anything promotional" },
@@ -54,6 +67,7 @@ const TemplateForm = ({ waba, onDone, onCancel }) => {
     footerText: "",
   });
   const [examples, setExamples] = useState({});
+  const [buttons, setButtons] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -100,6 +114,16 @@ const TemplateForm = ({ waba, onDone, onCancel }) => {
       const result = await crmApi.createWhatsappTemplate({
         ...form,
         variableExamples: used.map((key) => ({ key, example: examples[key] || "" })),
+        // Incomplete rows are dropped here rather than sent for Meta to
+        // refuse: a link button with no link is not a button.
+        buttons: buttons.filter(
+          (b) =>
+            b.text.trim() &&
+            (b.type === "quick_reply" ||
+              b.type === "copy_code" ||
+              (b.type === "website" && b.url.trim()) ||
+              (b.type === "phone_call" && b.phoneNumber.trim()))
+        ),
       });
       onDone(result.message);
     } catch (err) {
@@ -241,6 +265,113 @@ const TemplateForm = ({ waba, onDone, onCancel }) => {
               </div>
             </div>
           ) : null}
+
+          <div className="crm-field">
+            <label className="crm-label">Buttons (optional)</label>
+            <div className="crm-hint">
+              Up to three. A quotation with "Confirm" on it gets a reply more often than one
+              with only a link.
+            </div>
+
+            {buttons.map((b, i) => (
+              <div className="crm-card crm-card-pad" key={i}>
+                <div className="crm-grid-2">
+                  <div className="crm-field">
+                    <label className="crm-label">Type</label>
+                    <select
+                      className="crm-input"
+                      value={b.type}
+                      onChange={(e) =>
+                        setButtons((list) =>
+                          list.map((x, n) => (n === i ? { ...x, type: e.target.value } : x))
+                        )
+                      }
+                    >
+                      {BUTTON_TYPES.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="crm-hint">
+                      {BUTTON_TYPES.find((t) => t.id === b.type)?.hint}
+                    </div>
+                  </div>
+
+                  <div className="crm-field">
+                    <label className="crm-label">Button text</label>
+                    <input
+                      className="crm-input"
+                      value={b.text}
+                      onChange={(e) =>
+                        setButtons((list) =>
+                          list.map((x, n) => (n === i ? { ...x, text: e.target.value } : x))
+                        )
+                      }
+                      placeholder={b.type === "quick_reply" ? "Confirm" : "View quote"}
+                      maxLength={25}
+                    />
+                  </div>
+                </div>
+
+                {b.type === "website" ? (
+                  <div className="crm-field">
+                    <label className="crm-label">Web address</label>
+                    <input
+                      className="crm-input"
+                      value={b.url}
+                      onChange={(e) =>
+                        setButtons((list) =>
+                          list.map((x, n) => (n === i ? { ...x, url: e.target.value } : x))
+                        )
+                      }
+                      placeholder="https://happywedz.com"
+                    />
+                  </div>
+                ) : null}
+
+                {b.type === "phone_call" ? (
+                  <div className="crm-field">
+                    <label className="crm-label">Number to ring</label>
+                    <input
+                      className="crm-input"
+                      value={b.phoneNumber}
+                      onChange={(e) =>
+                        setButtons((list) =>
+                          list.map((x, n) => (n === i ? { ...x, phoneNumber: e.target.value } : x))
+                        )
+                      }
+                      placeholder="+917770005377"
+                    />
+                  </div>
+                ) : null}
+
+                <div className="crm-actions">
+                  <button
+                    type="button"
+                    className="crm-btn crm-btn-sm"
+                    onClick={() => setButtons((list) => list.filter((_, n) => n !== i))}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {buttons.length < 3 ? (
+              <button
+                type="button"
+                className="crm-btn crm-btn-sm"
+                onClick={() =>
+                  setButtons((list) => [...list, { type: "quick_reply", text: "", url: "", phoneNumber: "" }])
+                }
+              >
+                Add a button
+              </button>
+            ) : (
+              <div className="crm-hint">Three is the most WhatsApp allows.</div>
+            )}
+          </div>
 
           <div className="crm-field">
             <label className="crm-label">Footer (optional)</label>
