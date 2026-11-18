@@ -581,12 +581,28 @@ const Campaigns = () => {
   const reach = audience?.reachable ?? 0;
 
   const problem = (() => {
-    if (!form.name.trim()) return "Give this campaign a name.";
-    if (!form.templateName) return "Choose a template.";
-    if (!reach) return "Nobody in this audience has a number WhatsApp can reach.";
-    if (audience?.max && reach > audience.max) {
-      return `This would message ${reach} people at once. Send to at most ${audience.max} at a time.`;
+    if (!form.name.trim()) return "Give this campaign a name";
+    if (!form.templateName) return "Choose a template";
+    if (!reach) {
+      return audience?.total
+        ? "Nobody here has a number WhatsApp can reach"
+        : "Nobody in this group yet";
     }
+    if (audience?.max && reach > audience.max) {
+      return `Too many at once — ${audience.max} is the limit`;
+    }
+    if (form.scheduledAt) {
+      const at = new Date(form.scheduledAt);
+      if (Number.isNaN(at.getTime())) return "That is not a valid date and time";
+      // Matches the server's rule, so the refusal arrives while the vendor is
+      // still looking at the field rather than after a round trip.
+      if (at.getTime() < Date.now() + 60 * 1000) return "Pick a time at least a minute from now";
+    }
+    const needed = chosen?.variableCount || 0;
+    const missing = Array.from({ length: needed }, (_, i) => String(i + 1)).find(
+      (n) => !(variables[n] || "").trim()
+    );
+    if (missing) return `Fill in {{${missing}}}`;
     return "";
   })();
 
@@ -601,7 +617,8 @@ const Campaigns = () => {
     try {
       const result = await crmApi.startWhatsappCampaign({
         ...form,
-        scheduledAt: form.scheduledAt || null,
+        // toISOString carries the timezone; the raw field value does not.
+        scheduledAt: form.scheduledAt ? new Date(form.scheduledAt).toISOString() : null,
         variables,
       });
       setNotice(result.message);
@@ -652,9 +669,13 @@ const Campaigns = () => {
                 onChange={(e) => set({ templateName: e.target.value })}
               >
                 <option value="">Choose a template</option>
-                {templates.map((t) => (
-                  <option key={`${t.name}-${t.language}`} value={t.name}>
-                    {t.name} ({t.language})
+                {/* One entry per name: Wapzio's campaign API takes a template
+                    name and no language, so listing the same name twice gave
+                    two options that could not be told apart and snapped back
+                    to the first. */}
+                {[...new Map(templates.map((t) => [t.name, t])).values()].map((t) => (
+                  <option key={t.name} value={t.name}>
+                    {t.name}
                   </option>
                 ))}
               </select>
@@ -681,12 +702,14 @@ const Campaigns = () => {
                 ))}
               </select>
               <div className="crm-hint">
-                {audience
-                  ? `${reach} of ${audience.total} will be messaged` +
-                    (audience.unreachable?.length
-                      ? ` · ${audience.unreachable.length} have no usable number`
-                      : "")
-                  : "Counting…"}
+                {!audience
+                  ? "Counting…"
+                  : audience.total === 0
+                    ? "Nobody in this group yet"
+                    : `${reach} of ${audience.total} in this group will be messaged` +
+                      (audience.unreachable?.length
+                        ? ` · ${audience.unreachable.length} have no usable number`
+                        : "")}
               </div>
             </div>
 
@@ -710,8 +733,24 @@ const Campaigns = () => {
                 in it would greet every client by that one name, so keep personal details out
                 of a broadcast.
               </div>
+
+              {/* The message itself, where we have it. Three blank boxes
+                  labelled {{1}} {{2}} {{3}} told a vendor nothing about what
+                  any of them stood for. */}
+              {chosen.body ? (
+                <p className="crm-note">{chosen.body}</p>
+              ) : (
+                <div className="crm-hint">
+                  This template was made outside HappyWedz, so we cannot show its wording or
+                  how many values it takes. Fill in the ones it uses and leave the rest blank.
+                </div>
+              )}
+
               <div className="crm-grid-2">
-                {[1, 2, 3].map((n) => (
+                {(chosen.variableCount
+                  ? Array.from({ length: chosen.variableCount }, (_, i) => i + 1)
+                  : [1, 2, 3]
+                ).map((n) => (
                   <div className="crm-field" key={n}>
                     <label className="crm-label">{`{{${n}}}`}</label>
                     <input
@@ -723,7 +762,6 @@ const Campaigns = () => {
                   </div>
                 ))}
               </div>
-              <div className="crm-hint">Leave blank any the template does not use.</div>
             </div>
           ) : null}
 
@@ -749,9 +787,11 @@ const Campaigns = () => {
             >
               {sending
                 ? "Starting…"
-                : form.scheduledAt
-                  ? `Schedule for ${reach}`
-                  : `Send to ${reach} now`}
+                : problem
+                  ? problem
+                  : form.scheduledAt
+                    ? `Schedule for ${reach}`
+                    : `Send to ${reach} now`}
             </button>
           </div>
         </form>
