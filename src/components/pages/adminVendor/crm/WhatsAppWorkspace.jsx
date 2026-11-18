@@ -120,11 +120,17 @@ const TemplateForm = ({ waba, onDone, onCancel }) => {
           <span>Name</span>
           <input
             value={form.templateName}
-            onChange={(e) => set({ templateName: e.target.value })}
+            // Meta names are lowercase, and the server lowercases before
+            // submitting - so a vendor typing My_Template would have got a
+            // template called my_template with nothing to say so. Lowercasing
+            // here makes the field show exactly what will be created.
+            onChange={(e) => set({ templateName: e.target.value.toLowerCase() })}
             placeholder="booking_confirmed"
             required
           />
-          <small className="crm-muted">Lowercase letters, numbers and underscores only.</small>
+          <small className="crm-muted">
+            Lowercase letters, numbers and underscores only. Capitals are converted as you type.
+          </small>
         </label>
 
         <label className="crm-field">
