@@ -23,6 +23,11 @@ const TABS = [
 
 const STATUS_TONE = {
   completed: "crm-badge crm-tone-green",
+  draft: "crm-badge crm-tone-grey",
+  queued: "crm-badge crm-tone-blue",
+  processing: "crm-badge crm-tone-blue",
+  paused: "crm-badge crm-tone-amber",
+  cancelled: "crm-badge crm-tone-grey",
   sending: "crm-badge crm-tone-blue",
   scheduled: "crm-badge crm-tone-amber",
   approved: "crm-badge crm-tone-green",
