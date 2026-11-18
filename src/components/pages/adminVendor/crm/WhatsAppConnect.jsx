@@ -165,7 +165,7 @@ export default function WhatsAppConnect() {
                 size="sm"
                 value={wabaId}
                 onChange={(e) => setWabaId(e.target.value)}
-                placeholder="2130828530998872"
+                placeholder="e.g. 1234567890123456"
                 inputMode="numeric"
                 autoComplete="off"
                 style={{ maxWidth: 260 }}
@@ -174,11 +174,20 @@ export default function WhatsAppConnect() {
                 {savingWaba ? "Saving…" : "Save"}
               </Button>
             </div>
-            <Form.Text className="text-muted">
-              In Wapzio, open Message Templates — it is the number beside CONNECTED WABA ID. Without
-              it a broadcast is created and never sent, so leave this blank only if you do not send
-              broadcasts.
-            </Form.Text>
+            {state.wabaId ? (
+              <Form.Text className="text-muted">
+                Saved. In Wapzio, this is the number beside CONNECTED WABA ID on the Message
+                Templates page.
+              </Form.Text>
+            ) : (
+              /* An empty field with a greyed-out example in it reads as a
+                 filled one, and the only symptom is a broadcast that never
+                 arrives. So the state is said outright. */
+              <Form.Text style={{ color: "#b45309" }}>
+                Not set, so broadcasts will be refused. In Wapzio, open Message Templates and copy
+                the number beside CONNECTED WABA ID. One-to-one messages work without it.
+              </Form.Text>
+            )}
           </Form>
 
           <Button variant="outline-danger" size="sm" onClick={disconnect} disabled={saving}>
@@ -224,7 +233,7 @@ export default function WhatsAppConnect() {
               type="text"
               value={wabaId}
               onChange={(e) => setWabaId(e.target.value)}
-              placeholder="2130828530998872"
+              placeholder="e.g. 1234567890123456"
               inputMode="numeric"
               autoComplete="off"
             />
