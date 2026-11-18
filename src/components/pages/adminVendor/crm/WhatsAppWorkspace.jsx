@@ -68,6 +68,22 @@ const LANGUAGE_NAMES = {
 
 const languageName = (code) => LANGUAGE_NAMES[code] || LANGUAGE_NAMES[String(code).split("_")[0]] || code;
 
+/** 7:48 pm — the time alone, because the day is a divider above it. */
+const timeOf = (v) =>
+  v ? new Date(v).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) : "";
+
+/** 18 Nov — the divider itself. */
+const dayOf = (v) =>
+  v ? new Date(v).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "";
+
+/** In a narrow list column: the time today, the date before that. */
+const shortWhen = (v) => {
+  if (!v) return "";
+  const at = new Date(v);
+  const today = new Date().toDateString() === at.toDateString();
+  return today ? timeOf(at) : dayOf(at);
+};
+
 const when = (v) =>
   v ? new Date(v).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
 
@@ -980,13 +996,15 @@ const Chats = () => {
   const [thread, setThread] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [unreadOnly, setUnreadOnly] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (quiet = false) => {
     try {
       const data = await crmApi.whatsappConversations();
       setThreads(data.conversations || []);
     } catch (err) {
-      setError(errorMessage(err, "Could not read your conversations."));
+      if (!quiet) setError(errorMessage(err, "Could not read your conversations."));
     } finally {
       setLoading(false);
     }
@@ -996,79 +1014,70 @@ const Chats = () => {
     load();
   }, [load]);
 
-  // New messages arrive by webhook, not by anything the vendor does here, so
-  // the list has to look for itself.
+  // Messages arrive by webhook, not by anything done on this screen, so the
+  // list has to look for itself. Quietly: a failed poll must not throw an
+  // error across a conversation the vendor is reading.
   useEffect(() => {
-    const timer = setInterval(load, 20000);
+    const timer = setInterval(() => load(true), 20000);
     return () => clearInterval(timer);
   }, [load]);
 
-  const open = async (key) => {
-    setOpenKey(key);
-    setThread(null);
-    try {
-      const data = await crmApi.whatsappConversation(key);
-      setThread(data.conversation);
-      // Only what was in it when it was opened; anything arriving while it is
-      // open stays unread until it has been looked at.
-      await crmApi.whatsappConversationSeen(key).catch(() => {});
-      load();
-    } catch (err) {
-      setError(errorMessage(err, "Could not open this conversation."));
-    }
-  };
+  const open = useCallback(
+    async (key) => {
+      setOpenKey(key);
+      setThread(null);
+      try {
+        const data = await crmApi.whatsappConversation(key);
+        setThread(data.conversation);
+        // Only what was in it when it was opened. Anything arriving while it
+        // is open stays unread until it has actually been looked at.
+        await crmApi.whatsappConversationSeen(key).catch(() => {});
+        load(true);
+      } catch (err) {
+        setError(errorMessage(err, "Could not open this conversation."));
+      }
+    },
+    [load]
+  );
+
+  // Keep the open conversation moving too, or a reply arriving mid-read
+  // would not show until it was closed and opened again.
+  useEffect(() => {
+    if (!openKey) return undefined;
+    const timer = setInterval(() => {
+      crmApi
+        .whatsappConversation(openKey)
+        .then((d) => setThread(d.conversation))
+        .catch(() => {});
+    }, 15000);
+    return () => clearInterval(timer);
+  }, [openKey]);
+
+  // The first conversation opens itself, so the screen is never an empty
+  // panel beside a list.
+  useEffect(() => {
+    if (!openKey && threads.length) open(threads[0].key);
+  }, [threads, openKey, open]);
 
   if (loading) return <Spinner />;
 
-  if (openKey && thread) {
+  const term = search.trim().toLowerCase();
+  const shown = threads.filter((t) => {
+    if (unreadOnly && !t.unread) return false;
+    if (!term) return true;
+    return `${t.name || ""} ${t.number || ""}`.toLowerCase().includes(term);
+  });
+  const unreadTotal = threads.reduce((n, t) => n + t.unread, 0);
+
+  if (!threads.length) {
     return (
       <>
-        <div className="crm-actions">
-          <button className="crm-btn crm-btn-sm" onClick={() => { setOpenKey(null); setThread(null); }}>
-            Back to all chats
-          </button>
-        </div>
-
-        <div className="crm-card crm-card-pad">
-          <div className="crm-card-title">
-            {thread.name || thread.number}
-            <span className="crm-muted crm-small">{thread.number}</span>
-          </div>
-          <div className="crm-hint">{windowLine(thread.window)}</div>
-
-          <div className="crm-chat">
-            {!thread.messages.length ? (
-              <p className="crm-muted">Nothing here yet.</p>
-            ) : (
-              thread.messages.map((m) => (
-                <div key={m.id} className={`crm-bubble ${m.direction === "in" ? "is-them" : "is-us"}`}>
-                  {m.body ? <div className="crm-bubble-text">{m.body}</div> : null}
-                  {m.mediaUrl ? (
-                    <a className="crm-bubble-file" href={m.mediaUrl} target="_blank" rel="noreferrer">
-                      📎 {m.mediaType || "Attachment"}
-                    </a>
-                  ) : null}
-                  {!m.body && !m.mediaUrl ? (
-                    <div className="crm-bubble-text crm-muted">
-                      {m.template ? `Template: ${m.template}` : m.kind}
-                    </div>
-                  ) : null}
-                  <div className="crm-bubble-foot">
-                    {when(m.at)}
-                    {m.direction === "out" ? ` ${TICK[m.status] || m.status}` : ""}
-                    {m.direction === "out" && m.actorName ? ` · ${m.actorName}` : ""}
-                  </div>
-                  {m.error ? <div className="crm-bubble-foot crm-danger">{m.error}</div> : null}
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className="crm-hint">
-            To reply, open the client and use Message on WhatsApp — that is where their quotations
-            and files are too.
-          </div>
-        </div>
+        {error ? <div className="crm-error">{error}</div> : null}
+        <p className="crm-muted">
+          No conversations yet. They appear here as soon as a client writes to your WhatsApp
+          number. If you have been getting replies in Wapzio and nothing shows here, check
+          Settings → Integrations, under Replies and delivery reports.
+        </p>
       </>
     );
   }
@@ -1077,40 +1086,122 @@ const Chats = () => {
     <>
       {error ? <div className="crm-error">{error}</div> : null}
 
-      {!threads.length ? (
-        <p className="crm-muted">
-          No conversations yet. Replies appear here once a client writes to your WhatsApp number —
-          check Settings if you have not switched on replies and delivery reports.
-        </p>
-      ) : (
-        <div className="crm-table-wrap"><table className="crm-table">
-          <thead>
-            <tr>
-              <th>Who</th>
-              <th>Last message</th>
-              <th>When</th>
-            </tr>
-          </thead>
-          <tbody>
-            {threads.map((t) => (
-              <tr key={t.key} className="crm-row-click" onClick={() => open(t.key)}>
-                <td className="crm-strong">
-                  {t.name || t.number}
-                  {t.unread ? <span className="crm-badge crm-tone-green">{t.unread} new</span> : null}
-                  {!t.clientId ? <div className="crm-muted crm-small">not a client yet</div> : null}
-                </td>
-                <td>
-                  <span className={t.unread ? "crm-strong" : ""}>
+      <div className="crm-inbox">
+        <div className="crm-inbox-list">
+          <input
+            className="crm-input"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name or number"
+          />
+          <div className="crm-tabs crm-tabs-sm">
+            <button
+              className={`crm-tab ${!unreadOnly ? "is-active" : ""}`}
+              onClick={() => setUnreadOnly(false)}
+            >
+              All
+            </button>
+            <button
+              className={`crm-tab ${unreadOnly ? "is-active" : ""}`}
+              onClick={() => setUnreadOnly(true)}
+            >
+              Unread {unreadTotal ? `(${unreadTotal})` : ""}
+            </button>
+          </div>
+
+          {!shown.length ? (
+            <p className="crm-muted crm-small">Nothing matches.</p>
+          ) : (
+            shown.map((t) => (
+              <button
+                key={t.key}
+                className={`crm-inbox-row ${openKey === t.key ? "is-open" : ""}`}
+                onClick={() => open(t.key)}
+              >
+                <span className="crm-inbox-avatar">
+                  {(t.name || t.number || "?").trim().charAt(0).toUpperCase()}
+                </span>
+                <span className="crm-inbox-who">
+                  <span className="crm-inbox-name">{t.name || t.number}</span>
+                  <span className="crm-inbox-last">
                     {t.lastDirection === "out" ? "You: " : ""}
                     {t.lastMessage}
                   </span>
-                </td>
-                <td>{when(t.lastAt)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table></div>
-      )}
+                </span>
+                <span className="crm-inbox-meta">
+                  <span className="crm-inbox-when">{shortWhen(t.lastAt)}</span>
+                  {t.unread ? <span className="crm-inbox-unread">{t.unread}</span> : null}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+
+        <div className="crm-inbox-thread">
+          {!thread ? (
+            <Spinner />
+          ) : (
+            <>
+              <div className="crm-inbox-head">
+                <span className="crm-inbox-avatar">
+                  {(thread.name || thread.number || "?").trim().charAt(0).toUpperCase()}
+                </span>
+                <span>
+                  <span className="crm-inbox-name">{thread.name || thread.number}</span>
+                  <span className="crm-inbox-last">{thread.number}</span>
+                </span>
+                {!thread.clientId ? <span className="crm-chip">not a client yet</span> : null}
+              </div>
+
+              <div className="crm-chat">
+                {!thread.messages.length ? (
+                  <p className="crm-muted">Nothing here yet.</p>
+                ) : (
+                  thread.messages.map((m, i) => (
+                    <React.Fragment key={m.id}>
+                      {dayOf(m.at) !== dayOf(thread.messages[i - 1]?.at) ? (
+                        <div className="crm-chat-day">{dayOf(m.at)}</div>
+                      ) : null}
+                      <div className={`crm-bubble ${m.direction === "in" ? "is-them" : "is-us"}`}>
+                        {m.body ? <div className="crm-bubble-text">{m.body}</div> : null}
+                        {m.mediaUrl ? (
+                          <a className="crm-bubble-file" href={m.mediaUrl} target="_blank" rel="noreferrer">
+                            📎 {m.mediaType || "Attachment"}
+                          </a>
+                        ) : null}
+                        {!m.body && !m.mediaUrl ? (
+                          <div className="crm-bubble-text crm-muted">
+                            {m.template ? `Template: ${m.template}` : m.kind}
+                          </div>
+                        ) : null}
+                        <div className="crm-bubble-foot">
+                          {timeOf(m.at)}
+                          {m.direction === "out" ? ` ${TICK[m.status] || m.status}` : ""}
+                          {m.direction === "out" && m.actorName ? ` · ${m.actorName}` : ""}
+                        </div>
+                        {m.error ? <div className="crm-bubble-foot crm-danger">{m.error}</div> : null}
+                      </div>
+                    </React.Fragment>
+                  ))
+                )}
+              </div>
+
+              <div className="crm-inbox-foot">
+                <div className="crm-hint">{windowLine(thread.window)}</div>
+                {thread.clientId ? (
+                  <a className="crm-btn crm-btn-primary" href={`?client=${thread.clientId}`}>
+                    Open client to reply
+                  </a>
+                ) : (
+                  <div className="crm-hint">
+                    Add this number as a client to reply to them from HappyWedz.
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </>
   );
 };
