@@ -53,15 +53,43 @@ const TemplateForm = ({ waba, onDone, onCancel }) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const set = (patch) => setForm((f) => ({ ...f, ...patch }));
-
   // Meta refuses a template whose variables carry no sample value, so the
   // form asks for one the moment a {{1}} appears rather than letting the
   // vendor find out by email hours later.
   const used = [...new Set((form.body.match(/\{\{\s*\d+\s*\}\}/g) || []).map((m) => m.replace(/\D/g, "")))];
 
+  // Clears the previous failure: a banner that stays up while the vendor is
+  // editing reads as though the new attempt failed too.
+  const set = (patch) => {
+    setForm((f) => ({ ...f, ...patch }));
+    setError("");
+  };
+
+  /**
+   * The same rules the server applies, checked here first.
+   *
+   * Without this a name with a space went all the way to the server, and the
+   * only hint was a line of static help text nobody reads until after.
+   */
+  const problem = (() => {
+    const name = form.templateName.trim();
+    if (!name) return "Give the template a name.";
+    if (!/^[a-z0-9_]+$/.test(name.toLowerCase())) {
+      return "A name may use only lowercase letters, numbers and underscores — no spaces or hyphens.";
+    }
+    if (!form.wabaId.trim()) return "Enter the WhatsApp Business Account ID.";
+    if (form.category !== "AUTHENTICATION" && !form.body.trim()) return "Write the message.";
+    const blank = used.find((k) => !(examples[k] || "").trim());
+    if (blank) return `Give a sample value for {{${blank}}} — Meta rejects a template without one.`;
+    return "";
+  })();
+
   const submit = async (e) => {
     e.preventDefault();
+    if (problem) {
+      setError(problem);
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -201,11 +229,20 @@ const TemplateForm = ({ waba, onDone, onCancel }) => {
         </p>
       )}
 
+      {problem && form.templateName ? (
+        <p className="crm-hint">{problem}</p>
+      ) : null}
+
       <div className="crm-actions">
         <button type="button" className="crm-btn" onClick={onCancel} disabled={saving}>
           Cancel
         </button>
-        <button type="submit" className="crm-btn crm-btn-primary" disabled={saving}>
+        <button
+          type="submit"
+          className="crm-btn crm-btn-primary"
+          disabled={saving || Boolean(problem)}
+          title={problem || ""}
+        >
           {saving ? "Submitting…" : "Submit for approval"}
         </button>
       </div>
@@ -291,14 +328,17 @@ const Templates = () => {
           </thead>
           <tbody>
             {templates.map((t) => (
-              <tr key={`${t.name}-${t.language}`}>
+              <tr key={`${t.name}-${t.language}-${t.status}`}>
                 <td className="crm-strong">{t.name}</td>
                 <td>{t.language || "—"}</td>
                 <td>{t.category || "—"}</td>
                 <td>
                   <span className={STATUS_TONE[t.status] || "crm-badge"}>{t.status}</span>
                   {t.status === "pending" ? (
-                    <div className="crm-muted crm-small">Waiting on Meta</div>
+                    <div className="crm-muted crm-small">
+                      Waiting on Meta
+                      {t.submittedBy ? ` · submitted by ${t.submittedBy}` : ""}
+                    </div>
                   ) : null}
                 </td>
               </tr>
@@ -510,7 +550,16 @@ const History = () => {
                     {KIND_LABEL[m.kind] || m.kind}
                     {m.template ? <div className="crm-muted crm-small">{m.template}</div> : null}
                   </td>
-                  <td className="crm-strong">{m.to}</td>
+                  <td>
+                    {m.client ? (
+                      <>
+                        <div>{m.client}</div>
+                        <div className="crm-muted crm-small">{m.to}</div>
+                      </>
+                    ) : (
+                      <span className="crm-strong">{m.to}</span>
+                    )}
+                  </td>
                   <td>{m.sentBy || "—"}</td>
                   <td>
                     <span className={STATUS_TONE[m.status] || "crm-badge"}>{m.status}</span>
