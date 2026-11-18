@@ -253,6 +253,13 @@ export const ActivityCard = ({ clientId, activity, onChanged }) => {
  * never reach us.
  */
 export const WhatsAppReply = ({ client, connected }) => {
+  // Templates, fetched only when a vendor asks for one. A client's page
+  // should not call the provider on every open for a list most visits never
+  // need.
+  const [templating, setTemplating] = React.useState(false);
+  const [templates, setTemplates] = React.useState(null);
+  const [templateName, setTemplateName] = React.useState("");
+  const [values, setValues] = React.useState({});
   const [text, setText] = React.useState("");
   const [sending, setSending] = React.useState(false);
   // A file is fetched by WhatsApp from a public link, so this is an address
@@ -261,6 +268,39 @@ export const WhatsAppReply = ({ client, connected }) => {
   const [mediaUrl, setMediaUrl] = React.useState("");
   const [error, setError] = React.useState("");
   const [sent, setSent] = React.useState("");
+
+  const chosen = (templates || []).find((t) => t.name === templateName);
+
+  const openTemplates = async () => {
+    setTemplating(true);
+    setError("");
+    if (templates) return;
+    try {
+      const data = await crmApi.whatsappTemplates();
+      setTemplates((data.templates || []).filter((t) => t.status === "approved"));
+    } catch (err) {
+      setError(errorMessage(err, "Could not read your templates."));
+      setTemplates([]);
+    }
+  };
+
+  const sendTemplate = async () => {
+    if (!templateName) return;
+    setSending(true);
+    setError("");
+    setSent("");
+    try {
+      const data = await crmApi.whatsappSendTemplate(client.id, { templateName, variables: values });
+      setSent(data.message || `Sent to ${client.name}.`);
+      setTemplating(false);
+      setTemplateName("");
+      setValues({});
+    } catch (err) {
+      setError(errorMessage(err, "Could not send this template."));
+    } finally {
+      setSending(false);
+    }
+  };
 
   if (!connected) return null;
 
@@ -318,8 +358,8 @@ export const WhatsAppReply = ({ client, connected }) => {
         />
         <div className="crm-hint">
           A plain message only reaches a client who has written to you in the last 24 hours.
-          Outside that, WhatsApp allows approved templates only — send a quotation or invoice
-          instead.
+          Outside that, WhatsApp allows approved templates only — send one below, and once they
+          reply you can write freely again.
         </div>
       </div>
 
@@ -339,7 +379,77 @@ export const WhatsAppReply = ({ client, connected }) => {
         </div>
       ) : null}
 
+      {templating ? (
+        <div className="crm-field">
+          <label className="crm-label">Approved template</label>
+          {templates === null ? (
+            <div className="crm-hint">Reading your templates…</div>
+          ) : !templates.length ? (
+            <div className="crm-hint">
+              You have no approved templates yet. Create one on the WhatsApp screen; Meta has to
+              approve it before it can be sent.
+            </div>
+          ) : (
+            <>
+              <select
+                className="crm-input"
+                value={templateName}
+                onChange={(e) => {
+                  setTemplateName(e.target.value);
+                  setValues({});
+                  if (error) setError("");
+                }}
+              >
+                <option value="">Choose a template</option>
+                {[...new Map(templates.map((t) => [t.name, t])).values()].map((t) => (
+                  <option key={t.name} value={t.name}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+
+              {chosen?.body ? <p className="crm-note">{chosen.body}</p> : null}
+
+              {/* Only the slots the template uses, where we know. A template
+                  made outside HappyWedz reports no wording and no count, so
+                  three blanks and a word about why. */}
+              {(chosen?.variableCount
+                ? Array.from({ length: chosen.variableCount }, (_, i) => i + 1)
+                : templateName
+                  ? [1, 2, 3]
+                  : []
+              ).map((n) => (
+                <div className="crm-field" key={n}>
+                  <label className="crm-label">{`{{${n}}}`}</label>
+                  <input
+                    className="crm-input"
+                    value={values[n] || ""}
+                    onChange={(e) => setValues((v) => ({ ...v, [n]: e.target.value }))}
+                    placeholder={n === 1 ? client.name || "" : ""}
+                  />
+                </div>
+              ))}
+
+              {templateName && !chosen?.variableCount ? (
+                <div className="crm-hint">
+                  This template was made outside HappyWedz, so we cannot show its wording or how
+                  many values it takes. Fill in the ones it uses and leave the rest blank.
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+      ) : null}
+
       <div className="crm-actions">
+        <button
+          type="button"
+          className="crm-btn crm-btn-sm"
+          onClick={() => (templating ? setTemplating(false) : openTemplates())}
+          disabled={sending}
+        >
+          {templating ? "Back to a message" : "Send a template"}
+        </button>
         <button
           type="button"
           className="crm-btn crm-btn-sm"
@@ -348,13 +458,24 @@ export const WhatsAppReply = ({ client, connected }) => {
         >
           {attaching ? "Just a message" : "Attach a photo or file"}
         </button>
-        <button
-          type="submit"
-          className="crm-btn crm-btn-primary"
-          disabled={sending || (attaching ? !mediaUrl.trim() : !text.trim())}
-        >
-          <WhatsAppIcon /> {sending ? "Sending…" : "Send"}
-        </button>
+        {templating ? (
+          <button
+            type="button"
+            className="crm-btn crm-btn-primary"
+            onClick={sendTemplate}
+            disabled={sending || !templateName}
+          >
+            <WhatsAppIcon /> {sending ? "Sending…" : templateName ? "Send template" : "Choose a template"}
+          </button>
+        ) : (
+          <button
+            type="submit"
+            className="crm-btn crm-btn-primary"
+            disabled={sending || (attaching ? !mediaUrl.trim() : !text.trim())}
+          >
+            <WhatsAppIcon /> {sending ? "Sending…" : "Send"}
+          </button>
+        )}
       </div>
     </form>
   );

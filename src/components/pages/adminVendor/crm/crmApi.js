@@ -109,6 +109,8 @@ export const crmApi = {
   whatsappCampaigns: () => data(axiosInstance.get(`${BASE}/whatsapp/campaigns`)),
   startWhatsappCampaign: (body) => data(axiosInstance.post(`${BASE}/whatsapp/campaigns`, body)),
 
+  whatsappSendTemplate: (clientId, body) =>
+    data(axiosInstance.post(`${BASE}/clients/${clientId}/whatsapp/template`, body)),
   whatsappReply: (clientId, body) =>
     data(axiosInstance.post(`${BASE}/clients/${clientId}/whatsapp/reply`, body)),
 
