@@ -92,6 +92,10 @@ export const crmApi = {
   saveWhatsappContact: (body) => data(axiosInstance.post(`${BASE}/whatsapp/contacts`, body)),
 
   // Our own record of every send. Wapzio keeps no message history.
+  whatsappConversations: () => data(axiosInstance.get(`${BASE}/whatsapp/conversations`)),
+  whatsappConversation: (key) => data(axiosInstance.get(`${BASE}/whatsapp/conversations/${key}`)),
+  whatsappConversationSeen: (key) =>
+    data(axiosInstance.post(`${BASE}/whatsapp/conversations/${key}/seen`)),
   whatsappHistory: (params) => data(axiosInstance.get(`${BASE}/whatsapp/history`, { params })),
 
   // Free text, which WhatsApp only allows for 24 hours after the client

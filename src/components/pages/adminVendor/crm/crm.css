@@ -2173,3 +2173,77 @@ textarea.crm-input {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Chat ─────────────────────────────────────────────────────────────────
+   A conversation, which HappyWedz could not show at all until Wapzio's
+   webhooks arrived: everything here was one-sided. Theirs on the left, ours
+   on the right, the way every messaging app has taught people to read it. */
+.crm-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 460px;
+  overflow-y: auto;
+  padding: 12px 2px;
+}
+
+.crm-bubble {
+  max-width: 78%;
+  border-radius: 12px;
+  padding: 8px 11px;
+  border: 1px solid var(--crm-line);
+}
+
+.crm-bubble.is-them {
+  align-self: flex-start;
+  background: var(--crm-card);
+  border-bottom-left-radius: 4px;
+}
+
+.crm-bubble.is-us {
+  align-self: flex-end;
+  background: var(--crm-green-soft);
+  border-color: transparent;
+  border-bottom-right-radius: 4px;
+}
+
+.crm-bubble-text {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--crm-ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.crm-bubble-file {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--crm-blue);
+  word-break: break-all;
+}
+
+.crm-bubble-foot {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--crm-muted);
+}
+
+.crm-row-click {
+  cursor: pointer;
+}
+
+.crm-row-click:hover {
+  background: var(--crm-bg);
+}
+
+@media (max-width: 520px) {
+  .crm-bubble {
+    max-width: 90%;
+  }
+}
+
+/* A failure reason under a message, where it belongs rather than in a toast
+   the vendor has already dismissed. */
+.crm-danger {
+  color: var(--crm-red);
+}

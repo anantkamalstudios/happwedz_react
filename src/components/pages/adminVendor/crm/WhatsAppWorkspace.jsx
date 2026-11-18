@@ -15,6 +15,7 @@ import { Spinner } from "./crmUi";
  */
 
 const TABS = [
+  { key: "chats", label: "Chats" },
   { key: "templates", label: "Templates" },
   { key: "campaigns", label: "Broadcasts" },
   { key: "contacts", label: "Contacts" },
@@ -939,6 +940,181 @@ const Campaigns = () => {
   );
 };
 
+/* ─── Chats ─────────────────────────────────────────────────────────────── */
+
+/**
+ * What clients have said, beside what was sent them.
+ *
+ * Until the webhook existed this screen could not: a client's reply went to
+ * Wapzio and nowhere else, so HappyWedz only ever had its own half of a
+ * conversation. The list is every thread newest first; opening one marks
+ * what is in it as read.
+ *
+ * The 24-hour window is shown as a fact rather than left to be discovered.
+ * WhatsApp refuses free text to a client who has not written for a day, and
+ * finding that out by having a message bounce is a poor way to learn it.
+ */
+const windowLine = (w) => {
+  if (!w) return null;
+  if (!w.closesAt) return "They have never written to you, so only a template can be sent.";
+  const closes = new Date(w.closesAt);
+  if (!w.open) return "More than 24 hours since they wrote, so only a template can be sent.";
+  return `You can write freely until ${closes.toLocaleTimeString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+  })}.`;
+};
+
+/** A tick for each thing WhatsApp tells us about a message we sent. */
+const TICK = {
+  queued: "· sending",
+  sent: "✓ sent",
+  delivered: "✓✓ delivered",
+  read: "✓✓ read",
+  failed: "✕ failed",
+};
+
+const Chats = () => {
+  const [threads, setThreads] = useState([]);
+  const [openKey, setOpenKey] = useState(null);
+  const [thread, setThread] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const data = await crmApi.whatsappConversations();
+      setThreads(data.conversations || []);
+    } catch (err) {
+      setError(errorMessage(err, "Could not read your conversations."));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // New messages arrive by webhook, not by anything the vendor does here, so
+  // the list has to look for itself.
+  useEffect(() => {
+    const timer = setInterval(load, 20000);
+    return () => clearInterval(timer);
+  }, [load]);
+
+  const open = async (key) => {
+    setOpenKey(key);
+    setThread(null);
+    try {
+      const data = await crmApi.whatsappConversation(key);
+      setThread(data.conversation);
+      // Only what was in it when it was opened; anything arriving while it is
+      // open stays unread until it has been looked at.
+      await crmApi.whatsappConversationSeen(key).catch(() => {});
+      load();
+    } catch (err) {
+      setError(errorMessage(err, "Could not open this conversation."));
+    }
+  };
+
+  if (loading) return <Spinner />;
+
+  if (openKey && thread) {
+    return (
+      <>
+        <div className="crm-actions">
+          <button className="crm-btn crm-btn-sm" onClick={() => { setOpenKey(null); setThread(null); }}>
+            Back to all chats
+          </button>
+        </div>
+
+        <div className="crm-card crm-card-pad">
+          <div className="crm-card-title">
+            {thread.name || thread.number}
+            <span className="crm-muted crm-small">{thread.number}</span>
+          </div>
+          <div className="crm-hint">{windowLine(thread.window)}</div>
+
+          <div className="crm-chat">
+            {!thread.messages.length ? (
+              <p className="crm-muted">Nothing here yet.</p>
+            ) : (
+              thread.messages.map((m) => (
+                <div key={m.id} className={`crm-bubble ${m.direction === "in" ? "is-them" : "is-us"}`}>
+                  {m.body ? <div className="crm-bubble-text">{m.body}</div> : null}
+                  {m.mediaUrl ? (
+                    <a className="crm-bubble-file" href={m.mediaUrl} target="_blank" rel="noreferrer">
+                      📎 {m.mediaType || "Attachment"}
+                    </a>
+                  ) : null}
+                  {!m.body && !m.mediaUrl ? (
+                    <div className="crm-bubble-text crm-muted">
+                      {m.template ? `Template: ${m.template}` : m.kind}
+                    </div>
+                  ) : null}
+                  <div className="crm-bubble-foot">
+                    {when(m.at)}
+                    {m.direction === "out" ? ` ${TICK[m.status] || m.status}` : ""}
+                    {m.direction === "out" && m.actorName ? ` · ${m.actorName}` : ""}
+                  </div>
+                  {m.error ? <div className="crm-bubble-foot crm-danger">{m.error}</div> : null}
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="crm-hint">
+            To reply, open the client and use Message on WhatsApp — that is where their quotations
+            and files are too.
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {error ? <div className="crm-error">{error}</div> : null}
+
+      {!threads.length ? (
+        <p className="crm-muted">
+          No conversations yet. Replies appear here once a client writes to your WhatsApp number —
+          check Settings if you have not switched on replies and delivery reports.
+        </p>
+      ) : (
+        <div className="crm-table-wrap"><table className="crm-table">
+          <thead>
+            <tr>
+              <th>Who</th>
+              <th>Last message</th>
+              <th>When</th>
+            </tr>
+          </thead>
+          <tbody>
+            {threads.map((t) => (
+              <tr key={t.key} className="crm-row-click" onClick={() => open(t.key)}>
+                <td className="crm-strong">
+                  {t.name || t.number}
+                  {t.unread ? <span className="crm-badge crm-tone-green">{t.unread} new</span> : null}
+                  {!t.clientId ? <div className="crm-muted crm-small">not a client yet</div> : null}
+                </td>
+                <td>
+                  <span className={t.unread ? "crm-strong" : ""}>
+                    {t.lastDirection === "out" ? "You: " : ""}
+                    {t.lastMessage}
+                  </span>
+                </td>
+                <td>{when(t.lastAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table></div>
+      )}
+    </>
+  );
+};
+
 /* ─── Contacts ──────────────────────────────────────────────────────────── */
 
 const Contacts = () => {
@@ -1213,7 +1389,9 @@ const WhatsAppWorkspace = ({ onBack }) => {
         ))}
       </div>
 
-      {tab === "templates" ? (
+      {tab === "chats" ? (
+        <Chats />
+      ) : tab === "templates" ? (
         <Templates />
       ) : tab === "campaigns" ? (
         <Campaigns />
