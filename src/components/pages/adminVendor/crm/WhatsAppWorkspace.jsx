@@ -595,6 +595,8 @@ const Campaigns = () => {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [composing, setComposing] = useState(false);
+  // Something is still going out, so the numbers need to keep moving.
+  const working = campaigns.some((c) => ["queued", "sending"].includes(c.status));
 
   const [form, setForm] = useState({ name: "", templateName: "", audience: "all", scheduledAt: "" });
   const [variables, setVariables] = useState({});
@@ -627,6 +629,24 @@ const Campaigns = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  /**
+   * While something is going out, keep the counts moving.
+   *
+   * A broadcast is sent one message at a time, so "3 of 180" is a number that
+   * changes while a vendor watches it. Refreshing quietly, without the
+   * spinner, so the table does not blink every few seconds.
+   */
+  useEffect(() => {
+    if (!working) return undefined;
+    const timer = setInterval(() => {
+      crmApi
+        .whatsappCampaigns()
+        .then((r) => setCampaigns(r.campaigns || []))
+        .catch(() => {});
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [working]);
 
   // Recount every time the audience changes, so the number beside the button
   // is always the number that will actually be messaged.
@@ -802,9 +822,8 @@ const Campaigns = () => {
             <div className="crm-card crm-card-pad">
               <div className="crm-section-label">Values for this campaign</div>
               <div className="crm-hint">
-                These are the same for everyone who receives it. A template with someone's name
-                in it would greet every client by that one name, so keep personal details out
-                of a broadcast.
+                Write <strong>{"{name}"}</strong> and each client sees their own name. Anything
+                else is the same for everyone, so keep other personal details out of a broadcast.
               </div>
 
               {/* The message itself, where we have it. Three blank boxes
@@ -891,11 +910,25 @@ const Campaigns = () => {
           <tbody>
             {campaigns.map((c) => (
               <tr key={c.id || c.name}>
-                <td className="crm-strong">{c.name || "—"}</td>
+                <td className="crm-strong">
+                  {c.name || "—"}
+                  {c.source === "wapzio" ? <div className="crm-muted crm-small">made in Wapzio</div> : null}
+                </td>
                 <td>
                   <span className={STATUS_TONE[c.status] || "crm-badge"}>{c.status}</span>
+                  {c.error ? <div className="crm-muted crm-small">{c.error}</div> : null}
                 </td>
-                <td>{c.recipients ?? "—"}</td>
+                <td>
+                  {c.source === "happywedz" ? (
+                    <>
+                      {c.sent}
+                      {c.recipients ? ` of ${c.recipients}` : ""}
+                      {c.failed ? <div className="crm-muted crm-small">{c.failed} failed</div> : null}
+                    </>
+                  ) : (
+                    (c.recipients ?? "—")
+                  )}
+                </td>
                 <td>{when(c.scheduledAt || c.sentAt || c.createdAt)}</td>
               </tr>
             ))}

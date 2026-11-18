@@ -174,20 +174,12 @@ export default function WhatsAppConnect() {
                 {savingWaba ? "Saving…" : "Save"}
               </Button>
             </div>
-            {state.wabaId ? (
-              <Form.Text className="text-muted">
-                Saved. In Wapzio, this is the number beside CONNECTED WABA ID on the Message
-                Templates page.
-              </Form.Text>
-            ) : (
-              /* An empty field with a greyed-out example in it reads as a
-                 filled one, and the only symptom is a broadcast that never
-                 arrives. So the state is said outright. */
-              <Form.Text style={{ color: "#b45309" }}>
-                Not set, so broadcasts will be refused. In Wapzio, open Message Templates and copy
-                the number beside CONNECTED WABA ID. One-to-one messages work without it.
-              </Form.Text>
-            )}
+            <Form.Text className="text-muted">
+              {state.wabaId ? "Saved. " : "Not set. "}
+              Optional. Broadcasts are sent from here one message at a time and do not need it;
+              it is kept for Wapzio&apos;s own campaign tools. In Wapzio it is the number beside
+              CONNECTED WABA ID on the Message Templates page.
+            </Form.Text>
           </Form>
 
           <Button variant="outline-danger" size="sm" onClick={disconnect} disabled={saving}>
@@ -238,8 +230,8 @@ export default function WhatsAppConnect() {
               autoComplete="off"
             />
             <Form.Text className="text-muted">
-              Optional, and only needed for broadcasts. In Wapzio, open Message Templates — it is
-              the number beside CONNECTED WABA ID. You can add it later.
+              Optional. Not needed to send broadcasts; it is kept for Wapzio&apos;s own campaign
+              tools. You can add it later.
             </Form.Text>
           </Form.Group>
           <Button type="submit" variant="success" disabled={saving || !baseUrl.trim() || !apiKey.trim()}>
