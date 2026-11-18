@@ -859,7 +859,7 @@ const Campaigns = () => {
                   <span className={STATUS_TONE[c.status] || "crm-badge"}>{c.status}</span>
                 </td>
                 <td>{c.recipients ?? "—"}</td>
-                <td>{when(c.scheduledAt || c.sentAt)}</td>
+                <td>{when(c.scheduledAt || c.sentAt || c.createdAt)}</td>
               </tr>
             ))}
           </tbody>
@@ -1018,7 +1018,7 @@ const History = () => {
   return (
     <>
       <div className="crm-hint">
-        Everything sent from HappyWedz to one client at a time. Broadcasts are not listed
+        Messages you sent to one client at a time. Broadcasts are not listed
         here — they are campaigns, and they live on the Broadcasts tab. Replies from clients
         are not shown either: WhatsApp messages sent to you do not reach us.
       </div>
