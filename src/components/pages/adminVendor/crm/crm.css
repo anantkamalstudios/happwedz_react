@@ -2082,3 +2082,91 @@ textarea.crm-input {
   align-items: center;
   justify-content: center;
 }
+
+/* ── Template cards ───────────────────────────────────────────────────────
+   A vendor with twenty-one templates cannot tell them apart from a table of
+   names: the name is a slug and the wording is what they are choosing. So
+   each one is a card showing the message, with its category and language
+   where a table would have put columns. */
+.crm-tpl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.crm-tpl-card {
+  background: var(--crm-card);
+  border: 1px solid var(--crm-line);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 150px;
+}
+
+.crm-tpl-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.crm-tpl-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--crm-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* The message itself. Clamped rather than truncated at a character count,
+   so a Devanagari template is cut at the same number of LINES as an English
+   one instead of mid-word. */
+.crm-tpl-body {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--crm-ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.crm-tpl-body.is-missing {
+  color: var(--crm-muted);
+  font-style: italic;
+}
+
+.crm-tpl-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.crm-tpl-lang {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--crm-muted);
+  white-space: nowrap;
+}
+
+.crm-tpl-note {
+  font-size: 11.5px;
+  color: var(--crm-muted);
+}
+
+@media (max-width: 520px) {
+  .crm-tpl-grid {
+    grid-template-columns: 1fr;
+  }
+}

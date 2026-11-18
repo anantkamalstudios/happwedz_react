@@ -42,6 +42,14 @@ const STATUS_TONE = {
  * actually has; anything else keeps its code, which is better than guessing
  * at a name.
  */
+/** The filters over a template list, in the order Wapzio shows them. */
+const STATUS_FILTERS = [
+  { key: "all", label: "All" },
+  { key: "approved", label: "Approved" },
+  { key: "pending", label: "Pending" },
+  { key: "rejected", label: "Rejected" },
+];
+
 const LANGUAGE_NAMES = {
   en: "English",
   en_US: "English",
@@ -446,6 +454,7 @@ const Templates = () => {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [creating, setCreating] = useState(false);
+  const [filter, setFilter] = useState("all");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -469,6 +478,12 @@ const Templates = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  const counts = templates.reduce(
+    (acc, t) => ({ ...acc, all: templates.length, [t.status]: (acc[t.status] || 0) + 1 }),
+    { all: templates.length }
+  );
+  const shown = filter === "all" ? templates : templates.filter((t) => t.status === filter);
 
   if (loading) return <Spinner />;
 
@@ -503,37 +518,59 @@ const Templates = () => {
         </div>
       )}
 
+      {templates.length > 6 ? (
+        <div className="crm-tabs">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              className={`crm-tab ${filter === f.key ? "is-active" : ""}`}
+              onClick={() => setFilter(f.key)}
+            >
+              {f.label} ({counts[f.key] || 0})
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       {!templates.length ? (
         <p className="crm-muted">No templates on this account yet.</p>
+      ) : !shown.length ? (
+        <p className="crm-muted">Nothing {filter === "all" ? "here" : `is ${filter}`} right now.</p>
       ) : (
-        <div className="crm-table-wrap"><table className="crm-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Language</th>
-              <th>Category</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {templates.map((t) => (
-              <tr key={`${t.name}-${t.language}-${t.status}`}>
-                <td className="crm-strong">{t.name}</td>
-                <td>{t.language || "—"}</td>
-                <td>{t.category || "—"}</td>
-                <td>
-                  <span className={STATUS_TONE[t.status] || "crm-badge"}>{t.status}</span>
-                  {t.status === "pending" ? (
-                    <div className="crm-muted crm-small">
-                      Waiting on Meta
-                      {t.submittedBy ? ` · submitted by ${t.submittedBy}` : ""}
-                    </div>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table></div>
+        <div className="crm-tpl-grid">
+          {shown.map((t) => (
+            <div className="crm-tpl-card" key={`${t.name}-${t.language}-${t.status}`}>
+              <div className="crm-tpl-head">
+                <span className="crm-tpl-name" title={t.name}>
+                  {t.name}
+                </span>
+                <span className={STATUS_TONE[t.status] || "crm-badge"}>{t.status}</span>
+              </div>
+
+              {/* The wording, where we have it. Wapzio's list returns none, so
+                  this is filled only for templates submitted from here. */}
+              {t.body ? (
+                <p className="crm-tpl-body">{t.body}</p>
+              ) : (
+                <p className="crm-tpl-body is-missing">
+                  Made outside HappyWedz, so we cannot show the wording.
+                </p>
+              )}
+
+              {t.status === "pending" ? (
+                <div className="crm-tpl-note">
+                  Waiting on Meta
+                  {t.submittedBy ? ` · submitted by ${t.submittedBy}` : ""}
+                </div>
+              ) : null}
+
+              <div className="crm-tpl-foot">
+                <span className="crm-chip">{(t.category || "—").toLowerCase()}</span>
+                <span className="crm-tpl-lang">{languageName(t.language) || "—"}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </>
   );
