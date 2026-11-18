@@ -75,6 +75,7 @@ export const crmApi = {
   // these send for them instead of opening wa.me in a tab.
   whatsapp: () => data(axiosInstance.get(`${BASE}/whatsapp`)),
   connectWhatsapp: (body) => data(axiosInstance.put(`${BASE}/whatsapp`, body)),
+  setWhatsappWaba: (wabaId) => data(axiosInstance.put(`${BASE}/whatsapp/waba`, { wabaId })),
   disconnectWhatsapp: () => data(axiosInstance.delete(`${BASE}/whatsapp`)),
   whatsappQuotation: (id) => data(axiosInstance.post(`${BASE}/quotations/${id}/whatsapp`)),
   whatsappInvoice: (id) => data(axiosInstance.post(`${BASE}/invoices/${id}/whatsapp`)),

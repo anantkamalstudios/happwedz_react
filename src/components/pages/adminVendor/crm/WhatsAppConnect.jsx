@@ -24,6 +24,10 @@ export default function WhatsAppConnect() {
   const [state, setState] = useState(null);
   const [baseUrl, setBaseUrl] = useState("");
   const [apiKey, setApiKey] = useState("");
+  // The WhatsApp Business Account campaigns are sent from. Wapzio prints it
+  // under Message Templates as "CONNECTED WABA ID".
+  const [wabaId, setWabaId] = useState("");
+  const [savingWaba, setSavingWaba] = useState(false);
   const [error, setError] = useState("");
   // Templates the account cannot send yet. A working key is not enough: Meta
   // has to have approved each message before it can go out.
@@ -35,6 +39,7 @@ export default function WhatsAppConnect() {
       const data = await crmApi.whatsapp();
       setState(data.whatsapp);
       if (data.whatsapp?.baseUrl) setBaseUrl(data.whatsapp.baseUrl);
+      setWabaId(data.whatsapp?.wabaId || "");
     } catch (err) {
       setError(errorMessage(err, "Could not check your WhatsApp connection."));
     } finally {
@@ -51,7 +56,11 @@ export default function WhatsAppConnect() {
     setError("");
     setSaving(true);
     try {
-      const data = await crmApi.connectWhatsapp({ baseUrl: baseUrl.trim(), apiKey: apiKey.trim() });
+      const data = await crmApi.connectWhatsapp({
+        baseUrl: baseUrl.trim(),
+        apiKey: apiKey.trim(),
+        wabaId: wabaId.trim(),
+      });
       setState(data.whatsapp);
       setMissing(data.whatsapp?.missingTemplates || []);
       setApiKey("");
@@ -60,6 +69,21 @@ export default function WhatsAppConnect() {
       setError(errorMessage(err, "Could not connect WhatsApp."));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const saveWaba = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSavingWaba(true);
+    try {
+      const data = await crmApi.setWhatsappWaba(wabaId.trim());
+      setState(data.whatsapp);
+      addToast(data.message || "Saved.", "success");
+    } catch (err) {
+      setError(errorMessage(err, "Could not save that account id."));
+    } finally {
+      setSavingWaba(false);
     }
   };
 
@@ -133,6 +157,30 @@ export default function WhatsAppConnect() {
               <span>The last message did not go through: {state.lastError}</span>
             </div>
           )}
+          <Form onSubmit={saveWaba} className="mb-3">
+            <Form.Label className="small fw-semibold mb-1">Account broadcasts are sent from</Form.Label>
+            <div className="d-flex gap-2 align-items-start">
+              <Form.Control
+                type="text"
+                size="sm"
+                value={wabaId}
+                onChange={(e) => setWabaId(e.target.value)}
+                placeholder="2130828530998872"
+                inputMode="numeric"
+                autoComplete="off"
+                style={{ maxWidth: 260 }}
+              />
+              <Button type="submit" variant="outline-success" size="sm" disabled={savingWaba}>
+                {savingWaba ? "Saving…" : "Save"}
+              </Button>
+            </div>
+            <Form.Text className="text-muted">
+              In Wapzio, open Message Templates — it is the number beside CONNECTED WABA ID. Without
+              it a broadcast is created and never sent, so leave this blank only if you do not send
+              broadcasts.
+            </Form.Text>
+          </Form>
+
           <Button variant="outline-danger" size="sm" onClick={disconnect} disabled={saving}>
             Disconnect
           </Button>
@@ -169,6 +217,21 @@ export default function WhatsAppConnect() {
               required
             />
             <Form.Text className="text-muted">Stored encrypted. It is never shown again after you connect.</Form.Text>
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label className="small fw-semibold">WhatsApp Business Account id</Form.Label>
+            <Form.Control
+              type="text"
+              value={wabaId}
+              onChange={(e) => setWabaId(e.target.value)}
+              placeholder="2130828530998872"
+              inputMode="numeric"
+              autoComplete="off"
+            />
+            <Form.Text className="text-muted">
+              Optional, and only needed for broadcasts. In Wapzio, open Message Templates — it is
+              the number beside CONNECTED WABA ID. You can add it later.
+            </Form.Text>
           </Form.Group>
           <Button type="submit" variant="success" disabled={saving || !baseUrl.trim() || !apiKey.trim()}>
             {saving ? (
