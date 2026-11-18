@@ -20,7 +20,7 @@ import ClientFormModal from "./ClientFormModal";
 import QuotationEditor from "./QuotationEditor";
 import InvoiceModal from "./InvoiceModal";
 import PaymentModal from "./PaymentModal";
-import { ActivityCard, FollowUpBar, WhatsAppIcon } from "./ClientExtras";
+import { ActivityCard, FollowUpBar, WhatsAppIcon, WhatsAppReply } from "./ClientExtras";
 import { useToast } from "../../../layouts/toasts/Toast";
 import { resolveMediaUrl } from "../../../../config/constants";
 
@@ -567,6 +567,7 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
               <div className="crm-muted crm-small">Keep photos, signed contracts and other documents for this client here. Images or PDF, up to 10 MB each.</div>
             )}
           </div>
+          <WhatsAppReply client={client} connected={waConnected} />
           <ActivityCard clientId={client.id} activity={activity || []} onChanged={load} />
           </div>
         </div>

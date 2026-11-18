@@ -80,6 +80,24 @@ export const crmApi = {
   whatsappInvoice: (id) => data(axiosInstance.post(`${BASE}/invoices/${id}/whatsapp`)),
   whatsappReceipt: (id) => data(axiosInstance.post(`${BASE}/payments/${id}/whatsapp`)),
 
+  // Templates. Submitting is all we can do - Meta approves, in its own time,
+  // and the list is what reports the outcome.
+  whatsappTemplates: () => data(axiosInstance.get(`${BASE}/whatsapp/templates`)),
+  createWhatsappTemplate: (body) => data(axiosInstance.post(`${BASE}/whatsapp/templates`, body)),
+  whatsappWaba: () => data(axiosInstance.get(`${BASE}/whatsapp/waba`)),
+
+  whatsappContacts: (params) => data(axiosInstance.get(`${BASE}/whatsapp/contacts`, { params })),
+  saveWhatsappContact: (body) => data(axiosInstance.post(`${BASE}/whatsapp/contacts`, body)),
+
+  // Our own record of every send. Wapzio keeps no message history.
+  whatsappHistory: (params) => data(axiosInstance.get(`${BASE}/whatsapp/history`, { params })),
+
+  // Free text, which WhatsApp only allows for 24 hours after the client
+  // writes to the business. We cannot see when that was, so this can come
+  // back saying the window has closed.
+  whatsappReply: (clientId, body) =>
+    data(axiosInstance.post(`${BASE}/clients/${clientId}/whatsapp/reply`, body)),
+
   // Public quotation page (no login).
   publicQuotation: (token) => data(axiosInstance.get(`/crm/public/quotations/${token}`)),
   respondToQuotation: (token, decision) => data(axiosInstance.post(`/crm/public/quotations/${token}/respond`, { decision })),

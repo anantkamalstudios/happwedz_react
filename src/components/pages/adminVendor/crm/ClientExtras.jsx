@@ -240,3 +240,69 @@ export const ActivityCard = ({ clientId, activity, onChanged }) => {
     </div>
   );
 };
+
+/**
+ * A free-text WhatsApp message to the client.
+ *
+ * WhatsApp only permits this for 24 hours after the CLIENT writes to the
+ * business, and Wapzio's API has no way to read incoming messages — so
+ * nothing here knows whether that window is open. The send is attempted and
+ * the refusal explained, because trying is the only way to find out.
+ *
+ * That is also why there is no conversation above this box: their replies
+ * never reach us.
+ */
+export const WhatsAppReply = ({ client, connected }) => {
+  const [text, setText] = React.useState("");
+  const [sending, setSending] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const [sent, setSent] = React.useState("");
+
+  if (!connected) return null;
+
+  const send = async (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    setSending(true);
+    setError("");
+    setSent("");
+    try {
+      await crmApi.whatsappReply(client.id, { text: text.trim() });
+      setSent(`Sent to ${client.name}.`);
+      setText("");
+    } catch (err) {
+      setError(errorMessage(err, "Could not send this message."));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <form className="crm-card crm-card-pad" onSubmit={send}>
+      <div className="crm-card-title">Message on WhatsApp</div>
+
+      {error ? <div className="crm-error">{error}</div> : null}
+      {sent ? <div className="crm-notice crm-notice-info">{sent}</div> : null}
+
+      <textarea
+        className="crm-input"
+        rows={3}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={`Write to ${client.name || "this client"}…`}
+      />
+
+      <p className="crm-muted crm-small">
+        A plain message only reaches a client who has written to you in the last 24 hours.
+        Outside that, WhatsApp allows approved templates only — send a quotation or invoice
+        instead.
+      </p>
+
+      <div className="crm-actions">
+        <button type="submit" className="crm-btn crm-btn-primary" disabled={sending || !text.trim()}>
+          <WhatsAppIcon /> {sending ? "Sending…" : "Send"}
+        </button>
+      </div>
+    </form>
+  );
+};

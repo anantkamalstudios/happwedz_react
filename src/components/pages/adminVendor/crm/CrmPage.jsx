@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import CrmHome from "./CrmHome";
 import ClientDetail from "./ClientDetail";
 import BusinessProfile from "./BusinessProfile";
+import WhatsAppWorkspace from "./WhatsAppWorkspace";
 import "./crm.css";
 
 // The CRM tab of the vendor dashboard. Which screen shows is kept in the URL
@@ -25,10 +26,16 @@ const CrmPage = () => {
       <div className="crm-wrap">
         {view === "business" ? (
           <BusinessProfile onBack={() => go({})} />
+        ) : view === "whatsapp" ? (
+          <WhatsAppWorkspace onBack={() => go({})} />
         ) : clientId ? (
           <ClientDetail key={clientId} clientId={clientId} onBack={() => go({})} onOpenBusiness={() => go({ view: "business" })} />
         ) : (
-          <CrmHome onOpenClient={(id) => go({ client: String(id) })} onOpenBusiness={() => go({ view: "business" })} />
+          <CrmHome
+            onOpenClient={(id) => go({ client: String(id) })}
+            onOpenBusiness={() => go({ view: "business" })}
+            onOpenWhatsapp={() => go({ view: "whatsapp" })}
+          />
         )}
       </div>
     </div>

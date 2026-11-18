@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CalendarDays, Download, Kanban, LineChart, List, PhoneCall, Plus, Search, Settings2, Users, UsersRound } from "lucide-react";
+import { AlertCircle, CalendarDays, Download, Kanban, LineChart, List, MessageCircle, PhoneCall, Plus, Search, Settings2, Users, UsersRound } from "lucide-react";
 import { crmApi, errorMessage, openFile, pdfPaths } from "./crmApi";
 import { CLIENT_STATUSES, LEAD_SOURCES, formatDate, labelOf, rupees, todayIso } from "./crmFormat";
 import { Badge, Spinner } from "./crmUi";
@@ -24,7 +24,7 @@ const readView = () => {
   }
 };
 
-const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
+const CrmHome = ({ onOpenClient, onOpenBusiness, onOpenWhatsapp }) => {
   const { addToast } = useToast();
   const [summary, setSummary] = useState(null);
   const [rows, setRows] = useState([]);
@@ -201,6 +201,9 @@ const CrmHome = ({ onOpenClient, onOpenBusiness }) => {
         <div className="crm-actions">
           <button className="crm-btn" onClick={onOpenBusiness}>
             <Settings2 size={15} /> Business details
+          </button>
+          <button className="crm-btn" onClick={onOpenWhatsapp}>
+            <MessageCircle size={15} /> WhatsApp
           </button>
           <button className="crm-btn" onClick={exportExcel} disabled={exporting || !total}>
             <Download size={15} /> {exporting ? "Exporting…" : "Export Excel"}
