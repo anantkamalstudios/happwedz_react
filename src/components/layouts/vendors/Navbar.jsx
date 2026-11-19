@@ -331,12 +331,13 @@ const Navbar = () => {
               WebkitOverflowScrolling: isMobile ? "touch" : undefined,
               paddingBottom: isMobile ? 8 : undefined,
               // 2026-10-27: more room between items (long labels such as "Google Profile" ran into the next one).
-              // 2026-11-19: still not enough. The gap is between the ITEMS,
-              // and an item is as wide as its label — so a wide label like
-              // "Google Profile" leaves far less space beside its neighbour
-              // than a narrow one like "CRM". Wider gap, and room inside
-              // each item so the words themselves are not touching.
-              gap: isMobile ? 12 : 30,
+              // 2026-11-19: widening this did not fix it, and the reason
+              // is below — the space between two LABELS is the gap plus
+              // whatever empty box sits around each of them, and that
+              // varied wildly. The room now lives inside each item, where
+              // it is the same for every one, so this is back to what it
+              // was.
+              gap: isMobile ? 12 : 22,
               maxWidth: "100%",
             }}
           >
@@ -347,10 +348,19 @@ const Navbar = () => {
                   activeTab === tab.id ? "active-tab" : ""
                 }`}
                 style={{
-                  paddingInline: 4,
+                  // The space between two labels is this padding twice,
+                  // plus the row's gap. Which is why a minimum width was
+                  // the problem: "CRM" is 26px of text in a 58px box, so it
+                  // carried 16px of empty box on each side, while "Google
+                  // Profile" filled its box exactly and had none. Same gap
+                  // between the boxes, half the space between the words.
+                  //
+                  // Padding is the same for every item whatever its label,
+                  // so the words are evenly spaced rather than the boxes.
+                  paddingInline: isMobile ? 6 : 12,
                   background: "transparent",
                   fontSize: isMobile ? 12 : 13,
-                  minWidth: isMobile ? 56 : 58,
+                  minWidth: isMobile ? 56 : 0,
                   // 2026-10-27: never squeezed narrower than its label (a long label ran into the next item).
                   flexShrink: 0,
                   color:
