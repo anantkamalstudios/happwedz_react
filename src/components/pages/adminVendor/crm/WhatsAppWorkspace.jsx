@@ -181,6 +181,8 @@ const Templates = () => {
   const [error, setError] = useState("");
   // Which template is being looked at, by name and language.
   const [viewing, setViewing] = useState(null);
+  // Only set when the wording did not come back, and then it says what did.
+  const [wordingReport, setWordingReport] = useState("");
   const [filter, setFilter] = useState("all");
 
   const load = useCallback(async () => {
@@ -189,6 +191,7 @@ const Templates = () => {
     try {
       const list = await crmApi.whatsappTemplates();
       setTemplates(list.templates || []);
+      setWordingReport(list.wordingReport || "");
     } catch (err) {
       setError(errorMessage(err, "Could not read your templates."));
     } finally {
@@ -224,6 +227,17 @@ const Templates = () => {
           Refresh from Wapzio
         </button>
       </div>
+
+      {/* Shown only when the wording is missing. "We could not get it" is
+          not a useful thing to read twice; what the provider actually
+          answered is. */}
+      {wordingReport ? (
+        <div className="crm-notice crm-notice-warn">
+          The message text could not be read from Wapzio, so previews are empty. Sending is
+          unaffected.
+          <div className="crm-small crm-muted">{wordingReport}</div>
+        </div>
+      ) : null}
 
       {viewing ? (
         <div className="crm-viewer">
