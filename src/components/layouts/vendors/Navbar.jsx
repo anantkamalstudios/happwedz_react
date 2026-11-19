@@ -324,7 +324,10 @@ const Navbar = () => {
           style={{ minWidth: 0, width: "100%" }}
         >
           <div
-            className="d-flex gap-3"
+            // No gap-3: Bootstrap writes `gap: 1rem !important`, which beats
+            // the inline value below. Every adjustment made here since
+            // October has been silently discarded by it.
+            className="d-flex"
             style={{
               flexWrap: isMobile ? "nowrap" : "wrap",
               overflowX: isMobile ? "auto" : "visible",
@@ -344,7 +347,10 @@ const Navbar = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                className={`btn border-0 d-flex flex-column align-items-center p-0 position-relative ${
+                // No p-0 either, for the same reason — it is
+                // `padding: 0 !important`. The padding is set below, where
+                // it can be seen next to the width it works with.
+                className={`btn border-0 d-flex flex-column align-items-center position-relative ${
                   activeTab === tab.id ? "active-tab" : ""
                 }`}
                 style={{
@@ -357,7 +363,9 @@ const Navbar = () => {
                   //
                   // Padding is the same for every item whatever its label,
                   // so the words are evenly spaced rather than the boxes.
-                  paddingInline: isMobile ? 6 : 12,
+                  // Both axes, because .btn brings its own padding once
+                  // p-0 is gone.
+                  padding: isMobile ? "0 6px" : "0 12px",
                   background: "transparent",
                   fontSize: isMobile ? 12 : 13,
                   minWidth: isMobile ? 56 : 0,
@@ -365,8 +373,6 @@ const Navbar = () => {
                   flexShrink: 0,
                   color:
                     activeTab === tab.id ? "var(--primary-color)" : "#2c3e50",
-                  paddingLeft: isMobile ? 6 : undefined,
-                  paddingRight: isMobile ? 6 : undefined,
                   marginRight: isMobile ? 4 : undefined,
                 }}
                 onClick={() => handleTabClick(tab)}
