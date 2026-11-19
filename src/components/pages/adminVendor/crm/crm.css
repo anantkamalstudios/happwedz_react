@@ -2441,3 +2441,165 @@ textarea.crm-input {
   min-width: 140px;
   margin: 0;
 }
+
+/* ── The message as the client will see it ────────────────────────────────
+   Numbered boxes say nothing about what belongs in them. A vendor filling
+   {{1}} {{2}} {{3}} is guessing, and finds out whether they guessed right
+   after it has gone to two hundred people. */
+.crm-phone {
+  width: 100%;
+  max-width: 320px;
+  border: 1px solid var(--crm-line);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #efe7dd;
+  box-shadow: 0 1px 3px rgba(31, 35, 48, 0.08);
+}
+
+.crm-phone-bar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #075e54;
+  color: #fff;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.crm-phone-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  flex: 0 0 auto;
+}
+
+.crm-phone-sub {
+  display: block;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.crm-phone-body {
+  padding: 14px 12px 20px;
+  min-height: 150px;
+}
+
+.crm-phone-bubble {
+  background: #fff;
+  border-radius: 8px;
+  border-top-left-radius: 0;
+  padding: 8px 10px 6px;
+  box-shadow: 0 1px 1px rgba(31, 35, 48, 0.12);
+}
+
+.crm-phone-header {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--crm-ink);
+  margin-bottom: 4px;
+}
+
+.crm-phone-text {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--crm-ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* A value that has been typed, so it can be told apart from the wording it
+   was dropped into. */
+.crm-phone-filled {
+  background: var(--crm-green-soft);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+/* One still empty. A blank gap in a sentence reads as finished; this does
+   not. */
+.crm-phone-slot {
+  background: var(--crm-amber-soft);
+  color: var(--crm-amber);
+  border-radius: 3px;
+  padding: 0 3px;
+  font-weight: 700;
+}
+
+.crm-phone-footer {
+  margin-top: 5px;
+  font-size: 11.5px;
+  color: var(--crm-muted);
+}
+
+.crm-phone-time {
+  text-align: right;
+  font-size: 10.5px;
+  color: var(--crm-muted);
+  margin-top: 2px;
+}
+
+/* The form and the message it is writing, side by side. */
+.crm-compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+.crm-compose-side {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Templates are written in Wapzio; this says so where the create button was. */
+.crm-managed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.crm-managed .crm-hint {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+}
+
+.crm-viewer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+  border: 1px solid var(--crm-line);
+  border-radius: 12px;
+  background: var(--crm-card);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 860px) {
+  .crm-compose,
+  .crm-viewer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .crm-compose-side {
+    position: static;
+  }
+
+  .crm-phone {
+    max-width: 100%;
+  }
+}
+
+/* The template's details, beside its preview. */
+.crm-viewer-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

@@ -95,399 +95,100 @@ const when = (v) =>
  * Meta allows at most three, and a quotation with "Confirm" and "Call us" on
  * it is worth more than one with a link to tap.
  */
-const BUTTON_TYPES = [
-  { id: "quick_reply", label: "Quick reply", hint: "The client taps it and the text comes back to you" },
-  { id: "website", label: "Open a link", hint: "Needs the web address" },
-  { id: "phone_call", label: "Call us", hint: "Needs the number to ring" },
-  { id: "copy_code", label: "Copy a code", hint: "For a discount code" },
-];
+/**
+ * A template as the client will see it.
+ *
+ * Filling in {{1}} {{2}} {{3}} from a list of numbered boxes is guesswork:
+ * the numbers say nothing about what belongs in them, and the vendor only
+ * finds out after it has gone to two hundred people. So the message is shown
+ * as a WhatsApp bubble, and the values appear in it as they are typed.
+ *
+ * A slot still empty keeps its {{n}} and is marked, because a blank gap in a
+ * sentence reads as finished and a marked one does not.
+ */
+const TemplateBubble = ({ template, values = {}, name }) => {
+  if (!template) {
+    return (
+      <div className="crm-phone">
+        <div className="crm-phone-bar">WhatsApp</div>
+        <div className="crm-phone-body">
+          <p className="crm-muted crm-small">Choose a template to see it here.</p>
+        </div>
+      </div>
+    );
+  }
 
-const CATEGORIES = [
-  { id: "UTILITY", label: "Utility", hint: "Order updates, reminders, receipts" },
-  { id: "MARKETING", label: "Marketing", hint: "Offers, announcements, anything promotional" },
-  { id: "AUTHENTICATION", label: "Authentication", hint: "One-time passcodes" },
-];
-
-/* ─── Templates ─────────────────────────────────────────────────────────── */
-
-const TemplateForm = ({ waba, onDone, onCancel }) => {
-  const [form, setForm] = useState({
-    templateName: "",
-    wabaId: waba[0]?.id || "",
-    category: "UTILITY",
-    language: "en_US",
-    body: "",
-    footerText: "",
-  });
-  const [examples, setExamples] = useState({});
-  const [buttons, setButtons] = useState([]);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  // Meta refuses a template whose variables carry no sample value, so the
-  // form asks for one the moment a {{1}} appears rather than letting the
-  // vendor find out by email hours later.
-  const used = [...new Set((form.body.match(/\{\{\s*\d+\s*\}\}/g) || []).map((m) => m.replace(/\D/g, "")))];
-
-  // Clears the previous failure: a banner that stays up while the vendor is
-  // editing reads as though the new attempt failed too.
-  const set = (patch) => {
-    setForm((f) => ({ ...f, ...patch }));
-    setError("");
-  };
-
-  /**
-   * The same rules the server applies, checked here first.
-   *
-   * Without this a name with a space went all the way to the server, and the
-   * only hint was a line of static help text nobody reads until after.
-   */
-  const problem = (() => {
-    const name = form.templateName.trim();
-    if (!name) return "Give the template a name.";
-    if (!/^[a-z0-9_]+$/.test(name.toLowerCase())) {
-      return "A name may use only lowercase letters, numbers and underscores — no spaces or hyphens.";
+  // The wording, with each value dropped into its place. {name} is the
+  // client's own name, as it is in a broadcast.
+  const parts = [];
+  const body = String(template.body || "");
+  if (body) {
+    const re = /\{\{\s*(\d+)\s*\}\}/g;
+    let last = 0;
+    let match = re.exec(body);
+    while (match) {
+      if (match.index > last) parts.push({ text: body.slice(last, match.index) });
+      const n = match[1];
+      const typed = String(values[n] ?? "").replace(/\{name\}/gi, name || "their name");
+      parts.push(typed.trim() ? { text: typed, filled: true } : { text: `{{${n}}}`, empty: true });
+      last = match.index + match[0].length;
+      match = re.exec(body);
     }
-    if (!form.wabaId.trim()) return "Enter the WhatsApp Business Account ID.";
-    if (form.category !== "AUTHENTICATION" && !form.body.trim()) return "Write the message.";
-    const blank = used.find((k) => !(examples[k] || "").trim());
-    if (blank) return `Give a sample value for {{${blank}}} — Meta rejects a template without one.`;
-    return "";
-  })();
-
-  const submit = async (e) => {
-    e.preventDefault();
-    if (problem) {
-      setError(problem);
-      return;
-    }
-    setSaving(true);
-    setError("");
-    try {
-      const result = await crmApi.createWhatsappTemplate({
-        ...form,
-        variableExamples: used.map((key) => ({ key, example: examples[key] || "" })),
-        // Incomplete rows are dropped here rather than sent for Meta to
-        // refuse: a link button with no link is not a button.
-        buttons: buttons.filter(
-          (b) =>
-            b.text.trim() &&
-            (b.type === "quick_reply" ||
-              b.type === "copy_code" ||
-              (b.type === "website" && b.url.trim()) ||
-              (b.type === "phone_call" && b.phoneNumber.trim()))
-        ),
-      });
-      onDone(result.message);
-    } catch (err) {
-      setError(errorMessage(err, "Could not submit this template."));
-    } finally {
-      setSaving(false);
-    }
-  };
+    if (last < body.length) parts.push({ text: body.slice(last) });
+  }
 
   return (
-    <form className="crm-card crm-card-pad" onSubmit={submit}>
-      <div className="crm-card-title">New template</div>
-      <div className="crm-hint">
-        Meta has to approve every template before it can be sent — usually a few hours. It
-        cannot be used until it comes back approved.
+    <div className="crm-phone">
+      <div className="crm-phone-bar">
+        <span className="crm-phone-avatar" />
+        <span>
+          <strong>Your business</strong>
+          <span className="crm-phone-sub">WhatsApp Business</span>
+        </span>
       </div>
+      <div className="crm-phone-body">
+        <div className="crm-phone-bubble">
+          {template.header ? <div className="crm-phone-header">{template.header}</div> : null}
 
-      {error ? <div className="crm-error">{error}</div> : null}
-
-      <div className="crm-grid-2">
-        <div className="crm-field">
-          <label className="crm-label">Name</label>
-          <input
-            className="crm-input"
-            value={form.templateName}
-            // Meta names are lowercase, and the server lowercases before
-            // submitting - so a vendor typing My_Template would have got a
-            // template called my_template with nothing to say so. Lowercasing
-            // here makes the field show exactly what will be created.
-            onChange={(e) => set({ templateName: e.target.value.toLowerCase() })}
-            placeholder="booking_confirmed"
-            required
-          />
-          <div className="crm-hint">
-            Lowercase letters, numbers and underscores. Capitals are converted as you type.
-          </div>
-        </div>
-
-        <div className="crm-field">
-          <label className="crm-label">Language</label>
-          <select
-            className="crm-input"
-            value={form.language}
-            onChange={(e) => set({ language: e.target.value })}
-          >
-            <option value="en_US">English (US)</option>
-            <option value="en">English</option>
-            <option value="hi">Hindi</option>
-            <option value="mr">Marathi</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="crm-field">
-        <label className="crm-label">Category</label>
-        <select
-          className="crm-input"
-          value={form.category}
-          onChange={(e) => set({ category: e.target.value })}
-        >
-          {CATEGORIES.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.label}
-            </option>
-          ))}
-        </select>
-        <div className="crm-hint">{CATEGORIES.find((c) => c.id === form.category)?.hint}</div>
-      </div>
-
-      {waba.length ? (
-        waba.length > 1 ? (
-          <div className="crm-field">
-            <label className="crm-label">WhatsApp Business Account</label>
-            <select
-              className="crm-input"
-              value={form.wabaId}
-              onChange={(e) => set({ wabaId: e.target.value })}
-            >
-              {waba.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name || a.id}
-                </option>
+          {body ? (
+            <div className="crm-phone-text">
+              {parts.map((p, i) => (
+                <span key={i} className={p.empty ? "crm-phone-slot" : p.filled ? "crm-phone-filled" : undefined}>
+                  {p.text}
+                </span>
               ))}
-            </select>
-          </div>
-        ) : null
-      ) : (
-        <div className="crm-field">
-          <label className="crm-label">WhatsApp Business Account ID</label>
-          <input
-            className="crm-input"
-            value={form.wabaId}
-            onChange={(e) => set({ wabaId: e.target.value })}
-            placeholder="1248119146671221"
-            required
-          />
-          <div className="crm-hint">
-            We could not read this from your account. It is the long number shown against your
-            WhatsApp Business Account in your provider's dashboard.
-          </div>
+            </div>
+          ) : (
+            <div className="crm-phone-text crm-muted">
+              Wapzio did not return this template&apos;s wording, so we cannot show it. The message
+              still sends correctly.
+            </div>
+          )}
+
+          {template.footer ? <div className="crm-phone-footer">{template.footer}</div> : null}
+          <div className="crm-phone-time">now</div>
         </div>
-      )}
-
-      {form.category !== "AUTHENTICATION" ? (
-        <>
-          <div className="crm-field">
-            <label className="crm-label">Message</label>
-            <textarea
-              className="crm-input"
-              rows={4}
-              value={form.body}
-              onChange={(e) => set({ body: e.target.value })}
-              placeholder="Hi {{1}}, your booking for {{2}} is confirmed."
-            />
-            <div className="crm-hint">
-              Use {"{{1}}"}, {"{{2}}"} for anything that changes from one message to the next.
-            </div>
-          </div>
-
-          {used.length ? (
-            <div className="crm-card crm-card-pad">
-              <div className="crm-section-label">Sample values</div>
-              <div className="crm-hint">
-                Meta rejects a template without these. They are only examples for the reviewer.
-              </div>
-              <div className="crm-grid-2">
-                {used.map((key) => (
-                  <div className="crm-field" key={key}>
-                    <label className="crm-label">{`{{${key}}}`}</label>
-                    <input
-                      className="crm-input"
-                      value={examples[key] || ""}
-                      onChange={(e) => setExamples((x) => ({ ...x, [key]: e.target.value }))}
-                      placeholder={key === "1" ? "Rahul" : "Sangeet, 12 Feb"}
-                      required
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          <div className="crm-field">
-            <label className="crm-label">Buttons (optional)</label>
-            <div className="crm-hint">
-              Up to three. A quotation with "Confirm" on it gets a reply more often than one
-              with only a link.
-            </div>
-
-            {buttons.map((b, i) => (
-              <div className="crm-card crm-card-pad" key={i}>
-                <div className="crm-grid-2">
-                  <div className="crm-field">
-                    <label className="crm-label">Type</label>
-                    <select
-                      className="crm-input"
-                      value={b.type}
-                      onChange={(e) =>
-                        setButtons((list) =>
-                          list.map((x, n) => (n === i ? { ...x, type: e.target.value } : x))
-                        )
-                      }
-                    >
-                      {BUTTON_TYPES.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="crm-hint">
-                      {BUTTON_TYPES.find((t) => t.id === b.type)?.hint}
-                    </div>
-                  </div>
-
-                  <div className="crm-field">
-                    <label className="crm-label">Button text</label>
-                    <input
-                      className="crm-input"
-                      value={b.text}
-                      onChange={(e) =>
-                        setButtons((list) =>
-                          list.map((x, n) => (n === i ? { ...x, text: e.target.value } : x))
-                        )
-                      }
-                      placeholder={b.type === "quick_reply" ? "Confirm" : "View quote"}
-                      maxLength={25}
-                    />
-                  </div>
-                </div>
-
-                {b.type === "website" ? (
-                  <div className="crm-field">
-                    <label className="crm-label">Web address</label>
-                    <input
-                      className="crm-input"
-                      value={b.url}
-                      onChange={(e) =>
-                        setButtons((list) =>
-                          list.map((x, n) => (n === i ? { ...x, url: e.target.value } : x))
-                        )
-                      }
-                      placeholder="https://happywedz.com"
-                    />
-                  </div>
-                ) : null}
-
-                {b.type === "phone_call" ? (
-                  <div className="crm-field">
-                    <label className="crm-label">Number to ring</label>
-                    <input
-                      className="crm-input"
-                      value={b.phoneNumber}
-                      onChange={(e) =>
-                        setButtons((list) =>
-                          list.map((x, n) => (n === i ? { ...x, phoneNumber: e.target.value } : x))
-                        )
-                      }
-                      placeholder="+917770005377"
-                    />
-                  </div>
-                ) : null}
-
-                <div className="crm-actions">
-                  <button
-                    type="button"
-                    className="crm-btn crm-btn-sm"
-                    onClick={() => setButtons((list) => list.filter((_, n) => n !== i))}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {buttons.length < 3 ? (
-              <button
-                type="button"
-                className="crm-btn crm-btn-sm"
-                onClick={() =>
-                  setButtons((list) => [...list, { type: "quick_reply", text: "", url: "", phoneNumber: "" }])
-                }
-              >
-                Add a button
-              </button>
-            ) : (
-              <div className="crm-hint">Three is the most WhatsApp allows.</div>
-            )}
-          </div>
-
-          <div className="crm-field">
-            <label className="crm-label">Footer (optional)</label>
-            <input
-              className="crm-input"
-              value={form.footerText}
-              onChange={(e) => set({ footerText: e.target.value })}
-              placeholder="Thank you"
-            />
-            <div className="crm-hint">Small grey line under the message.</div>
-          </div>
-        </>
-      ) : (
-        <div className="crm-notice crm-notice-info">
-          An authentication template carries no message of its own — the passcode is filled in
-          when it is sent.
-        </div>
-      )}
-
-      {problem && form.templateName ? (
-        <p className="crm-hint">{problem}</p>
-      ) : null}
-
-      <div className="crm-actions">
-        <button type="button" className="crm-btn" onClick={onCancel} disabled={saving}>
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="crm-btn crm-btn-primary"
-          disabled={saving || Boolean(problem)}
-          title={problem || ""}
-        >
-          {saving ? "Submitting…" : "Submit for approval"}
-        </button>
       </div>
-    </form>
+    </div>
   );
 };
 
+/* ─── Templates ─────────────────────────────────────────────────────────── */
+
 const Templates = () => {
   const [templates, setTemplates] = useState([]);
-  const [waba, setWaba] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [creating, setCreating] = useState(false);
+  // Which template is being looked at, by name and language.
+  const [viewing, setViewing] = useState(null);
   const [filter, setFilter] = useState("all");
-  // Which card is having its wording typed in, by name and language.
-  const [editing, setEditing] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const [list, accounts] = await Promise.all([
-        crmApi.whatsappTemplates(),
-        // Only needed to file a new template; a failure here must not hide
-        // the templates the vendor already has.
-        crmApi.whatsappWaba().catch(() => ({ accounts: [] })),
-      ]);
+      const list = await crmApi.whatsappTemplates();
       setTemplates(list.templates || []);
-      setWaba(accounts.accounts || []);
     } catch (err) {
       setError(errorMessage(err, "Could not read your templates."));
     } finally {
@@ -510,33 +211,39 @@ const Templates = () => {
   return (
     <>
       {error ? <div className="crm-error">{error}</div> : null}
-      {notice ? <div className="crm-notice crm-notice-info">{notice}</div> : null}
 
-      {!waba.length && templates.length ? (
-        <div className="crm-notice crm-notice-warn">
-          We could not read your WhatsApp Business Account automatically, though your
-          templates load fine. You can still create a template — you will be asked for the
-          account ID, which you will find in your WhatsApp provider's dashboard.
+      {/* Templates are written and approved in Wapzio. Offering to create
+          one here meant two places to look for the same thing, and the one
+          that mattered — Meta's approval — was never ours to give. */}
+      <div className="crm-managed">
+        <span className="crm-chip">Managed in Wapzio</span>
+        <span className="crm-hint">
+          Templates are created and approved in Wapzio. HappyWedz shows them here and sends them.
+        </span>
+        <button className="crm-btn crm-btn-sm" onClick={load}>
+          Refresh from Wapzio
+        </button>
+      </div>
+
+      {viewing ? (
+        <div className="crm-viewer">
+          <div className="crm-viewer-side">
+            <div className="crm-card-title">
+              {viewing.name}
+              <button type="button" className="crm-btn crm-btn-sm" onClick={() => setViewing(null)}>
+                Close
+              </button>
+            </div>
+            <div className="crm-hint">
+              {languageName(viewing.language)} · {(viewing.category || "—").toLowerCase()} ·{" "}
+              {viewing.variableCount
+                ? `${viewing.variableCount} ${viewing.variableCount === 1 ? "value" : "values"} to fill in`
+                : "no values to fill in"}
+            </div>
+          </div>
+          <TemplateBubble template={viewing} />
         </div>
       ) : null}
-
-      {creating ? (
-        <TemplateForm
-          waba={waba}
-          onCancel={() => setCreating(false)}
-          onDone={(message) => {
-            setCreating(false);
-            setNotice(message);
-            load();
-          }}
-        />
-      ) : (
-        <div className="crm-actions">
-          <button className="crm-btn crm-btn-primary" onClick={() => setCreating(true)}>
-            New template
-          </button>
-        </div>
-      )}
 
       {templates.length > 6 ? (
         <div className="crm-tabs">
@@ -572,18 +279,9 @@ const Templates = () => {
                   copied across from Wapzio's own page. */}
               {t.body ? (
                 <p className="crm-tpl-body">{t.body}</p>
-              ) : editing === `${t.name}:${t.language || ""}` ? (
-                <Wording template={t} onDone={(message) => { setEditing(null); setNotice(message); load(); }} onCancel={() => setEditing(null)} />
               ) : (
                 <p className="crm-tpl-body is-missing">
-                  We do not have the wording for this one.{" "}
-                  <button
-                    type="button"
-                    className="crm-link"
-                    onClick={() => setEditing(`${t.name}:${t.language || ""}`)}
-                  >
-                    Add it
-                  </button>
+                  Wapzio did not return this one&apos;s wording.
                 </p>
               )}
 
@@ -597,83 +295,21 @@ const Templates = () => {
               <div className="crm-tpl-foot">
                 <span className="crm-chip">{(t.category || "—").toLowerCase()}</span>
                 <span className="crm-tpl-lang">{languageName(t.language) || "—"}</span>
+                <button
+                  type="button"
+                  className="crm-link"
+                  onClick={() => setViewing(t)}
+                  disabled={!t.body}
+                  title={t.body ? "See it as the client will" : "We do not have this one's wording"}
+                >
+                  View
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
     </>
-  );
-};
-
-/**
- * Telling HappyWedz what a template says.
- *
- * Wapzio's API returns a template's name, language, category and status, and
- * never its text — so every template made before this, or made anywhere
- * else, shows a vendor three blank boxes labelled {{1}} {{2}} {{3}} with
- * nothing to say what any of them is for.
- *
- * The wording is on Wapzio's own Message Templates page, where it can be
- * copied. Pasted once, it is ours: the send forms can then show the message
- * and ask for exactly the values it uses, in the right number.
- */
-const Wording = ({ template, onDone, onCancel }) => {
-  const [body, setBody] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  const save = async () => {
-    setSaving(true);
-    setError("");
-    try {
-      const data = await crmApi.saveWhatsappTemplateWording({
-        name: template.name,
-        language: template.language,
-        body: body.trim(),
-      });
-      onDone(data.message || "Saved.");
-    } catch (err) {
-      setError(errorMessage(err, "Could not save that."));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Counted as it is typed, so a vendor sees straight away whether the
-  // braces came across intact.
-  const slots = [...body.matchAll(/\{\{\s*(\d+)\s*\}\}/g)].map((m) => Number(m[1]));
-  const count = slots.length ? Math.max(...slots) : 0;
-
-  return (
-    <div className="crm-tpl-body">
-      {error ? <div className="crm-error">{error}</div> : null}
-      <textarea
-        className="crm-input"
-        rows={4}
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder="Paste the message exactly as Wapzio shows it, including {{1}}, {{2}}…"
-      />
-      <div className="crm-hint">
-        {count
-          ? `${count} ${count === 1 ? "value" : "values"} to fill in when sending.`
-          : "No values — it sends the same words every time."}
-      </div>
-      <div className="crm-actions">
-        <button type="button" className="crm-btn crm-btn-sm" onClick={onCancel} disabled={saving}>
-          Cancel
-        </button>
-        <button
-          type="button"
-          className="crm-btn crm-btn-primary crm-btn-sm"
-          onClick={save}
-          disabled={saving || !body.trim()}
-        >
-          {saving ? "Saving…" : "Save wording"}
-        </button>
-      </div>
-    </div>
   );
 };
 
@@ -833,6 +469,7 @@ const Campaigns = () => {
       {notice ? <div className="crm-notice crm-notice-info">{notice}</div> : null}
 
       {composing ? (
+        <div className="crm-compose">
         <form className="crm-card crm-card-pad" onSubmit={send}>
           <div className="crm-card-title">New broadcast</div>
           <div className="crm-hint">
@@ -932,17 +569,12 @@ const Campaigns = () => {
                 else is the same for everyone, so keep other personal details out of a broadcast.
               </div>
 
-              {/* The message itself, where we have it. Three blank boxes
-                  labelled {{1}} {{2}} {{3}} told a vendor nothing about what
-                  any of them stood for. */}
-              {chosen.body ? (
-                <p className="crm-note">{chosen.body}</p>
-              ) : (
+              {!chosen.body ? (
                 <div className="crm-hint">
-                  This template was made outside HappyWedz, so we cannot show its wording or
-                  how many values it takes. Fill in the ones it uses and leave the rest blank.
+                  Wapzio did not return this template&apos;s wording, so we cannot show how many
+                  values it takes. Fill in the ones it uses and leave the rest blank.
                 </div>
-              )}
+              ) : null}
 
               <div className="crm-grid-2">
                 {(chosen.variableCount
@@ -993,6 +625,21 @@ const Campaigns = () => {
             </button>
           </div>
         </form>
+
+        {/* What the client will actually receive, filling in as the values
+            are typed. Numbered boxes alone say nothing about what belongs
+            in them, and a vendor finds that out after it has gone to two
+            hundred people. */}
+        <div className="crm-compose-side">
+          <TemplateBubble template={chosen} values={variables} />
+          {chosen?.body ? (
+            <div className="crm-hint">
+              {audience?.sample || "Each client"} sees their own name wherever you write{" "}
+              <strong>{"{name}"}</strong>.
+            </div>
+          ) : null}
+        </div>
+        </div>
       ) : (
         <div className="crm-actions">
           <button className="crm-btn crm-btn-primary" onClick={() => setComposing(true)}>
