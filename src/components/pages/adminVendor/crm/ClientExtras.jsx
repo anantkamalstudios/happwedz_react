@@ -252,7 +252,7 @@ export const ActivityCard = ({ clientId, activity, onChanged }) => {
  * That is also why there is no conversation above this box: their replies
  * never reach us.
  */
-export const WhatsAppReply = ({ client, connected }) => {
+export const WhatsAppReply = ({ client, connected, onClientChanged }) => {
   // Templates, fetched only when a vendor asks for one. A client's page
   // should not call the provider on every open for a list most visits never
   // need.
@@ -274,6 +274,10 @@ export const WhatsAppReply = ({ client, connected }) => {
   const openTemplates = async () => {
     setTemplating(true);
     setError("");
+    // {{1}} is the client's name in almost every template anyone writes, so
+    // it is put there as a real value that can be seen and changed, not as
+    // grey placeholder text that looks filled and sends nothing.
+    setValues((v) => (v[1] ? v : { ...v, 1: client.name || "" }));
     if (templates) return;
     try {
       const data = await crmApi.whatsappTemplates();
@@ -297,6 +301,24 @@ export const WhatsAppReply = ({ client, connected }) => {
       setValues({});
     } catch (err) {
       setError(errorMessage(err, "Could not send this template."));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const optedOut = Boolean(client.whatsappOptedOutAt);
+
+  const allowAgain = async () => {
+    if (!window.confirm(`${client.name} asked you to stop messaging them. Only do this if they have asked to hear from you again.`)) return;
+    setSending(true);
+    setError("");
+    try {
+      const data = await crmApi.clearWhatsappOptOut(client.id);
+      setSent(data.message || "They can be messaged again.");
+      // The flag lives on the client, so the page it came from has to say so.
+      if (typeof onClientChanged === "function") onClientChanged();
+    } catch (err) {
+      setError(errorMessage(err, "Could not change that."));
     } finally {
       setSending(false);
     }
@@ -339,6 +361,19 @@ export const WhatsAppReply = ({ client, connected }) => {
   return (
     <form className="crm-card crm-card-pad" onSubmit={send}>
       <div className="crm-card-title">Message on WhatsApp</div>
+
+      {optedOut ? (
+        <div className="crm-notice crm-notice-warn">
+          <strong>{client.name} asked you to stop messaging them</strong>
+          {client.whatsappOptOutText ? ` — they wrote "${client.whatsappOptOutText}".` : "."} They are
+          left out of every broadcast, and messages here will be refused.
+          <div className="crm-actions">
+            <button type="button" className="crm-btn crm-btn-sm" onClick={allowAgain} disabled={sending}>
+              They asked to hear from me again
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {error ? <div className="crm-error">{error}</div> : null}
       {sent ? <div className="crm-notice crm-notice-info">{sent}</div> : null}
@@ -421,11 +456,13 @@ export const WhatsAppReply = ({ client, connected }) => {
               ).map((n) => (
                 <div className="crm-field" key={n}>
                   <label className="crm-label">{`{{${n}}}`}</label>
+                  {/* No placeholder. Greyed-out text in an empty box reads as
+                      a filled one — the client's name sat in {{1}} looking
+                      saved, and the template went out with it blank. */}
                   <input
                     className="crm-input"
                     value={values[n] || ""}
                     onChange={(e) => setValues((v) => ({ ...v, [n]: e.target.value }))}
-                    placeholder={n === 1 ? client.name || "" : ""}
                   />
                 </div>
               ))}

@@ -2412,3 +2412,32 @@ textarea.crm-input {
     max-height: 240px;
   }
 }
+
+/* ── Writing back from the conversation ───────────────────────────────────
+   A reply used to mean leaving the screen for the client's page, which lost
+   the conversation you were replying to. */
+.crm-inbox-compose {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.crm-inbox-compose textarea.crm-input {
+  resize: vertical;
+}
+
+.crm-inbox-send {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* The hint and the button share a row; on a phone the hint wraps above it
+   rather than squeezing the button to nothing. */
+.crm-inbox-send .crm-hint {
+  flex: 1;
+  min-width: 140px;
+  margin: 0;
+}

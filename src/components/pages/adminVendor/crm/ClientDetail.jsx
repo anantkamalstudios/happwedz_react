@@ -567,7 +567,7 @@ const ClientDetail = ({ clientId, onBack, onOpenBusiness }) => {
               <div className="crm-muted crm-small">Keep photos, signed contracts and other documents for this client here. Images or PDF, up to 10 MB each.</div>
             )}
           </div>
-          <WhatsAppReply client={client} connected={waConnected} />
+          <WhatsAppReply client={client} connected={waConnected} onClientChanged={load} />
           <ActivityCard clientId={client.id} activity={activity || []} onChanged={load} />
           </div>
         </div>

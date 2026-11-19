@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { crmApi, errorMessage } from "./crmApi";
 import { Spinner } from "./crmUi";
+import { WhatsAppIcon } from "./ClientExtras";
 
 /**
  * WhatsApp, beyond sending a document.
@@ -472,6 +473,8 @@ const Templates = () => {
   const [notice, setNotice] = useState("");
   const [creating, setCreating] = useState(false);
   const [filter, setFilter] = useState("all");
+  // Which card is having its wording typed in, by name and language.
+  const [editing, setEditing] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -564,13 +567,23 @@ const Templates = () => {
                 <span className={STATUS_TONE[t.status] || "crm-badge"}>{t.status}</span>
               </div>
 
-              {/* The wording, where we have it. Wapzio's list returns none, so
-                  this is filled only for templates submitted from here. */}
+              {/* The wording. Wapzio's list returns none, so it is here for
+                  templates submitted from HappyWedz and for any a vendor has
+                  copied across from Wapzio's own page. */}
               {t.body ? (
                 <p className="crm-tpl-body">{t.body}</p>
+              ) : editing === `${t.name}:${t.language || ""}` ? (
+                <Wording template={t} onDone={(message) => { setEditing(null); setNotice(message); load(); }} onCancel={() => setEditing(null)} />
               ) : (
                 <p className="crm-tpl-body is-missing">
-                  Made outside HappyWedz, so we cannot show the wording.
+                  We do not have the wording for this one.{" "}
+                  <button
+                    type="button"
+                    className="crm-link"
+                    onClick={() => setEditing(`${t.name}:${t.language || ""}`)}
+                  >
+                    Add it
+                  </button>
                 </p>
               )}
 
@@ -590,6 +603,77 @@ const Templates = () => {
         </div>
       )}
     </>
+  );
+};
+
+/**
+ * Telling HappyWedz what a template says.
+ *
+ * Wapzio's API returns a template's name, language, category and status, and
+ * never its text — so every template made before this, or made anywhere
+ * else, shows a vendor three blank boxes labelled {{1}} {{2}} {{3}} with
+ * nothing to say what any of them is for.
+ *
+ * The wording is on Wapzio's own Message Templates page, where it can be
+ * copied. Pasted once, it is ours: the send forms can then show the message
+ * and ask for exactly the values it uses, in the right number.
+ */
+const Wording = ({ template, onDone, onCancel }) => {
+  const [body, setBody] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const save = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const data = await crmApi.saveWhatsappTemplateWording({
+        name: template.name,
+        language: template.language,
+        body: body.trim(),
+      });
+      onDone(data.message || "Saved.");
+    } catch (err) {
+      setError(errorMessage(err, "Could not save that."));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Counted as it is typed, so a vendor sees straight away whether the
+  // braces came across intact.
+  const slots = [...body.matchAll(/\{\{\s*(\d+)\s*\}\}/g)].map((m) => Number(m[1]));
+  const count = slots.length ? Math.max(...slots) : 0;
+
+  return (
+    <div className="crm-tpl-body">
+      {error ? <div className="crm-error">{error}</div> : null}
+      <textarea
+        className="crm-input"
+        rows={4}
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        placeholder="Paste the message exactly as Wapzio shows it, including {{1}}, {{2}}…"
+      />
+      <div className="crm-hint">
+        {count
+          ? `${count} ${count === 1 ? "value" : "values"} to fill in when sending.`
+          : "No values — it sends the same words every time."}
+      </div>
+      <div className="crm-actions">
+        <button type="button" className="crm-btn crm-btn-sm" onClick={onCancel} disabled={saving}>
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="crm-btn crm-btn-primary crm-btn-sm"
+          onClick={save}
+          disabled={saving || !body.trim()}
+        >
+          {saving ? "Saving…" : "Save wording"}
+        </button>
+      </div>
+    </div>
   );
 };
 
@@ -819,6 +903,11 @@ const Campaigns = () => {
                     : `${reach} of ${audience.total} in this group will be messaged` +
                       (audience.unreachable?.length
                         ? ` · ${audience.unreachable.length} have no usable number`
+                        : "") +
+                      // Left out on purpose, and said so: a vendor who sees
+                      // a smaller number than they expected should know why.
+                      (audience.optedOut?.length
+                        ? ` · ${audience.optedOut.length} asked not to be messaged`
                         : "")}
               </div>
             </div>
@@ -973,12 +1062,14 @@ const Campaigns = () => {
 const windowLine = (w) => {
   if (!w) return null;
   if (!w.closesAt) return "They have never written to you, so only a template can be sent.";
-  const closes = new Date(w.closesAt);
   if (!w.open) return "More than 24 hours since they wrote, so only a template can be sent.";
-  return `You can write freely until ${closes.toLocaleTimeString("en-IN", {
-    hour: "numeric",
-    minute: "2-digit",
-  })}.`;
+
+  // The window closes 24 hours after they wrote, which is nearly always
+  // tomorrow — and "until 10:11 am" on its own reads as "until now".
+  const closes = new Date(w.closesAt);
+  const time = closes.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+  const tomorrow = closes.toDateString() !== new Date().toDateString();
+  return `You can write freely until ${time}${tomorrow ? " tomorrow" : ""}.`;
 };
 
 /** A tick for each thing WhatsApp tells us about a message we sent. */
@@ -990,6 +1081,141 @@ const TICK = {
   failed: "✕ failed",
 };
 
+/**
+ * Writing back, from the conversation rather than from the client's page.
+ *
+ * Which of the two boxes a vendor gets is not a preference: inside the
+ * 24-hour window WhatsApp allows free text, outside it only an approved
+ * template. So the screen offers whichever is actually possible, and says
+ * which, instead of letting a message be typed and refused.
+ */
+const Composer = ({ thread, templates, onSent }) => {
+  const [text, setText] = useState("");
+  const [templateName, setTemplateName] = useState("");
+  const [values, setValues] = useState({});
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+
+  const chosen = templates.find((t) => t.name === templateName);
+  const canWrite = Boolean(thread.window?.open);
+  const replyable = thread.key?.startsWith("p-");
+
+  const send = async (event) => {
+    event.preventDefault();
+    setSending(true);
+    setError("");
+    try {
+      if (canWrite) {
+        if (!text.trim()) return;
+        await crmApi.whatsappConversationReply(thread.key, { text: text.trim() });
+        setText("");
+      } else {
+        if (!templateName) return;
+        await crmApi.whatsappConversationTemplate(thread.key, { templateName, variables: values });
+        setTemplateName("");
+        setValues({});
+      }
+      onSent();
+    } catch (err) {
+      setError(errorMessage(err, "Could not send that."));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (!replyable) {
+    return (
+      <div className="crm-inbox-foot">
+        <div className="crm-hint">
+          This conversation has no phone number we can reply to — Wapzio sent an id rather than a
+          number.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form className="crm-inbox-foot crm-inbox-compose" onSubmit={send}>
+      {error ? <div className="crm-error">{error}</div> : null}
+
+      {canWrite ? (
+        <>
+          <textarea
+            className="crm-input"
+            rows={2}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              if (error) setError("");
+            }}
+            placeholder={`Write to ${thread.name || thread.number}…`}
+          />
+          <div className="crm-inbox-send">
+            <span className="crm-hint">{windowLine(thread.window)}</span>
+            <button className="crm-btn crm-btn-primary" type="submit" disabled={sending || !text.trim()}>
+              <WhatsAppIcon /> {sending ? "Sending…" : "Send"}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="crm-hint">{windowLine(thread.window)}</div>
+          <select
+            className="crm-input"
+            value={templateName}
+            onChange={(e) => {
+              setTemplateName(e.target.value);
+              setValues({});
+              if (error) setError("");
+            }}
+          >
+            <option value="">Choose an approved template</option>
+            {[...new Map(templates.map((t) => [t.name, t])).values()].map((t) => (
+              <option key={t.name} value={t.name}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+
+          {chosen?.body ? <p className="crm-note">{chosen.body}</p> : null}
+
+          {(chosen?.variableCount
+            ? Array.from({ length: chosen.variableCount }, (_, i) => i + 1)
+            : templateName
+              ? [1, 2, 3]
+              : []
+          ).map((n) => (
+            <div className="crm-field" key={n}>
+              <label className="crm-label">{`{{${n}}}`}</label>
+              <input
+                className="crm-input"
+                value={values[n] || ""}
+                onChange={(e) => setValues((v) => ({ ...v, [n]: e.target.value }))}
+              />
+            </div>
+          ))}
+
+          {templateName && !chosen?.body ? (
+            <div className="crm-hint">
+              We do not have this template's wording. Add it on the Templates tab and these boxes
+              will be labelled.
+            </div>
+          ) : null}
+
+          <div className="crm-inbox-send">
+            <span className="crm-hint">
+              {thread.clientId ? "" : "This number is not one of your clients yet."}
+            </span>
+            <button className="crm-btn crm-btn-primary" type="submit" disabled={sending || !templateName}>
+              <WhatsAppIcon /> {sending ? "Sending…" : "Send template"}
+            </button>
+          </div>
+        </>
+      )}
+    </form>
+  );
+};
+
 const Chats = () => {
   const [threads, setThreads] = useState([]);
   const [openKey, setOpenKey] = useState(null);
@@ -998,11 +1224,18 @@ const Chats = () => {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [unreadOnly, setUnreadOnly] = useState(false);
+  // For the composer: outside the 24-hour window a template is the only way
+  // to write, so the list is needed here rather than on another screen.
+  const [templates, setTemplates] = useState([]);
 
   const load = useCallback(async (quiet = false) => {
     try {
       const data = await crmApi.whatsappConversations();
       setThreads(data.conversations || []);
+      if (!quiet) {
+        const temps = await crmApi.whatsappTemplates().catch(() => ({ templates: [] }));
+        setTemplates((temps.templates || []).filter((t) => t.status === "approved"));
+      }
     } catch (err) {
       if (!quiet) setError(errorMessage(err, "Could not read your conversations."));
     } finally {
@@ -1186,18 +1419,14 @@ const Chats = () => {
                 )}
               </div>
 
-              <div className="crm-inbox-foot">
-                <div className="crm-hint">{windowLine(thread.window)}</div>
-                {thread.clientId ? (
-                  <a className="crm-btn crm-btn-primary" href={`?client=${thread.clientId}`}>
-                    Open client to reply
-                  </a>
-                ) : (
-                  <div className="crm-hint">
-                    Add this number as a client to reply to them from HappyWedz.
-                  </div>
-                )}
-              </div>
+              <Composer
+                thread={thread}
+                templates={templates}
+                onSent={() => {
+                  open(openKey);
+                  load(true);
+                }}
+              />
             </>
           )}
         </div>

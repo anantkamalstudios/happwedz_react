@@ -94,6 +94,14 @@ export const crmApi = {
   // Our own record of every send. Wapzio keeps no message history.
   whatsappConversations: () => data(axiosInstance.get(`${BASE}/whatsapp/conversations`)),
   whatsappConversation: (key) => data(axiosInstance.get(`${BASE}/whatsapp/conversations/${key}`)),
+  whatsappConversationReply: (key, body) =>
+    data(axiosInstance.post(`${BASE}/whatsapp/conversations/${key}/reply`, body)),
+  whatsappConversationTemplate: (key, body) =>
+    data(axiosInstance.post(`${BASE}/whatsapp/conversations/${key}/template`, body)),
+  saveWhatsappTemplateWording: (body) =>
+    data(axiosInstance.put(`${BASE}/whatsapp/templates/wording`, body)),
+  clearWhatsappOptOut: (clientId) =>
+    data(axiosInstance.post(`${BASE}/clients/${clientId}/whatsapp/opt-in`)),
   whatsappConversationSeen: (key) =>
     data(axiosInstance.post(`${BASE}/whatsapp/conversations/${key}/seen`)),
   whatsappHistory: (params) => data(axiosInstance.get(`${BASE}/whatsapp/history`, { params })),
