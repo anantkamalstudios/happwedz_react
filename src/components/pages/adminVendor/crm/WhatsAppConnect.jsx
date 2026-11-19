@@ -206,11 +206,11 @@ export default function WhatsAppConnect() {
                 {savingWaba ? "Saving…" : "Save"}
               </Button>
             </div>
-            <Form.Text className="text-muted">
-              {state.wabaId ? "Saved. " : "Not set. "}
-              Optional. Broadcasts are sent from here one message at a time and do not need it;
-              it is kept for Wapzio&apos;s own campaign tools. In Wapzio it is the number beside
-              CONNECTED WABA ID on the Message Templates page.
+            <Form.Text className={state.wabaId ? "text-muted" : undefined} style={state.wabaId ? undefined : { color: "#b45309" }}>
+              {state.wabaId
+                ? "Saved. Wapzio needs this to tell us what your templates say, so their previews work."
+                : "Not set, so we cannot read what your templates say and their previews stay empty. Sending still works."}{" "}
+              In Wapzio it is the number beside CONNECTED WABA ID on the Message Templates page.
             </Form.Text>
           </Form>
 
@@ -369,8 +369,8 @@ export default function WhatsAppConnect() {
               autoComplete="off"
             />
             <Form.Text className="text-muted">
-              Optional. Not needed to send broadcasts; it is kept for Wapzio&apos;s own campaign
-              tools. You can add it later.
+              Wapzio needs this to tell us what your templates say. Without it messages still
+              send, but template previews stay empty. You can add it later.
             </Form.Text>
           </Form.Group>
           <Button type="submit" variant="success" disabled={saving || !baseUrl.trim() || !apiKey.trim()}>
