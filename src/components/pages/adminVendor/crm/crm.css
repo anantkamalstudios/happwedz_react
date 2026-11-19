@@ -2603,3 +2603,148 @@ textarea.crm-input {
   flex-direction: column;
   gap: 4px;
 }
+
+/* ── WhatsApp screens: the things testing found ───────────────────────────
+   One gap under the tab bar on every tab. It was 14px on one, 20px on
+   another, and nothing at all on a third, which reads as three screens
+   built by three people. */
+.crm-tabs + * {
+  margin-top: 4px;
+}
+
+/* A hint belongs to what is under it, with room to say so. Several sat
+   directly on the control they described. */
+.crm-hint {
+  margin-bottom: 10px;
+}
+
+/* The All / Unread filter was being crushed to a sliver.
+   .crm-inbox-list is a flex column, and a flex child with content taller
+   than the container shrinks by default — so the conversation list ate the
+   filter above it and left a pink line under the search box. */
+.crm-inbox-list .crm-tabs-sm {
+  flex: 0 0 auto;
+  margin: 8px 0;
+  border-bottom: 0;
+}
+
+.crm-inbox-list .crm-input {
+  flex: 0 0 auto;
+}
+
+/* The page scrolled, and the conversation inside it scrolled too. One
+   scrollbar: the messages. The list and the composer stay put. */
+.crm-inbox-thread .crm-chat {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
+.crm-inbox {
+  max-height: 72vh;
+}
+
+.crm-inbox-thread {
+  max-height: 72vh;
+}
+
+.crm-inbox-list {
+  max-height: 72vh;
+}
+
+/* Rows of one height. A truncated preview made some a few pixels taller,
+   which showed as a list that would not sit straight. */
+.crm-inbox-row {
+  min-height: 52px;
+}
+
+.crm-inbox-when {
+  min-width: 46px;
+  text-align: right;
+}
+
+/* Said once, above the composer, instead of under every message it applies
+   to — where the same sentence three times read as three problems. */
+.crm-chat-problem {
+  margin: 0 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--crm-red-soft);
+  color: var(--crm-red);
+  font-size: 12.5px;
+}
+
+/* A disabled button that is a faded version of the live one looks broken
+   rather than unavailable. */
+.crm-btn:disabled,
+.crm-btn-primary:disabled {
+  background: var(--crm-grey-soft);
+  border-color: var(--crm-line);
+  color: var(--crm-muted);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* Why the button cannot be pressed, under it, where a sentence fits. */
+.crm-form-problem {
+  margin: 6px 0 0;
+  color: var(--crm-amber);
+}
+
+/* Templates: the info bar, the cards, and the one being looked at. */
+.crm-managed {
+  margin-bottom: 16px;
+}
+
+.crm-tpl-card.is-open {
+  border-color: var(--crm-brand);
+  box-shadow: 0 0 0 1px var(--crm-brand);
+}
+
+/* The category and language belong together on the left; View on the
+   right. "English" was floating in the middle of the footer. */
+.crm-tpl-foot {
+  gap: 8px;
+}
+
+.crm-tpl-lang {
+  margin-right: auto;
+}
+
+.crm-viewer {
+  position: relative;
+}
+
+.crm-viewer-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* A smaller chip, for a tag that sits beside a name rather than under it. */
+.crm-chip-sm {
+  margin-left: 6px;
+  font-size: 11px;
+  padding: 1px 6px;
+}
+
+/* Tables that use the width they have. Every one of these had its columns
+   bunched at the left with a third of the row empty. */
+.crm-col-wide { width: 38%; }
+.crm-col-status { width: 16%; }
+.crm-col-count { width: 16%; }
+.crm-col-when { width: 30%; }
+
+/* The second level of tabs is a filter, not a change of screen, so it
+   should not look like the row above it. */
+.crm-tabs-sm .crm-tab {
+  border-bottom: 0;
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 12.5px;
+}
+
+.crm-tabs-sm .crm-tab.is-active {
+  background: var(--crm-brand-soft);
+  color: var(--crm-brand);
+}

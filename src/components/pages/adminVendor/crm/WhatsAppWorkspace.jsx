@@ -1,7 +1,21 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { crmApi, errorMessage } from "./crmApi";
 import { Spinner } from "./crmUi";
 import { WhatsAppIcon } from "./ClientExtras";
+
+/**
+ * What each tab last had, kept for as long as the screen is open.
+ *
+ * Every tab is its own component, so switching away unmounts it and
+ * switching back starts from nothing: a spinner, a round trip, and the
+ * content appearing again a second later. Three tabs in and it reads as
+ * though the page reloads every time you touch it.
+ *
+ * So the last answer is kept and shown at once, and the fetch happens
+ * behind it. Deliberately not persisted anywhere: it is worth exactly one
+ * session, and stale WhatsApp data is worse than none.
+ */
+const lastSeen = {};
 
 /**
  * WhatsApp, beyond sending a document.
@@ -25,6 +39,13 @@ const TABS = [
 
 const STATUS_TONE = {
   completed: "crm-badge crm-tone-green",
+  // What WhatsApp reports about a message after it leaves: these were plain
+  // bold text beside pills, which read as a different kind of thing.
+  delivered: "crm-badge crm-tone-green",
+  read: "crm-badge crm-tone-green",
+  received: "crm-badge crm-tone-blue",
+  lead: "crm-badge crm-tone-amber",
+  customer: "crm-badge crm-tone-green",
   draft: "crm-badge crm-tone-grey",
   queued: "crm-badge crm-tone-blue",
   processing: "crm-badge crm-tone-blue",
@@ -176,7 +197,7 @@ const TemplateBubble = ({ template, values = {}, name }) => {
 /* ─── Templates ─────────────────────────────────────────────────────────── */
 
 const Templates = () => {
-  const [templates, setTemplates] = useState([]);
+  const [templates, setTemplates] = useState(lastSeen.templates || []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   // Which template is being looked at, by name and language.
@@ -186,11 +207,14 @@ const Templates = () => {
   const [filter, setFilter] = useState("all");
 
   const load = useCallback(async () => {
-    setLoading(true);
+    // Only the first time. A refresh behind content already on screen is
+    // better than replacing it with a spinner.
+    setLoading(!lastSeen.templates);
     setError("");
     try {
       const list = await crmApi.whatsappTemplates();
       setTemplates(list.templates || []);
+      lastSeen.templates = list.templates || [];
       setWordingReport(list.wordingReport || "");
     } catch (err) {
       setError(errorMessage(err, "Could not read your templates."));
@@ -241,13 +265,15 @@ const Templates = () => {
 
       {viewing ? (
         <div className="crm-viewer">
+          <button
+            type="button"
+            className="crm-btn crm-btn-sm crm-viewer-close"
+            onClick={() => setViewing(null)}
+          >
+            Close
+          </button>
           <div className="crm-viewer-side">
-            <div className="crm-card-title">
-              {viewing.name}
-              <button type="button" className="crm-btn crm-btn-sm" onClick={() => setViewing(null)}>
-                Close
-              </button>
-            </div>
+            <div className="crm-card-title">{viewing.name}</div>
             <div className="crm-hint">
               {languageName(viewing.language)} · {(viewing.category || "—").toLowerCase()} ·{" "}
               {viewing.variableCount
@@ -280,7 +306,12 @@ const Templates = () => {
       ) : (
         <div className="crm-tpl-grid">
           {shown.map((t) => (
-            <div className="crm-tpl-card" key={`${t.name}-${t.language}-${t.status}`}>
+            <div
+              className={`crm-tpl-card ${
+                viewing && viewing.name === t.name && viewing.language === t.language ? "is-open" : ""
+              }`}
+              key={`${t.name}-${t.language}-${t.status}`}
+            >
               <div className="crm-tpl-head">
                 <span className="crm-tpl-name" title={t.name}>
                   {t.name}
@@ -339,7 +370,7 @@ const Templates = () => {
  * the button, not after.
  */
 const Campaigns = () => {
-  const [campaigns, setCampaigns] = useState([]);
+  const [campaigns, setCampaigns] = useState(lastSeen.campaigns || []);
   const [templates, setTemplates] = useState([]);
   const [audience, setAudience] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -359,7 +390,7 @@ const Campaigns = () => {
   };
 
   const load = useCallback(async () => {
-    setLoading(true);
+    setLoading(!lastSeen.campaigns);
     setError("");
     try {
       const [list, temps] = await Promise.all([
@@ -367,6 +398,7 @@ const Campaigns = () => {
         crmApi.whatsappTemplates(),
       ]);
       setCampaigns(list.campaigns || []);
+      lastSeen.campaigns = list.campaigns || [];
       // Only an approved template can be broadcast, so the rest are not
       // offered — choosing one that cannot send is a wasted journey.
       setTemplates((temps.templates || []).filter((t) => t.status === "approved"));
@@ -601,7 +633,6 @@ const Campaigns = () => {
                       className="crm-input"
                       value={variables[n] || ""}
                       onChange={(e) => setVariables((v) => ({ ...v, [n]: e.target.value }))}
-                      placeholder={n === 1 ? "Diwali" : n === 2 ? "20%" : ""}
                     />
                   </div>
                 ))}
@@ -631,13 +662,12 @@ const Campaigns = () => {
             >
               {sending
                 ? "Starting…"
-                : problem
-                  ? problem
-                  : form.scheduledAt
-                    ? `Schedule for ${reach}`
-                    : `Send to ${reach} now`}
+                : form.scheduledAt
+                  ? `Schedule for ${reach}`
+                  : `Send to ${reach} now`}
             </button>
           </div>
+          {problem ? <div className="crm-hint crm-form-problem">{problem}</div> : null}
         </form>
 
         {/* What the client will actually receive, filling in as the values
@@ -668,10 +698,10 @@ const Campaigns = () => {
         <div className="crm-table-wrap"><table className="crm-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Recipients</th>
-              <th>When</th>
+              <th className="crm-col-wide">Name</th>
+              <th className="crm-col-status">Status</th>
+              <th className="crm-col-count">Recipients</th>
+              <th className="crm-col-when">When</th>
             </tr>
           </thead>
           <tbody>
@@ -679,7 +709,7 @@ const Campaigns = () => {
               <tr key={c.id || c.name}>
                 <td className="crm-strong">
                   {c.name || "—"}
-                  {c.source === "wapzio" ? <div className="crm-muted crm-small">made in Wapzio</div> : null}
+                  {c.source === "wapzio" ? <span className="crm-chip crm-chip-sm">Wapzio</span> : null}
                 </td>
                 <td>
                   <span className={STATUS_TONE[c.status] || "crm-badge"}>{c.status}</span>
@@ -693,7 +723,9 @@ const Campaigns = () => {
                       {c.failed ? <div className="crm-muted crm-small">{c.failed} failed</div> : null}
                     </>
                   ) : (
-                    (c.recipients ?? "—")
+                    // Wapzio reports no count for its own campaigns. "—"
+                    // reads as missing data; "not reported" is the fact.
+                    c.recipients ?? <span className="crm-muted">not reported</span>
                   )}
                 </td>
                 <td>{when(c.scheduledAt || c.sentAt || c.createdAt)}</td>
@@ -878,10 +910,10 @@ const Composer = ({ thread, templates, onSent }) => {
 };
 
 const Chats = () => {
-  const [threads, setThreads] = useState([]);
+  const [threads, setThreads] = useState(lastSeen.threads || []);
   const [openKey, setOpenKey] = useState(null);
   const [thread, setThread] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!lastSeen.threads);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [unreadOnly, setUnreadOnly] = useState(false);
@@ -893,6 +925,7 @@ const Chats = () => {
     try {
       const data = await crmApi.whatsappConversations();
       setThreads(data.conversations || []);
+      lastSeen.threads = data.conversations || [];
       if (!quiet) {
         const temps = await crmApi.whatsappTemplates().catch(() => ({ templates: [] }));
         setTemplates((temps.templates || []).filter((t) => t.status === "approved"));
@@ -915,6 +948,15 @@ const Chats = () => {
     const timer = setInterval(() => load(true), 20000);
     return () => clearInterval(timer);
   }, [load]);
+
+  // The newest message, not the oldest. A chat that opens at the top of a
+  // year-old conversation makes the vendor scroll to find out what was just
+  // said.
+  const chatRef = useRef(null);
+  useEffect(() => {
+    const box = chatRef.current;
+    if (box) box.scrollTop = box.scrollHeight;
+  }, [thread]);
 
   const open = useCallback(
     async (key) => {
@@ -1047,7 +1089,7 @@ const Chats = () => {
                 {!thread.clientId ? <span className="crm-chip">not a client yet</span> : null}
               </div>
 
-              <div className="crm-chat">
+              <div className="crm-chat" ref={chatRef}>
                 {!thread.messages.length ? (
                   <p className="crm-muted">Nothing here yet.</p>
                 ) : (
@@ -1073,12 +1115,21 @@ const Chats = () => {
                           {m.direction === "out" ? ` ${TICK[m.status] || m.status}` : ""}
                           {m.direction === "out" && m.actorName ? ` · ${m.actorName}` : ""}
                         </div>
-                        {m.error ? <div className="crm-bubble-foot crm-danger">{m.error}</div> : null}
+
                       </div>
                     </React.Fragment>
                   ))
                 )}
               </div>
+
+              {/* Once, where it is acted on. The same sentence under every
+                  failed message read as several different problems. */}
+              {thread.messages.some((m) => m.status === "failed") ? (
+                <div className="crm-chat-problem">
+                  {thread.messages.filter((m) => m.error).slice(-1)[0]?.error ||
+                    "Some of these did not send."}
+                </div>
+              ) : null}
 
               <Composer
                 thread={thread}
@@ -1170,9 +1221,20 @@ const Contacts = () => {
             <tbody>
               {rows.map((c) => (
                 <tr key={c.phone}>
-                  <td>{c.name || "—"}</td>
-                  <td className="crm-strong">{c.phone}</td>
-                  <td>{c.status || "—"}</td>
+                  {/* The name is the thing being looked for, so it is the
+                      one in bold. The number was, which had every row
+                      shouting its least memorable part. */}
+                  <td className="crm-strong">
+                    {c.name || <span className="crm-muted">Not named</span>}
+                  </td>
+                  <td>{c.phone}</td>
+                  <td>
+                    {c.status ? (
+                      <span className={STATUS_TONE[c.status] || "crm-badge crm-tone-grey"}>{c.status}</span>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -1297,15 +1359,12 @@ const History = () => {
                     {KIND_LABEL[m.kind] || m.kind}
                     {m.template ? <div className="crm-muted crm-small">{m.template}</div> : null}
                   </td>
+                  {/* The same two lines in every row: who, then the
+                      number under it. Half the rows were a bold number and
+                      half a plain name, which read as two kinds of row. */}
                   <td>
-                    {m.client ? (
-                      <>
-                        <div>{m.client}</div>
-                        <div className="crm-muted crm-small">{m.to}</div>
-                      </>
-                    ) : (
-                      <span className="crm-strong">{m.to}</span>
-                    )}
+                    <div className="crm-strong">{m.client || "Not a client yet"}</div>
+                    <div className="crm-muted crm-small">{m.to}</div>
                   </td>
                   <td>{m.sentBy || "—"}</td>
                   <td>
