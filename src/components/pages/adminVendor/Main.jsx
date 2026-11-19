@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../../layouts/vendors/Navbar";
+import WhatsAppPage from "./crm/WhatsAppPage";
 import HomeAdmin from "./HomeAdmin";
 import Storefront from "./Storefront";
 import { useParams } from "react-router-dom";
@@ -81,6 +82,16 @@ const Main = () => {
             <CrmPage />
           </FeatureGuard>
         );
+      case "vendor-whatsapp":
+        return (
+          <FeatureGuard
+            module="crm"
+            title="WhatsApp"
+            description="Talk to your clients on WhatsApp from here: their replies, your templates and your broadcasts."
+          >
+            <WhatsAppPage />
+          </FeatureGuard>
+        );
       case "vendor-google-profile":
         return (
           <FeatureGuard
@@ -100,9 +111,12 @@ const Main = () => {
     // Fetched once here and shared by the navbar, the storefront and the settings tab,
     // so the dashboard does not ask the server the same question three times per load.
     <VendorAccessProvider>
-      <div>
+      {/* The navigation is a rail down the left on a desktop and a row
+          across the top on a phone, so the page it sits beside has to be a
+          column of its own rather than everything below it. */}
+      <div className="vendor-shell">
         <Navbar storefrontCompletion={storefrontCompletion} />
-        {renderContent()}
+        <div className="vendor-shell-main">{renderContent()}</div>
       </div>
     </VendorAccessProvider>
   );

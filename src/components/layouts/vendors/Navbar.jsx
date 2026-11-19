@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { FaGift, FaStore, FaEnvelope, FaStar, FaCog } from "react-icons/fa";
 import { LiaHomeSolid } from "react-icons/lia";
 import { FaRegStar } from "react-icons/fa";
-import { PiAddressBookLight, PiInstagramLogoLight, PiMapPinLight, PiOfficeChairLight } from "react-icons/pi";
+import { PiAddressBookLight, PiInstagramLogoLight, PiMapPinLight, PiOfficeChairLight, PiWhatsappLogoLight } from "react-icons/pi";
 import { GoMail } from "react-icons/go";
 import { FiLock } from "react-icons/fi";
 import { IoSettingsOutline } from "react-icons/io5";
@@ -244,6 +244,19 @@ const Navbar = () => {
       locked: !hasCrm,
     });
 
+    // WhatsApp was a button on the CRM's own header, which put a whole
+    // workspace — conversations, templates, broadcasts — one click inside
+    // another tool. It is where a vendor spends their day; it belongs in
+    // the rail. Same plan module as the CRM, since it is the CRM's
+    // connection that drives it.
+    baseTabs.push({
+      id: "whatsapp",
+      slug: "vendor-whatsapp",
+      label: "WhatsApp",
+      Icon: PiWhatsappLogoLight,
+      locked: !hasCrm,
+    });
+
     // Google Profile (set up through GrowthOS AI) is also a plan module.
     baseTabs.push({
       id: "google-profile",
@@ -311,25 +324,28 @@ const Navbar = () => {
   return (
     <div className="adminNav">
       <div
-        className="container py-2 vendor-dashboard-navbar mt-2"
+        // No mt-2: this sits inside a sticky bar that has its own padding,
+        // and the margin only pushed the bar taller.
+        className="py-2 vendor-dashboard-navbar"
         style={{
           paddingLeft: isMobile ? 12 : undefined,
           paddingRight: isMobile ? 12 : undefined,
-          maxWidth: "1320px",
-          overflowX: "hidden",
         }}
       >
         <div
-          className="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3"
+          className="vendor-nav-inner d-flex flex-column justify-content-between align-items-start gap-3"
           style={{ minWidth: 0, width: "100%" }}
         >
           <div
             // No gap-3: Bootstrap writes `gap: 1rem !important`, which beats
             // the inline value below. Every adjustment made here since
             // October has been silently discarded by it.
-            className="d-flex"
+            className="d-flex vendor-nav-tabs"
             style={{
-              flexWrap: isMobile ? "nowrap" : "wrap",
+              flex: "1 1 auto",
+              minWidth: 0,
+              flexDirection: isMobile ? "row" : "column",
+              flexWrap: "nowrap",
               overflowX: isMobile ? "auto" : "visible",
               WebkitOverflowScrolling: isMobile ? "touch" : undefined,
               paddingBottom: isMobile ? 8 : undefined,
@@ -350,9 +366,9 @@ const Navbar = () => {
                 // No p-0 either, for the same reason — it is
                 // `padding: 0 !important`. The padding is set below, where
                 // it can be seen next to the width it works with.
-                className={`btn border-0 d-flex flex-column align-items-center position-relative ${
-                  activeTab === tab.id ? "active-tab" : ""
-                }`}
+                className={`btn border-0 d-flex align-items-center position-relative vendor-nav-item ${
+                  isMobile ? "flex-column" : ""
+                } ${activeTab === tab.id ? "active-tab" : ""}`}
                 style={{
                   // The space between two labels is this padding twice,
                   // plus the row's gap. Which is why a minimum width was
@@ -455,121 +471,52 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Right side: Go Premium + small storefront completion (label above bar) */}
+          {/* The plan and the setup bar, on one line each.
+              This box used to be the tallest thing in the navigation — a
+              label above its bar, a plan name above its link, and 8px of
+              padding around both — so it set the height of the whole bar on
+              every page while saying two short things. */}
           <div
-            className="d-flex align-items-center gap-2 bg-light px-3 rounded-3"
+            className="d-flex align-items-center bg-light rounded-3 vendor-plan-box"
             style={{
-              paddingTop: 8,
-              paddingBottom: 8,
+              gap: isMobile ? 12 : 18,
+              flexWrap: isMobile ? "wrap" : "nowrap",
+              rowGap: isMobile ? 8 : undefined,
+              // Never squeezed, and never clipping what it holds. It was
+              // doing both: the row took its width for the icons, and
+              // overflow: hidden then cut "Change Plan" down to "Chang".
+              flexShrink: 0,
               maxWidth: "100%",
-              overflowX: "hidden",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                gap: 6,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: isMobile ? 12 : 40,
-                  flexWrap: isMobile ? "wrap" : "nowrap",
-                  rowGap: isMobile ? 8 : undefined,
-                  width: "100%",
-                }}
+            <div className="vendor-plan-meter" title={`Storefront setup ${storedCompletion}% complete`}>
+              <span className="vendor-plan-label">Storefront setup</span>
+              <span className="vendor-plan-track">
+                <span className="vendor-plan-fill" style={{ width: `${storedCompletion}%` }} />
+              </span>
+              <span className="vendor-plan-pct">{storedCompletion}%</span>
+            </div>
+
+            <span className="vendor-plan-divider" aria-hidden="true" />
+
+            <div className="vendor-plan-side">
+              <span className="vendor-plan-name">
+                {vendorAccess.subscription
+                  ? vendorAccess.subscription.planName + " plan"
+                  : "Grow Your Business"}
+              </span>
+              {/* Was a dead <Link> with no destination. It now goes to the plans
+                  page, and says what it will actually do for this vendor. */}
+              <Link
+                to="/vendor-dashboard/upgrade/vendor-plan"
+                className="btn upgrade-btn border-0"
               >
-                {/* Compact progress bar */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 8,
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "#2c3e50",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                      whiteSpace: "nowrap",
-                      marginBottom: 2,
-                    }}
-                  >
-                    Storefront Setup Progress
-                  </span>
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <div
-                      style={{
-                        width: isMobile ? 100 : 120,
-                        height: 8,
-                        background: "#e9ecef",
-                        borderRadius: 6,
-                        overflow: "hidden",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: `${storedCompletion}%`,
-                          height: "100%",
-                          background: "#f12d85",
-                          transition: "width 250ms ease",
-                        }}
-                      />
-                    </div>
-                    <span
-                      style={{
-                        fontWeight: 700,
-                        fontSize: 13,
-                        color: "#2c3e50",
-                        minWidth: 36,
-                        textAlign: "right",
-                      }}
-                    >
-                      {storedCompletion}%
-                    </span>
-                  </div>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "#2c3e50",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                      whiteSpace: "nowrap",
-                      marginBottom: 2,
-                    }}
-                  >
-                    {vendorAccess.subscription
-                      ? vendorAccess.subscription.planName + " plan"
-                      : "Grow Your Business"}
-                  </span>
-                  {/* Was a dead <Link> with no destination. It now goes to the plans
-                      page, and says what it will actually do for this vendor. */}
-                  <Link
-                    to="/vendor-dashboard/upgrade/vendor-plan"
-                    className="btn upgrade-btn border-0 p-0"
-                  >
-                    {vendorAccess.stage === "expired"
-                      ? "Renew Plan"
-                      : vendorAccess.subscription
-                        ? "Change Plan"
-                        : "Upgrade Now"}
-                  </Link>
-                </div>
-              </div>
+                {vendorAccess.stage === "expired"
+                  ? "Renew Plan"
+                  : vendorAccess.subscription
+                    ? "Change Plan"
+                    : "Upgrade Now"}
+              </Link>
             </div>
           </div>
         </div>

@@ -28,14 +28,27 @@
 .crm {
   background: var(--crm-bg);
   min-height: calc(100vh - 140px);
-  padding: 24px 0 48px;
+  /* The navigation above already leaves a gap; 24px on top of it put 44px
+     of nothing between the bar and the first card.
+     The bottom is deeper because the floating assistant sits over this
+     corner, and it was covering the last row of the funnel. */
+  padding: 14px 0 96px;
 }
 
+/* Bootstrap's .container widths, because the navigation bar above every
+   one of these pages is a .container and the two were starting at
+   different left edges. */
 .crm-wrap {
-  max-width: 1240px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 12px;
 }
+
+@media (min-width: 576px) { .crm-wrap { max-width: 540px; } }
+@media (min-width: 768px) { .crm-wrap { max-width: 720px; } }
+@media (min-width: 992px) { .crm-wrap { max-width: 960px; } }
+@media (min-width: 1200px) { .crm-wrap { max-width: 1140px; } }
+@media (min-width: 1400px) { .crm-wrap { max-width: 1320px; } }
 
 /* The dashboard sets h1-h3 sizes globally with !important (App.css: 48px, 40px,
    32px), which is a page-title scale, not a working-screen one. The CRM states
@@ -339,6 +352,16 @@ textarea.crm-input {
   width: 100%;
   border-collapse: collapse;
   font-size: 13.5px;
+}
+
+.crm-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.crm-table th.crm-num,
+.crm-table td.crm-num {
+  text-align: right;
 }
 
 .crm-table th {
@@ -1687,7 +1710,25 @@ textarea.crm-input {
   gap: 14px;
 }
 
+/* One padding for the card, instead of each thing inside it bringing its
+   own or going without. The funnel bars had none, so they ran to both
+   edges while the title above them sat 16px in. */
+.crm-analytics-row .crm-card,
+.crm-analytics > .crm-card:not(.crm-range) {
+  padding: 16px 18px;
+}
+
+.crm-analytics .crm-panel-title {
+  padding: 0;
+  margin-bottom: 2px;
+}
+
+/* The period filter is a row of controls, not a panel. A white card behind
+   three pills and two date boxes is a strip of nothing. */
 .crm-range {
+  background: transparent;
+  border: 0;
+  padding: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -1711,12 +1752,12 @@ textarea.crm-input {
   display: flex;
   align-items: flex-start;
   gap: 9px;
-  background: var(--crm-brand-soft);
-  border: 1px solid #f7c7de;
+  background: var(--crm-amber-soft);
+  border: 1px solid #f3dcb0;
   border-radius: 10px;
   padding: 11px 13px;
   font-size: 13px;
-  color: #8d0b45;
+  color: var(--crm-amber);
   line-height: 1.5;
 }
 
@@ -1730,6 +1771,25 @@ textarea.crm-input {
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   gap: 14px;
   align-items: start;
+}
+
+/* Nothing lost is good news and takes one line to say. It had been saying
+   it in the middle of 250px of white space, which read as a panel that had
+   failed to load. */
+.crm-analytics-row.is-alone {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.crm-lost-none {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border-radius: 10px;
+  background: var(--crm-green-soft);
+  color: var(--crm-green);
+  font-size: 13px;
+  margin-top: 14px;
 }
 
 .crm-funnel {
@@ -1762,10 +1822,17 @@ textarea.crm-input {
 }
 
 .crm-funnel-bar {
-  height: 22px;
+  height: 12px;
   border-radius: 6px;
   background: var(--crm-grey-soft);
   overflow: hidden;
+}
+
+/* Every step holding the same number is not a funnel narrowing, it is a
+   list of equal rows, and three identical full-width bars said nothing
+   that the numbers beside them did not. */
+.crm-funnel.is-flat .crm-funnel-bar {
+  height: 6px;
 }
 
 .crm-funnel-bar span {
@@ -2774,4 +2841,28 @@ textarea.crm-input {
   .crm-inbox-thread .crm-chat {
     height: 340px;
   }
+}
+
+/* The period filter is one control, so it should read as one: pills and
+   date boxes were the same question asked in two visual languages. */
+.crm-range-dates .crm-input {
+  border-radius: 18px;
+  min-height: 36px;
+  border-color: var(--crm-line);
+}
+
+.crm-range-dates label {
+  margin: 0;
+}
+
+/* A count and the rate beside it were separated by a dot, which read as
+   part of the number. Space does the same job without being a character. */
+.crm-funnel-rate {
+  margin-left: 2px;
+}
+
+/* Full width, with the numbers right-aligned so each one still sits under
+   its own heading rather than drifting to the middle of its column. */
+.crm-analytics .crm-table {
+  width: 100%;
 }

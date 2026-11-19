@@ -64,7 +64,10 @@
   border-top: 1px solid #e8e8e8;
   border-bottom: 1px solid #f1f5f9;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
+  /* None. This bar is white and the page below it is grey, so a margin
+     here is not a gap between them — it is a white stripe with the page's
+     own padding under it. The page provides the gap, in its own colour. */
+  margin-bottom: 0;
   background: #ffffff;
 }
 .btn-theme {
@@ -9648,10 +9651,17 @@ input:checked+.slider:before {
 }
 /* Vendor Dashboard Premium feature */
 .vendor-dashboard-navbar .upgrade-btn {
-  background: transparent;
+  background: #fff5e6;
   color: #ff9b00;
   font-weight: 600;
-  font-size: 25px;
+  /* 25px made this the largest text on any vendor page — larger than the
+     page's own title — and wide enough that "Change Plan" wrapped onto two
+     lines, which is what set the height of the whole navigation bar. */
+  font-size: 12.5px;
+  line-height: 1.25;
+  white-space: nowrap;
+  padding: 3px 11px;
+  border-radius: 999px;
   position: relative;
   overflow: hidden;
   -webkit-text-stroke: 0 transparent;
@@ -13634,4 +13644,460 @@ body.mobile-menu-active {
   animation: tj-shimmer 1.4s linear infinite;
   border-radius: 2px;
   margin-bottom: 20px;
+}
+
+/* ── The plan box in the vendor navigation ───────────────────────────────
+   It used to be the tallest element in the bar: a label stacked above its
+   progress track, a plan name stacked above its link, and padding around
+   both. Two short facts, 114px of height, on every page. Each is one line
+   now, side by side. */
+.vendor-plan-box {
+  padding: 6px 12px;
+}
+
+.vendor-plan-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.vendor-plan-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.vendor-plan-track {
+  display: block;
+  width: 96px;
+  height: 6px;
+  border-radius: 999px;
+  background: #e4e7ec;
+  overflow: hidden;
+}
+
+.vendor-plan-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f12d85, #ff7ab3);
+  transition: width 250ms ease;
+}
+
+/* Tabular, so the bar does not shift sideways as the number changes. */
+.vendor-plan-pct {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2c3e50;
+  font-variant-numeric: tabular-nums;
+  min-width: 30px;
+  text-align: right;
+}
+
+.vendor-plan-divider {
+  width: 1px;
+  height: 20px;
+  background: #dfe3e8;
+}
+
+.vendor-plan-side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.vendor-plan-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* The link sits on the same line as the plan it changes, so it is sized
+   like a link rather than like a headline. */
+.vendor-dashboard-navbar .upgrade-btn {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #fff5e6;
+  font-size: 12.5px;
+}
+
+@media (max-width: 991px) {
+  .vendor-plan-divider {
+    display: none;
+  }
+}
+
+/* ── Headings inside the vendor dashboard ────────────────────────────────
+   The marketing site sets h1/h2/h3 to 48/40/32px with !important, which is
+   right for a landing page and wrong for every panel in the dashboard: a
+   card's own title rule says 28px and loses, so "Instagram" and a KPI
+   figure both render at billboard size.
+
+   Scoped back here rather than weakened there, because the landing page
+   still wants them. */
+.igd-page h1,
+.igd-title {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+}
+
+.igd-page h2 {
+  font-size: 19px !important;
+  font-weight: 700 !important;
+}
+
+.igd-page h3,
+.igd-state h3 {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+
+.igd-subtitle {
+  font-size: 13.5px;
+}
+
+/* The dashboard's own numbers: 1.75rem in its stylesheet, 32px from the
+   global h3 rule, which won. */
+.admin-stat-value {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  margin-bottom: 0;
+}
+
+.admin-stat-title {
+  font-size: 13px;
+}
+
+.admin-stat-subtitle {
+  font-size: 12.5px;
+}
+
+/* ── Settings, laid out like every other vendor page ─────────────────────
+   It used <Container fluid> — width: 100%, no maximum, no centring — so it
+   ran from the viewport's left edge to the scrollbar while the navigation
+   above it and every other page stopped at the container width. That one
+   thing was most of why it looked like a different product. */
+.settings-page {
+  padding: 14px 0 96px;
+}
+
+.settings-header {
+  margin-bottom: 20px;
+}
+
+.settings-title {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  color: var(--primary-color, #ed1173);
+  margin: 0 0 6px;
+}
+
+.settings-subtitle {
+  color: #5f6b7a;
+  font-size: 13.5px;
+  margin: 0;
+}
+
+/* A fixed column, not a proportion. lg={3} of a 1320px page is 330px of
+   menu beside a squeezed panel; the same menu needs 245. */
+@media (min-width: 992px) {
+  .settings-row {
+    display: grid;
+    grid-template-columns: 245px minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .settings-row > .settings-side,
+  .settings-row > .settings-main {
+    width: 100%;
+    max-width: none;
+    flex: none;
+    padding: 0;
+  }
+}
+
+/* The same panel as Instagram's: a quiet border and a soft shadow, rather
+   than a drop shadow and a pink rule under every title. */
+.settings-card {
+  border: 1px solid #eef0f3 !important;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.settings-card > .card-header {
+  background: transparent;
+  border-bottom: 1px solid #eef0f3;
+  padding: 14px 18px;
+}
+
+.settings-card > .card-header .card-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* 40px of solid pink beside every panel title is a lot of colour for an
+   icon that is only there to label the panel. */
+.setting-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  background-color: #fde7f1 !important;
+  color: #ed1173 !important;
+}
+
+.setting-icon-wrapper svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* ── The vendor dashboard as a rail and a page ───────────────────────────
+   The navigation was a row across the top, which meant ten labels competing
+   for one line and the plan box fighting them for the leftovers. Down the
+   left it has room to be read, and the page beside it keeps its full
+   height. */
+.vendor-shell {
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.vendor-shell-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (min-width: 992px) {
+  .adminNav {
+    flex: 0 0 216px;
+    width: 216px;
+    align-self: stretch;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    border-top: 0;
+    border-bottom: 0;
+    border-right: 1px solid #ececf1;
+    box-shadow: none;
+  }
+
+  .vendor-nav-inner {
+    height: 100%;
+  }
+
+  .vendor-nav-tabs {
+    width: 100%;
+    gap: 2px !important;
+  }
+
+  /* A row in a rail: icon, then label, both left-aligned, the whole row
+     clickable rather than just the words. */
+  .vendor-nav-item {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 8px 10px !important;
+    border-radius: 9px;
+    text-align: left;
+  }
+
+  .vendor-nav-item:hover {
+    background: #f6f7f9;
+  }
+
+  .vendor-nav-item.active-tab {
+    background: #fde7f1;
+  }
+
+  .vendor-nav-item > span:last-child {
+    margin-top: 0 !important;
+  }
+
+  /* The plan box sits at the foot of the rail, stacked, because 216px is
+     not a row. */
+  .vendor-plan-box {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 10px 12px;
+  }
+
+  .vendor-plan-divider {
+    display: none;
+  }
+
+  .vendor-plan-side {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* On a phone it stays what it was: one scrollable row across the top. */
+@media (max-width: 991px) {
+  .vendor-shell {
+    display: block;
+  }
+}
+
+/* ── Settings: the menu, and the Integrations panel ──────────────────────
+   The menu reads as a list of places, not as headings, so it is sized like
+   one. "Payments & Subscription" was wrapping onto two lines at 16px. */
+.settings-nav .nav-link {
+  font-size: 13.5px;
+  padding: 9px 12px !important;
+  border-radius: 9px;
+}
+
+.settings-nav .nav-link svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* One block per service: its own heading, its own description, a rule
+   between them. It had been two headings, a loose paragraph and an <hr />
+   doing the separating, so the WhatsApp panel ran straight into the
+   Instagram one. */
+.integrations-body {
+  padding: 0 !important;
+}
+
+.integration-block {
+  padding: 18px 20px;
+}
+
+.integration-block + .integration-block {
+  border-top: 1px solid #eef0f3;
+}
+
+.integration-head {
+  margin-bottom: 14px;
+}
+
+.integration-head h6 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.integration-head p {
+  color: #5f6b7a;
+  font-size: 13px;
+  margin: 0;
+  max-width: 70ch;
+}
+
+/* The WhatsApp panel inside it brings its own green card; it should sit in
+   the block rather than against its edges. */
+.integration-block .border.rounded {
+  border-color: #e4e7ec !important;
+}
+
+/* The rail needs room inside it. Dropping the .container class took its
+   padding with it, so every label sat against the window edge. */
+@media (min-width: 992px) {
+  .adminNav .vendor-dashboard-navbar {
+    padding: 14px 12px !important;
+  }
+
+  .vendor-nav-item {
+    padding: 8px 12px !important;
+  }
+
+  /* The plan box is the last thing in the rail, so it needs the gap above
+     it that the border was providing by accident. */
+  .vendor-plan-box {
+    margin-top: 10px;
+  }
+
+  .vendor-shell-main {
+    padding-left: 4px;
+  }
+}
+
+/* ── The plan card, at the foot of the rail ──────────────────────────────
+   It was sitting directly under the last menu item because nothing in the
+   chain above it was full height, so "push to the bottom" had no bottom to
+   push to. */
+@media (min-width: 992px) {
+  .adminNav .vendor-dashboard-navbar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .vendor-nav-inner {
+    flex: 1 1 auto;
+    height: auto !important;
+  }
+
+  .vendor-nav-tabs {
+    flex: 0 0 auto !important;
+  }
+
+  /* Everything below the menu goes to the bottom of the rail. */
+  .vendor-plan-box {
+    margin-top: auto !important;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 12px !important;
+    background: #fafafb !important;
+    border: 1px solid #ececf1;
+    border-radius: 12px;
+  }
+
+  /* The label and its number on one line, the bar its own full width
+     under them — rather than three things squeezed onto one row. */
+  .vendor-plan-meter {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 8px;
+    width: 100%;
+  }
+
+  .vendor-plan-track {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: 7px;
+  }
+
+  .vendor-plan-pct {
+    text-align: right;
+  }
+
+  .vendor-plan-side {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #ececf1;
+  }
+
+  .vendor-plan-name {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* A full-width button, because at the foot of a rail it is the thing to
+     press rather than a word to notice. */
+  .adminNav .upgrade-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: #fff !important;
+    border: 1px solid #ffd79a !important;
+    color: #d97706 !important;
+    padding: 7px 10px !important;
+    border-radius: 9px;
+    font-size: 12.5px;
+  }
+
+  .adminNav .upgrade-btn:hover {
+    background: #fff5e6 !important;
+  }
 }

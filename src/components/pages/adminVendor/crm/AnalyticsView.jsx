@@ -116,9 +116,6 @@ const AnalyticsView = () => {
           <input id="crm-from" type="date" className="crm-input" value={range.from} max={range.to} onChange={setCustom("from")} />
           <label className="crm-small crm-muted" htmlFor="crm-to">to</label>
           <input id="crm-to" type="date" className="crm-input" value={range.to} min={range.from} onChange={setCustom("to")} />
-          <span className="crm-muted crm-small crm-range-said">
-            {formatDate(data.range.from)} – {formatDate(data.range.to)}
-          </span>
         </div>
       </div>
 
@@ -140,7 +137,7 @@ const AnalyticsView = () => {
         </div>
         <div className="crm-card crm-stat">
           <div className="crm-stat-label">Turned into bookings</div>
-          <div className="crm-stat-value" style={{ color: "var(--crm-brand)" }}>{pct(kpis.conversion.value)}</div>
+          <div className="crm-stat-value">{pct(kpis.conversion.value)}</div>
           <div className="crm-stat-note">
             {kpis.booked.value} of {kpis.leads.value}
             {kpis.conversion.before !== null && kpis.conversion.value !== null ? (
@@ -165,15 +162,17 @@ const AnalyticsView = () => {
         </div>
         <div className="crm-card crm-stat">
           <div className="crm-stat-label">Booked value</div>
-          <div className="crm-stat-value is-good">{rupees(kpis.bookedValuePaise.value)}</div>
+          <div className="crm-stat-value">{rupees(kpis.bookedValuePaise.value)}</div>
           <div className="crm-stat-note">
             {kpis.booked.value > 1 ? `${rupees(kpis.averageBookingPaise.value)} on average · ` : ""}
-            {rupees(kpis.collectedPaise.value)} collected in this period
+            <span className={kpis.bookedValuePaise.value > 0 && !kpis.collectedPaise.value ? "is-pending" : ""}>
+              {rupees(kpis.collectedPaise.value)} collected in this period
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="crm-analytics-row">
+      <div className={`crm-analytics-row ${lostReasons.length === 0 ? "is-alone" : ""}`}>
         <div className="crm-card">
           <div className="crm-panel-title">
             <span>{kpis.leads.value === 1 ? "Where this client got to" : `Where these ${kpis.leads.value} clients got to`}</span>
@@ -187,7 +186,7 @@ const AnalyticsView = () => {
               <div>Try a longer period, or add the enquiries you are working on.</div>
             </div>
           ) : (
-            <div className="crm-funnel">
+            <div className={`crm-funnel ${funnel.every((f) => f.count === funnel[0].count) ? "is-flat" : ""}`}>
               {funnel.map((step) => (
                 <div key={step.id} className="crm-funnel-step">
                   <div className="crm-funnel-head">
@@ -195,7 +194,9 @@ const AnalyticsView = () => {
                       <span className="crm-funnel-name">{step.label}</span>
                       <span className="crm-strong">{step.count}</span>
                       {step.rateFromPrevious !== null && (
-                        <span className="crm-muted crm-small">· {pct(step.rateFromPrevious)} of the step before</span>
+                        <span className="crm-muted crm-small crm-funnel-rate">
+                          {pct(step.rateFromPrevious)} of the step before
+                        </span>
                       )}
                     </span>
                     <span className="crm-funnel-side">
@@ -213,40 +214,49 @@ const AnalyticsView = () => {
           )}
         </div>
 
-        <div className="crm-card">
-          <div className="crm-panel-title">
-            <span>Why work is lost</span>
-            {data.lostCount > 0 && <span className="crm-tab-count">{data.lostCount}</span>}
-          </div>
-          <div className="crm-sub" style={{ marginBottom: 14 }}>From the reason picked when a client is moved to Lost or Cancelled.</div>
-          {lostReasons.length === 0 ? (
-            <div className="crm-empty" style={{ padding: "20px 0" }}>
-              <h3>Nothing lost in this period</h3>
+        {/* Only when there is something to show. Nothing lost is one line
+            of good news, and it had been saying it in the middle of a panel
+            as tall as the funnel beside it — which reads as a panel that
+            failed to load rather than a quiet quarter. */}
+        {lostReasons.length > 0 && (
+          <div className="crm-card">
+            <div className="crm-panel-title">
+              <span>Why work is lost</span>
+              {data.lostCount > 0 && <span className="crm-tab-count">{data.lostCount}</span>}
             </div>
-          ) : (
-            <>
-              <div className="crm-reasons">
-                {lostReasons.map((reason) => (
-                  <div key={reason.id} className="crm-reason">
-                    <div className="crm-reason-head">
-                      <span>{reason.label}</span>
-                      <span className="crm-strong">{reason.count}</span>
-                    </div>
-                    <div className="crm-funnel-bar">
-                      <span style={{ width: `${Math.round((reason.count / worstReason) * 100)}%`, background: "var(--crm-red)" }} />
-                    </div>
-                    <div className="crm-muted crm-small">{rupees(reason.valuePaise)}</div>
+            <div className="crm-sub" style={{ marginBottom: 14 }}>
+              From the reason picked when a client is moved to Lost or Cancelled.
+            </div>
+            <div className="crm-reasons">
+              {lostReasons.map((reason) => (
+                <div key={reason.id} className="crm-reason">
+                  <div className="crm-reason-head">
+                    <span>{reason.label}</span>
+                    <span className="crm-strong">{reason.count}</span>
                   </div>
-                ))}
-              </div>
-              <div className="crm-note" style={{ marginTop: 14 }}>
-                <Info size={15} />
-                <span>{rupees(data.lostValuePaise)} of work went elsewhere in this period.</span>
-              </div>
-            </>
-          )}
-        </div>
+                  <div className="crm-funnel-bar">
+                    <span
+                      style={{
+                        width: `${Math.round((reason.count / worstReason) * 100)}%`,
+                        background: "var(--crm-red)",
+                      }}
+                    />
+                  </div>
+                  <div className="crm-muted crm-small">{rupees(reason.valuePaise)}</div>
+                </div>
+              ))}
+            </div>
+            <div className="crm-note" style={{ marginTop: 14 }}>
+              <Info size={15} />
+              <span>{rupees(data.lostValuePaise)} of work went elsewhere in this period.</span>
+            </div>
+          </div>
+        )}
       </div>
+
+      {lostReasons.length === 0 && funnel.length > 0 && (
+        <div className="crm-lost-none">Nothing was lost or cancelled in this period.</div>
+      )}
 
       {teamRows.length > 0 && (
         <div className="crm-card">

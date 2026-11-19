@@ -107,9 +107,16 @@ const Settings = () => {
       className="settings-page"
       style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}
     >
-      <Container fluid>
-        <Row>
-          <Col lg={3} md={4}>
+      <Container className="settings-container">
+        <header className="settings-header">
+          <h1 className="settings-title">Settings</h1>
+          <p className="settings-subtitle">
+            Your plan, your notifications, and the services connected to this account.
+          </p>
+        </header>
+
+        <Row className="settings-row">
+          <Col lg={3} md={4} className="settings-side">
             <Card className="settings-card">
               <Card.Body className="p-0">
                 <Nav className="flex-column settings-nav p-3">
@@ -183,7 +190,7 @@ const Settings = () => {
             </Card>
           </Col>
 
-          <Col lg={9} md={8}>
+          <Col lg={9} md={8} className="settings-main">
             {showSuccess && (
               <Alert
                 variant="success"
@@ -422,23 +429,33 @@ const Settings = () => {
                     </h5>
                   </div>
                 </Card.Header>
-                <Card.Body className="p-4">
+                {/* One block per service, each with its own heading, rule
+                    and body — rather than two headings, a loose paragraph
+                    and an <hr /> doing the separating. */}
+                <Card.Body className="p-4 integrations-body">
                   {hasInstagram && (
-                    <>
-                      <h6 className="mb-3">Instagram</h6>
-                      <p className="text-muted small mb-3">
-                        Connect your Instagram Business account to enable direct
-                        messages, comments, and publishing from your dashboard.
-                      </p>
+                    <section className="integration-block">
+                      <div className="integration-head">
+                        <h6>Instagram</h6>
+                        <p>
+                          Connect your Instagram Business account to enable direct messages,
+                          comments, and publishing from your dashboard.
+                        </p>
+                      </div>
                       <InstagramConnect />
-                    </>
+                    </section>
                   )}
-                  {hasInstagram && hasCrm && <hr className="my-4" />}
                   {hasCrm && (
-                    <>
-                      <h6 className="mb-3">WhatsApp</h6>
+                    <section className="integration-block">
+                      <div className="integration-head">
+                        <h6>WhatsApp</h6>
+                        <p>
+                          Send quotations, invoices and receipts to clients on WhatsApp, and read
+                          their replies here.
+                        </p>
+                      </div>
                       <WhatsAppConnect />
-                    </>
+                    </section>
                   )}
                 </Card.Body>
               </Card>
