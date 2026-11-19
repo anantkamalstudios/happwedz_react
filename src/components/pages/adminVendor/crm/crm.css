@@ -2748,3 +2748,30 @@ textarea.crm-input {
   background: var(--crm-brand-soft);
   color: var(--crm-brand);
 }
+
+/* The conversation has to fit on the screen it is on.
+   72vh for the panel ignored the page header, the tab bar and the card's
+   own title above it, so a long thread pushed the composer — and the newest
+   message — below the fold, while a short one looked fine. The height that
+   matters is the message area's, and it is bounded on its own. */
+.crm-inbox,
+.crm-inbox-thread {
+  max-height: none;
+}
+
+.crm-inbox-thread .crm-chat {
+  height: 440px;
+  max-height: 48vh;
+}
+
+.crm-inbox-list {
+  max-height: 560px;
+}
+
+/* On a short screen the list sits above the conversation, so neither can
+   have half the window to itself. */
+@media (max-height: 760px) {
+  .crm-inbox-thread .crm-chat {
+    height: 340px;
+  }
+}

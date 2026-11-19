@@ -331,7 +331,12 @@ const Navbar = () => {
               WebkitOverflowScrolling: isMobile ? "touch" : undefined,
               paddingBottom: isMobile ? 8 : undefined,
               // 2026-10-27: more room between items (long labels such as "Google Profile" ran into the next one).
-              gap: isMobile ? 12 : 22,
+              // 2026-11-19: still not enough. The gap is between the ITEMS,
+              // and an item is as wide as its label — so a wide label like
+              // "Google Profile" leaves far less space beside its neighbour
+              // than a narrow one like "CRM". Wider gap, and room inside
+              // each item so the words themselves are not touching.
+              gap: isMobile ? 12 : 30,
               maxWidth: "100%",
             }}
           >
@@ -342,6 +347,7 @@ const Navbar = () => {
                   activeTab === tab.id ? "active-tab" : ""
                 }`}
                 style={{
+                  paddingInline: 4,
                   background: "transparent",
                   fontSize: isMobile ? 12 : 13,
                   minWidth: isMobile ? 56 : 58,
