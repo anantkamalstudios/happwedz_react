@@ -844,8 +844,8 @@ const Composer = ({ thread, templates, onSent }) => {
 
           {templateName && !chosen?.body ? (
             <div className="crm-hint">
-              We do not have this template's wording. Add it on the Templates tab and these boxes
-              will be labelled.
+              Wapzio did not return this template&apos;s wording, so we cannot show how many values
+              it takes. Fill in the ones it uses and leave the rest blank.
             </div>
           ) : null}
 
